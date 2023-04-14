@@ -20,10 +20,10 @@ export default function Header() {
                         <Link href="/projects" className="mr-5 hover:text-gray-900">
                             프로젝트
                         </Link>
-                        <Link href="/projects" className="mr-5 hover:text-gray-900">
+                        {/* <Link href="/projects" className="mr-5 hover:text-gray-900">
                             자가학습
-                        </Link>
-                        <Link href="/" className="mr-5 hover:text-gray-900"> {/* 오픈카카오링크 */}
+                        </Link> */}
+                        <Link href="https://open.kakao.com/o/srGJzeff" className="mr-5 hover:text-gray-900">
                             연락하기
                         </Link>
                     </nav>
