@@ -62,7 +62,7 @@ export async function getStaticProps() {
     aProject.properties.Name.title[0].plain_text
 
   ))
-  console.log(`projectNames: ${projectNames}`);
+  // console.log(`projectNames: ${projectNames}`);
 
   return {
     props: { projects }, // will be passed to the page component as props
