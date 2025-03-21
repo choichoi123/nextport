@@ -16,7 +16,7 @@ export default function Home() {
         
         <meta property="og:title" content="최지훈 포트폴리오!!"/>
         <meta property="og:description" content="최지훈의 포트폴리오에 오신걸 환영합니다!!"/>
-        <meta property="og:image" content="%PUBLIC_URL%/bak/favicon.ico"/>
+        <meta property="og:image" content="%PUBLIC_URL%/og_image.png"/>
         <meta property="og:type" content="website"/>
         <meta property="og:locale" content="ko_KR"/>
       </Head>
