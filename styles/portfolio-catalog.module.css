@@ -1,0 +1,61 @@
+.catalog { padding-block: 37px 48px; }
+.backLink { display: inline-flex; align-items: center; gap: 12px; font-size: 12px; color: var(--muted) !important; }
+.backLink:hover { color: var(--accent) !important; }
+.intro { display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; padding-block: 49px 47px; border-bottom: 1px solid var(--line); }
+.intro h1 { font-size: clamp(32px, 3.9vw, 49px); font-weight: 600; line-height: 1.4; letter-spacing: -.06em; margin-top: 20px; word-break: keep-all; }
+.intro h1 span { color: var(--accent); }
+.introAside { max-width: 320px; }
+.introAside p { font-size: 13px; line-height: 1.9; word-break: keep-all; }
+.total { display: inline-flex; align-items: baseline; gap: 15px; color: var(--muted); font-size: 9px; letter-spacing: .12em; margin-top: 23px; }
+.total strong { font-family: Georgia, serif; color: var(--ink); font-size: 35px; font-weight: 400; letter-spacing: -.04em; }
+.controls { display: grid; grid-template-columns: minmax(0, 1fr) 180px; align-items: start; gap: 35px; margin-top: 34px; }
+.controls label { display: block; color: var(--ink); font-size: 11px; margin-bottom: 9px; }
+.searchBox { display: flex; gap: 13px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 5px; padding: 0 14px; min-height: 48px; color: var(--muted); }
+.searchBox:focus-within { outline: 2px solid var(--accent); outline-offset: 3px; }
+.searchBox > svg { flex: 0 0 auto; }
+.searchBox input { min-width: 0; width: 100%; font: inherit; font-size: 13px; color: var(--ink); background: transparent; border: 0; padding: 13px 0; outline: 0; }
+.searchBox input::placeholder { color: var(--muted); opacity: 1; }
+.searchBox input::-webkit-search-cancel-button { display: none; }
+.searchBox button { border: 0; background: transparent; font-size: 22px !important; line-height: 1; padding: 4px; }
+.hint { margin-top: 9px !important; font-size: 10px; }
+.sortField select { min-height: 48px; width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); color: var(--ink); font: inherit; font-size: 12px; }
+.sortField select:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.filterRow { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; padding-block: 27px 29px; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.filters button { display: inline-flex; align-items: center; gap: 9px; border: 1px solid var(--line); border-radius: 30px; padding: 8px 14px; background: transparent; font-size: 11px !important; }
+.filters button > span { color: var(--muted); font-size: 9px; }
+.filters button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.filters button[aria-pressed="true"] > span { color: inherit; opacity: .75; }
+.filters button:hover:not([aria-pressed="true"]) { background: var(--soft); }
+.resultCount { font-size: 11px; }
+.resultCount strong { color: var(--ink); font-weight: 550; }
+.emptyState { display: grid; justify-items: center; border: 1px solid var(--line); border-radius: 7px; padding: 78px 25px; margin-top: 28px; text-align: center; background: var(--surface); }
+.emptyState > span { color: var(--accent); font-size: 36px; font-weight: 300; margin-bottom: 15px; }
+.emptyState h2 { font-size: 22px; font-weight: 550; letter-spacing: -.04em; word-break: keep-all; }
+.emptyState p { font-size: 12px; margin-top: 12px !important; }
+.emptyState button { border: 0; border-bottom: 1px solid var(--accent); background: transparent; color: var(--accent); padding: 8px 2px; margin-top: 20px; font-size: 12px !important; }
+.closing { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; border-top: 1px solid var(--line); padding-top: 27px; margin-top: 37px; font-size: 11px; }
+.closing a { display: inline-flex; align-items: center; gap: 14px; font-size: 12px; }
+.closing a:hover { color: var(--accent); }
+@media (max-width: 760px) {
+  .catalog { padding-block: 24px 32px; }
+  .backLink { font-size: 11px; }
+  .intro { flex-direction: column; align-items: flex-start; gap: 24px; padding-block: 33px 30px; }
+  .intro h1 { font-size: clamp(29px, 6.9vw, 39px); margin-top: 16px; }
+  .introAside { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; max-width: none; width: 100%; }
+  .introAside p { font-size: 11px; }
+  .total { flex-direction: column; gap: 2px; margin-top: 0; font-size: 7px; }
+  .total strong { font-size: 29px; line-height: 1.2; }
+  .controls { grid-template-columns: minmax(0, 1fr); gap: 17px; margin-top: 25px; }
+  .sortField { display: flex; align-items: center; gap: 12px; }
+  .sortField label { margin: 0; }
+  .sortField select { width: auto; min-height: 39px; }
+  .searchBox input { font-size: 12px; }
+  .hint { font-size: 10px; line-height: 1.7; }
+  .filterRow { gap: 15px; padding-block: 22px; }
+  .filters { gap: 7px; }
+  .filters button { padding: 8px 12px; font-size: 10px !important; gap: 7px; }
+  .emptyState { padding: 55px 20px; }
+  .emptyState h2 { font-size: 20px; }
+  .closing { align-items: flex-start; flex-direction: column; line-height: 1.8; }
+}
