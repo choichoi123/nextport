@@ -4,10 +4,12 @@ const nextConfig = {
   images: {
     domains: [
       'www.notion.so',
+      'app.notion.com',
       'images.unsplash.com',
-      's3.us-west-2.amazonaws.com'
+      's3.us-west-2.amazonaws.com',
+      'prod-files-secure.s3.us-west-2.amazonaws.com'
     ],
-    format: ['image/png', 'image/webp', 'image/jpeg']
+    formats: ['image/webp']
   }
 }
 

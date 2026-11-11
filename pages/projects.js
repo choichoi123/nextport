@@ -1,6 +1,7 @@
 import Layout from "../components/layout"
 import Head from "next/head"
-import { TOKEN, DATABASE_ID } from "@/config";
+import { TOKEN, DATABASE_ID, DATA_SOURCE_ID } from "@/config";
+import { getNotionProjects } from "@/lib/notion.mjs";
 import ProjectItem from "@/components/projects/project-item";
 
 export default function projects({ projects }) {
@@ -32,39 +33,11 @@ export default function projects({ projects }) {
 }
 
 export async function getStaticProps() {
-  //빌드 타임에 호출함
-  const options = {
-    method: 'POST',
-    headers: {
-      accept: 'application/json',
-      'Notion-Version': '2022-06-28',
-      'content-type': 'application/json'
-      , Authorization: `Bearer ${TOKEN}`
-    },
-    body: JSON.stringify({
-      sorts: [
-        {
-          "property": "Name",
-          "direction": "ascending"
-        }
-      ],
-      page_size: 100
-    })
-  };
+  const projects = await getNotionProjects({
+    token: TOKEN,
+    databaseId: DATABASE_ID,
+    dataSourceId: DATA_SOURCE_ID,
+  });
 
-  const res = await fetch(`https://api.notion.com/v1/databases/${DATABASE_ID}/query`, options)
-
-  const projects = await res.json()
-
-  // console.log(projects)
-
-  const projectNames = projects.results.map((aProject) => (
-    aProject.properties.Name.title[0].plain_text
-
-  ))
-  // console.log(`projectNames: ${projectNames}`);
-
-  return {
-    props: { projects }, revalidate: 1 // will be passed to the page component as props
-  }
+  return { props: { projects }, revalidate: 1 };
 }

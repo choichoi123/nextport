@@ -2,7 +2,7 @@ import { useTheme } from "next-themes";
 
 export default function DarkModeToggleButton() {
 
-    const { theme, setTheme } = useTheme()
+    const { resolvedTheme, setTheme } = useTheme()
 
     return (
         <>
@@ -17,7 +17,8 @@ export default function DarkModeToggleButton() {
                 dark:hover:bg-slate-700
                 rounded text-base mt-4 md:mt-0"
                 type="button"
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                aria-label="화면 테마 전환"
+                onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
             >
                 {/* Ligth Mode */}
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" 
