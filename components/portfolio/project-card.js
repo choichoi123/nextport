@@ -1,6 +1,6 @@
 import ProjectArt from '@/components/preview/project-art'
 import { useRouter } from 'next/router'
-import { getPortfolioMessages, formatPortfolioMessage } from '@/lib/portfolio-messages.mjs'
+import { getPortfolioMessages, formatPortfolioMessage, getCaseStudyLink } from '@/lib/portfolio-messages.mjs'
 import Arrow from './arrow'
 import styles from '@/styles/portfolio-preview.module.css'
 
@@ -10,6 +10,7 @@ export default function ProjectCard({ project, index = 0, featured = false, onPr
   const label = template => formatPortfolioMessage(template, { title: project.title })
   const Heading = headingLevel === 'h2' ? 'h2' : 'h3'
   const canPreview = !project.href && typeof onPreview === 'function'
+  const caseStudy = getCaseStudyLink(project, locale)
 
   return (
     <article className={`${styles.projectCard} ${featured ? styles.featuredCard : ''}`}>
@@ -25,7 +26,7 @@ export default function ProjectCard({ project, index = 0, featured = false, onPr
         </dl>
         {project.tags.length > 0 && <ul className={styles.tags} aria-label={label(card.technologies)}>{project.tags.map(tag => <li key={tag}>{tag}</li>)}</ul>}
         {(project.href || canPreview || project.github || project.youtube) && <div className={styles.projectActions}>
-          {project.href && <a className={styles.caseLink} href={project.href} target="_blank" rel="noopener noreferrer" hrefLang={locale === 'en' ? 'ko' : undefined} aria-label={label(card.caseStudyLabel)}>{card.caseStudy}<Arrow diagonal /></a>}
+          {caseStudy && <a className={styles.caseLink} href={caseStudy.href} target="_blank" rel="noopener noreferrer" hrefLang={caseStudy.hrefLang} aria-label={caseStudy.ariaLabel}>{caseStudy.text}<Arrow diagonal /></a>}
           {canPreview && <button className={styles.caseLink} type="button" onClick={() => onPreview(project)} aria-label={label(card.previewLabel)}>{card.preview}<Arrow /></button>}
           {(project.github || project.youtube) && <div className={styles.projectLinks}>
             {project.github && <a href={project.github} target="_blank" rel="noopener noreferrer" aria-label={label(card.githubLabel)}>GitHub<Arrow diagonal /></a>}

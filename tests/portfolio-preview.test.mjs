@@ -259,11 +259,11 @@ test('영어 번역 누락은 원문과 준비 상태로 남기며 영문 설명
   page.properties.NameEn = { rich_text: text('Project title') }
   page.properties.DescriptionEn = { rich_text: text('I implemented every part of this product. Another team handled the backend.') }
   const partial = normalizePortfolioProjects([page], { locale: 'en' })[0]
-  assert.equal(partial.role, 'See the Korean details for my role')
+  assert.equal(partial.role, 'See the case study for my role')
   assert.notEqual(partial.role, partial.description)
   assert.deepEqual(partial.translationMissing, ['role'])
   assert.equal(partial.translationPending, true)
-  assert.equal(partial.highlight, 'See the Korean details for individual contributions and verification')
+  assert.equal(partial.highlight, 'See the case study for individual contributions and verification')
   assert.equal(normalizePortfolioProjects([page])[0].role, '제가 한국어 화면을 담당했습니다.')
 })
 
@@ -273,7 +273,7 @@ test('원문 개인 역할이 미확인일 때는 빈 RoleEn을 번역 누락으
   page.properties.DescriptionEn = { rich_text: text('A team project with a map interface.') }
   page.properties.RoleEn = { rich_text: [] }
   const complete = normalizePortfolioProjects([page], { locale: 'en' })[0]
-  assert.equal(complete.role, 'See the Korean details for my role')
+  assert.equal(complete.role, 'See the case study for my role')
   assert.equal(complete.translationPending, false)
   assert.deepEqual(complete.translationMissing, [])
   page.properties.DescriptionEn.rich_text = []
