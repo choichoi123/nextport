@@ -8,6 +8,7 @@ Next.js Pages Router로 만든 개인 포트폴리오입니다. 개발자 소개
 | --- | --- |
 | [작업 규칙](AGENTS.md) | 작업 범위·콘텐츠 원칙·브라우저 접근·검증 기준 |
 | [Notion·콘텐츠 기준](docs/NOTION.md) | 운영 DB 출처·연결 설정·필드·소개 양식·변경 절차 |
+| [Vercel에서 개인 Notion DB로 전환](docs/VERCEL_NOTION_MIGRATION.md) | 다른 컴퓨터에서 Git·읽기 권한·환경변수 설정, 새 배포·검증·복구를 진행하는 절차 |
 | [프로젝트 자료 전달 가이드](docs/PORTFOLIO_HANDOFF_GUIDE.md) | 다른 프로젝트 담당 AI에게 줄 요청문·공개 초안·기술 근거·이미지 전달 템플릿 |
 | [현재 상태](docs/CURRENT_STATE.md) | 구현·검증·공개 배포·미확인 사항과 다음 작업 |
 | [화면과 미리보기](docs/PREVIEW.md) | 메인·전체 목록·이전 홈·예시의 경로와 데이터 구분 |
