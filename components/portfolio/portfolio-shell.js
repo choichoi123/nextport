@@ -9,6 +9,7 @@ import PortfolioBrand, { PortfolioBrandFavicon } from './portfolio-brand'
 import Arrow from './arrow'
 import { normalizeLocale, localePath } from '@/lib/portfolio-i18n.mjs'
 import { getPortfolioMessages } from '@/lib/portfolio-messages.mjs'
+import portfolioSocial, { getPortfolioSocialImage } from '@/config/portfolio-social.mjs'
 import styles from '@/styles/portfolio-preview.module.css'
 
 function ThemeButton({ label }) {
@@ -40,7 +41,8 @@ export default function PortfolioShell({
   const { nav } = messages
   const pageTitle = title || messages.meta.title
   const pageDescription = description || messages.meta.description
-  const siteOrigin = 'https://nextport-roan.vercel.app'
+  const { siteOrigin } = portfolioSocial
+  const socialImage = getPortfolioSocialImage()
   const canonical = `${siteOrigin}${localePath(router.pathname, locale)}`
   const [hash, setHash] = useState('')
   useEffect(() => {
@@ -64,11 +66,21 @@ export default function PortfolioShell({
         </>}
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDescription} />
-        <meta property="og:image" content="/opengraph-image.png" />
+        <meta property="og:site_name" content={messages.meta.siteName} />
+        <meta property="og:image" content={socialImage.url} />
+        <meta property="og:image:width" content={String(socialImage.width)} />
+        <meta property="og:image:height" content={String(socialImage.height)} />
+        <meta property="og:image:type" content={socialImage.type} />
+        <meta property="og:image:alt" content={messages.meta.imageAlt} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={canonical} />
         <meta property="og:locale" content={locale === 'en' ? 'en_US' : 'ko_KR'} />
         <meta property="og:locale:alternate" content={locale === 'en' ? 'ko_KR' : 'en_US'} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+        <meta name="twitter:image" content={socialImage.url} />
+        <meta name="twitter:image:alt" content={messages.meta.imageAlt} />
         {preview ? <meta name="robots" content="noindex, nofollow" /> : <>
           <meta name="naver-site-verification" content="cbaf6c94c9f869742c5755ca8b976783e266878e" />
           <meta name="google-site-verification" content="aZeJZGu7QX_-nX8d58FQ4YQ9hTjS3n9UwEW29pYZZB8" />

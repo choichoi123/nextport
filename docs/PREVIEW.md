@@ -12,6 +12,7 @@
 | `/en/projects` | 영어 전체 목록·카드·검색·분야·정렬 |
 | `/archive` | 이전 홈과 Lottie 보관본. 메인에서 분리하고 검색엔진 수집 제외 |
 | `/preview` | 같은 공통 디자인의 확인용 경로. 검색엔진 수집 제외, 무설정에서만 예시 표시 |
+| `/preview/og` | B JIHOON OG 두 안·현재 선택·한영 공유 카드 비교. 검색엔진 수집 제외 |
 
 기존 메인을 주석 묶음으로 남기는 대신 `pages/archive.js`에 실행 가능한 보관본으로 옮겼습니다. 주소를 직접 열거나 미리보기의 ‘기존 홈과 비교하기’로 접근할 수 있고, 보관본에서 현재 메인으로 돌아올 수 있습니다.
 
@@ -65,14 +66,37 @@ activeBrand: 'b', // 'a': 에디토리얼, 'b': 연결형 JIHOON, 'c': 블루/�
 - A·C는 원본 비교용 PNG와 파비콘으로 돌아갑니다. 두 안의 메인 로고는 아이보리 배경의 원본을 두 테마에서 공통으로 사용하며 별도 다크 변형을 만든 상태는 아닙니다.
 - 원래 `/favicon.ico`와 `/archive`의 이전 화면은 보존합니다. C안은 생성 이미지로 원본 폰트 파일·폰트명은 없으며, 새 B 로고는 해당 글자 형태와 굵기를 참고해 제작한 이미지입니다.
 
+## OG 설정과 시안 비교
+
+[OG 비교 페이지](../pages/preview/og.js)는 최신 B JIHOON 로고를 사용한 두 안을 원본 비율과 한국어·English 320px 기준 공유 카드 예시로 보여줍니다. 현재 선택한 안도 표시합니다. 좁은 화면에서는 비율을 유지해 줄이며 실제 공유 서비스의 표시 방식과 구분합니다. 원본 보기와 PNG 다운로드를 제공하고 Notion 데이터는 조회하지 않습니다. `/en/preview/og`에서도 같은 한국어 정적 비교 페이지를 표시하며 두 주소 모두 `noindex, nofollow`입니다.
+
+- 밝은 안: [PNG](../public/images/og-drafts/og-b-light-20261112.png) · [SVG 편집 원본](../public/images/og-drafts/og-b-light-20261112.svg)
+- 딥그린 안: [PNG](../public/images/og-drafts/og-b-deep-green-20261112.png) · [SVG 편집 원본](../public/images/og-drafts/og-b-deep-green-20261112.svg)
+
+PNG는 각각 불투명 RGB **1200 × 630**입니다. SVG는 기존 테마별 B 로고 PNG를 그대로 포함하고 주변 도형·문구를 구성한 원본입니다. 로고 파일은 편집하지 않았으며, 새 문구는 맑은 고딕을 사용합니다. SVG의 문구를 편집할 때는 해당 글꼴이 필요하지만 내보낸 PNG에는 별도 글꼴 설치가 필요하지 않습니다.
+
+기본 OG는 사용자가 선택한 **딥그린 안**입니다. [공유 설정](../config/portfolio-social.mjs)의 한 값만 바꾸면 밝은 안으로 전환합니다.
+
+```js
+activeImage: 'deep-green', // 'deep-green' 또는 'light'
+```
+
+이 설정은 홈·전체 프로젝트 목록·디자인 미리보기의 한국어와 영어 OG/Twitter 이미지 및 비교 페이지의 현재 선택을 함께 바꿉니다. 방문자의 라이트·다크 테마와는 별개이며 로고·파비콘·Notion은 바꾸지 않습니다. 선택한 PNG의 한국어 문구는 한영 페이지에서 공통으로 사용하고 제목·설명·이미지 alt는 해당 언어를 따릅니다. 페이지 메타 문구는 [한영 사전](../lib/portfolio-messages.mjs)의 `meta`에서 관리합니다.
+
+공유 메타는 설정의 `siteOrigin`을 사용한 절대 이미지 URL, 크기·형식·alt와 `summary_large_image` 카드를 제공합니다. canonical·OG URL·언어별 alternate는 검색어와 해시를 제외한 경로를 사용합니다. 미리보기의 수집 제외와 사이트 확인 메타는 유지합니다. 이전 홈 보관본의 메타·`/opengraph-image.png`도 보존하며 공통 화면에서는 새 설정을 참조합니다.
+
+비교 페이지는 자체 밝은 배경을 사용해 두 이미지를 같은 조건에서 비교합니다. 원본 저장소의 개발 서버는 설정 수정을 반영하지만, 별도 검토 사본은 관련 소스를 동기화해야 합니다. 운영 사이트의 이미지와 메타 변경에는 별도 커밋·배포가 필요하며 공유 서비스의 기존 링크 캐시는 배포 후 다시 확인합니다. 로컬 메타에 운영 절대 주소를 넣는 것과 실제 운영 서버에서 이미지가 제공되는지는 별도로 확인합니다. Notion 상세 URL을 직접 공유할 때의 미리보기는 Notion이 관리합니다.
+
 ## 주요 파일
 
 | 경로 | 역할 |
 | --- | --- |
 | `pages/index.js`, `pages/projects.js` | 공개 홈·전체 목록과 실제 데이터의 정적 생성·ISR |
 | `pages/archive.js`, `pages/preview.js` | 이전 홈 보관·예시 미리보기 |
+| `pages/preview/og.js`, `styles/og-preview.module.css` | OG 두 시안과 공유 카드 크기 비교 |
 | `components/portfolio/` | Shell·홈·카드·공유 아이콘 |
 | `config/portfolio-brand.js` | 활성 브랜드와 테마별 로고·파비콘 경로 |
+| `config/portfolio-social.mjs` | OG 선택·두 이미지 경로·공개 사이트 기준 주소 |
 | `components/preview/project-art.js` | 실제 표지와 구분한 구성 스케치·로드 실패 처리 |
 | `styles/portfolio-preview.module.css` | 메인·전체 목록·미리보기의 공유 디자인 |
 | `styles/portfolio-catalog.module.css` | 전체 목록의 검색·필터·빈 상태 |
