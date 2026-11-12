@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-12",
+  "mode": "built-in image_gen",
+  "selection": "B symbol with C-inspired JIHOON. lettering",
+  "typographyNote": "Reference C is a generated bitmap. No original font file or identified font family is available; this is a visual recreation of its glyph shapes and weight.",
+  "assets": [
+    {
+      "key": "b-jihoon-light",
+      "file": "../../../public/images/brand/logo-b-jihoon-light.png",
+      "sourceFile": "exec-056130dc-9f63-4591-a7d9-b9b81e1015e1.png",
+      "transparentBackground": true,
+      "prompt": "Use case: compositing. Asset type: production-ready horizontal transparent personal portfolio logo. Edit target Image 1 is the green/copper B logo. Input Image 2 is an exact typography reference for the desired name. Replace ONLY the Korean name in Image 1 with the exact JIHOON. wordmark from Image 2: preserve the same heavy wide geometric sans-serif letter shapes, rounded circular O counters, weight, spacing, and period shape from Image 2; reproduce that visible lettering as faithfully as possible, not a serif or medium-weight substitute. Keep the Image 1 B geometric interlocking J/H emblem, proportions, squared stems, J hook, copper rectangular joint and short copper underline unchanged. Keep its emblem left, name to the right and the small widely tracked WEB DEVELOPER subtitle underneath the name. Name JIHOON (J I H O O N) in deep forest green #203C30; period in copper #A35D36; subtitle green. Exact text only 'JIHOON.' and 'WEB DEVELOPER'. No Korean text. Flat solid fill identity artwork, no gradients, shading, paper texture, glow, shadow, lighting, decorative lines, mockup or background plate. Entire background must be genuinely transparent, including all counters and whitespace. A balanced single horizontal lockup on a 3:1 wide canvas, all artwork within bounds, tight but comfortable even margins around the full lockup. Light-theme version intended to sit on ivory #F7F8F3. Preserve reference B symbol and reference C name shape accurately.",
+      "sha256": "21415098de02f5589a4c75d5aac55fc24bd913460abf19601c3f7b2d42756306"
+    },
+    {
+      "key": "b-jihoon-dark",
+      "file": "../../../public/images/brand/logo-b-jihoon-dark.png",
+      "sourceFile": "exec-2dacb910-7893-4ffc-a0fe-a1a057c8516c.png",
+      "transparentBackground": false,
+      "prompt": "Use case: precise-object-edit. Recolor the attached clean JH + JIHOON. logo for dark mode, keeping the exact same symbol shapes, letterforms, wide heavy geometric font, subtitle, spacing, canvas size and layout. EXACT text 'JIHOON.' and 'WEB DEVELOPER'. Change deep forest green emblem and letters to SOLID ivory #F7F8F3. Change copper period, joint and underline to lighter copper #D49A70. Crucially render the ENTIRE background as one SOLID UNIFORM OPAQUE very dark forest #142019, full bleed, no alpha/transparency anywhere. This opaque dark proof is intended for a website header with exactly #142019 background. Keep JH negative spaces and O counters the same #142019 as background. Absolutely clean vector-like edges and solid shapes. No gradients, lighting, vignetting, paper texture, roughness, distressed edges, speckles, smudges, fuzzy edges, clouds, outlines, halos or shadows. No border/plate/mockup. ONE clean horizontal logo on uniform flat #142019, 3:1 canvas. Preserve the exact composition of the reference image, only recolor.",
+      "sha256": "260c390e114208ce40beab02039c6ef2e8d13e51199cf46d56b5151680805939"
+    }
+  ],
+  "references": [
+    "logo-b-connection.png",
+    "logo-c-electric.png"
+  ],
+  "notes": [
+    "Original six concept files are preserved.",
+    "Dark version uses an opaque forest background after transparent candidates showed artifacts. Discarded candidates are not production assets.",
+    "Active brand is configured in config/portfolio-brand.js; production requires a build/deployment to change."
+  ]
+}

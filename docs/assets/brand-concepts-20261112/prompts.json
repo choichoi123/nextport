@@ -1,0 +1,49 @@
+{
+  "date": "2026-11-12",
+  "mode": "built-in image_gen",
+  "purpose": "Six preview concepts; not applied to site",
+  "assets": [
+    {
+      "key": "favicon-a-final",
+      "file": "favicon-a-editorial.png",
+      "sha256": "90011d1792212e236151a82bcd6821170890724868af259ae341e995532cda89",
+      "prompt": "Use case: logo-brand. Asset type: a flat square favicon design proof for Choi Ji Hoon's personal portfolio. Direction A: refined editorial lowercase 'jh.' initials. Create a custom large ivory #F7F8F3 'jh' serif ligature with a generous curved j descender, clear round j dot and open h arch. Add a copper #A35D36 period at lower right of h. Entire square canvas is ONE SOLID UNIFORM OPAQUE forest green #203C30 background, full bleed with NO transparency and no rounded cutout. Exact text only: 'jh.' Strong readable letterforms, thick strokes and open counters, sophisticated restrained editorial typography. Mark fills 75 percent of canvas. Pure flat colors without lighting, shading, gradients, brush grain, mottling, flecks, transparent patches, shadows, embossing, glows, mockups, device frames, labels, or watermarks. One centered original monogram; clean professional icon proof, easy to simplify for 16/32px.",
+      "reference_file": null
+    },
+    {
+      "key": "favicon-b",
+      "file": "favicon-b-connection.png",
+      "sha256": "5c324e0e0b673d47d9c0388defa3149af1ea341ac5fc18269647e1518c9015b1",
+      "prompt": "Use case: logo-brand. Asset type: one favicon for a personal web developer portfolio. Primary request: Direction B, a distinctive geometric connection mark: two bold right-angle paths interlock to suggest a compact J and H in negative space, expressing interface and workflow connecting. Design a confident, very simple architectural emblem, not a diagram. A short copper rectangular joint is the only accent. Deep forest green #203C30 emblem and copper #A35D36 joint on a solid warm ivory #F7F8F3 rounded-square tile. Limit to two or three substantial geometric pieces with thick broad strokes and open negative space. No literal text or lettering outside the implied monogram. Tile occupies 86 percent of square canvas; mark fills the tile with ample clear margins. Genuine transparency outside the tile. Flat vector-like professional identity, straight-on, sharp clean edges, no gradients, no thin lines, no network of circles, no map, no arrows, no leaves, no code brackets as a stock logo, no shadows, no textures, no mockup, no caption, no watermark. Must be much more geometric than a serif 'jh' monogram and read clearly at 16/32px. Exactly one icon.",
+      "reference_file": null
+    },
+    {
+      "key": "favicon-c",
+      "file": "favicon-c-electric.png",
+      "sha256": "d8c277597673fd3f3d44abfcbe2f410b6707e9b9b6133e61735bfaf5fd0ec903",
+      "prompt": "Use case: logo-brand. Asset type: one experimental favicon for Choi Ji Hoon's personal web developer portfolio. Primary request: Direction C, bold electric editorial identity. Create a single distinctive heavy folded-ribbon emblem that subtly fuses J and H with a forward open notch; bold asymmetrical silhouette and simple architectural cuts, no generic lightning bolt or infinity symbol. Flat vivid ultramarine #3D4FEC rounded-square tile with a chartreuse #DDF58A emblem and a small deep navy #19214D cutout only if needed. Large strong emblem, generous open negative spaces, very few shapes, no fine details, legible at 16/32px. Tile occupies 86 percent of square canvas, outside tile truly transparent. A confident creative developer identity, playful but precise, different from a conservative green wordmark. No text, no numerals, no caption, no additional symbols, no gradients, no shadows, no glow, no 3D, no mockup, no watermark. Render exactly one centered original icon.",
+      "reference_file": null
+    },
+    {
+      "key": "logo-a",
+      "file": "logo-a-editorial.png",
+      "sha256": "f10a1f450dda60c2f6bb517ec2833b3b85bd3e4a37b92d68ec409f084f9e4f36",
+      "prompt": "Use case: logo-brand. Asset type: one horizontal MAIN HEADER LOGO concept for Korean developer Choi Ji Hoon. Input Image 1 is a SYMBOL AND TYPOGRAPHY STYLE REFERENCE ONLY, not an edit target: use the ivory editorial lowercase 'jh.' ligature and forest green/copper identity, but discard ALL grain, mottling, shadow or accidental transparent holes. Create a NEW clean horizontal lockup on a flat opaque warm ivory #F7F8F3 background. At left a compact solid forest green #203C30 rounded-square emblem holding the ivory jh ligature and small copper #A35D36 period. At right exact large Korean name '최지훈' in elegant clear humanist Korean sans serif, strong legibility, dark forest green, with exact much smaller 'WEB DEVELOPER' beneath in restrained spaced uppercase. The name, not subtitle, is dominant. Align emblem to combined name/subtitle height. Clean intentional editorial spacing; logo occupies most of a wide horizontal canvas, about a 3:1 image composition, 12 percent safe margins. All strokes and colored areas clean solid opaque ink. This is an individual portfolio, not a software vendor. Render EXACTLY one logo lockup, no extra copies, no header UI, no labels, no alternative layouts, no palette swatches, no perspective, no gradients, no textures, no shadows, no mockup, no border, no watermarks. Korean text must be spelled exactly 최지훈.",
+      "reference_file": "exec-175860a5-1d84-484d-aa82-5df39927b6e6.png"
+    },
+    {
+      "key": "logo-b",
+      "file": "logo-b-connection.png",
+      "sha256": "58e95c052f7a3ecced5c986d899f904a8c6089ceaa7d7c208abec4f8cb01d1aa",
+      "prompt": "Use case: logo-brand. Asset type: one horizontal MAIN HEADER LOGO concept. Input Image 1 is the reference symbol for Direction B, an original personal identity for web developer Choi Ji Hoon. Retain its recognizable thick geometric interlocked J/H symbol, including the copper rectangular joint, but render it pristine flat vector-like without any outer tile or rough edges. Place this forest green #203C30 and copper #A35D36 emblem at the left, then a generous clear gap and the exact Korean wordmark '최지훈' in carefully kerned geometric Korean sans-serif, bold yet friendly. Under the name put exactly 'WEB DEVELOPER' in smaller tracked uppercase. The name is primary, subtitle secondary. A short copper alignment bar below the emblem may link the layout subtly; do not create a diagram. Flat warm ivory #F7F8F3 opaque canvas, high contrast, balanced and compact wide horizontal composition about 3:1, emblem aligned with the combined name and subtitle height, logo occupies about 80 percent of canvas. Sophisticated functional identity, expresses connection and craft, no corporate transit branding. Exactly one lockup. No additional text, no duplicate variants, no labels, no 3D, no gradient, no grain, no shadow, no glow, no mockup, no watermark. Ensure exact Korean spelling 최지훈.",
+      "reference_file": "exec-1587dbc7-c415-4f5d-938a-7f71d1a3a7a3.png"
+    },
+    {
+      "key": "logo-c",
+      "file": "logo-c-electric.png",
+      "sha256": "9b7fbe2f10725773b007bba3d8b62e78f6aaa94fa54d650b534d2fc12e7476ba",
+      "prompt": "Use case: logo-brand. Asset type: one experimental horizontal MAIN HEADER LOGO for Choi Ji Hoon's personal developer portfolio. Input Image 1 is a symbol reference only: retain the distinctive chartreuse folded-ribbon J/H monogram on an ultramarine rounded-square tile, simplifying the tiny cutouts rather than adding detail. Direction C is bold electric editorial design. To the right of a compact emblem, create a custom confident heavy sans wordmark with EXACT text 'JIHOON.' in dark navy #19214D; make the period ultramarine #3D4FEC. Below put exact smaller uppercase text 'WEB DEVELOPER' with comfortable tracking, dark navy. Use only these words. On an opaque clean warm offwhite #F7F8F3 background, flat solid ultramarine #3D4FEC and chartreuse #DDF58A emblem. Sharp friendly contemporary typographic identity, energizing but still professional, no generic tech logo, no resemblance to Next.js or Notion. One wide horizontal lockup, about 3:1 composition, intentional generous margin and precise optical baseline, symbol sized to the combined two lines. No scene, no device, no additional logo options, no labels, no swatches, no watermark, no shadows, no glow, no texture, no gradients.",
+      "reference_file": "exec-70fd2ba3-0af2-4f1d-8acd-a457153b3649.png"
+    }
+  ]
+}

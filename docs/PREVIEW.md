@@ -38,6 +38,21 @@
 - `ProjectCard`: 메인·목록의 공통 표지·기간·태그·역할·실제 자료 링크. 예시 모달은 미리보기에서만 동작합니다.
 - 전체 목록: 검색어와 분야를 함께 적용하고, 결과 개수·빈 결과·초기화를 제공합니다. 여러 검색어는 모두 포함하는 항목을 찾습니다.
 
+## 로고와 파비콘 전환
+
+[브랜드 설정](../config/portfolio-brand.js)의 `activeBrand` 한 곳에서 `a`·`b`·`c`를 선택합니다. 기본값은 **`b`**이며 B의 연결형 심벌에 C안의 굵은 `JIHOON.` 글자 형태를 참고한 로고입니다. 원래 A·B·C 비교 이미지 6개는 [시안 폴더](assets/brand-concepts-20261112/README.md)에 보존합니다.
+
+```js
+activeBrand: 'b', // 'a': 에디토리얼, 'b': 연결형 JIHOON, 'c': 블루/라임
+```
+
+개발 서버는 설정 변경을 반영하고, 운영 사이트에는 수정한 코드를 빌드·배포해야 합니다. 방문자용 선택 메뉴나 Notion 속성은 추가하지 않습니다. 브랜드 설정은 로고와 파비콘만 바꾸며 프로젝트 내용·페이지의 기본 색상은 유지합니다.
+
+- `variants`의 `logo.light`·`logo.dark`와 `favicon.light`·`favicon.dark`에 자산 경로를 지정합니다. B의 메인 로고는 라이트·다크 전용 파일을 사용하며 기존 테마 버튼과 시스템 테마를 따릅니다.
+- [브랜드 컴포넌트](../components/portfolio/portfolio-brand.js)는 같은 HTML 구조에서 CSS로 로고를 전환합니다. 초기 서버 렌더에서 테마를 추측해 다른 로고 구조를 만들지 않습니다.
+- A·C는 원본 비교용 PNG와 파비콘으로 돌아갑니다. 두 안의 메인 로고는 아이보리 배경의 원본을 두 테마에서 공통으로 사용하며 별도 다크 변형을 만든 상태는 아닙니다.
+- 원래 `/favicon.ico`와 `/archive`의 이전 화면은 보존합니다. C안은 생성 이미지로 원본 폰트 파일·폰트명은 없으며, 새 B 로고는 해당 글자 형태와 굵기를 참고해 제작한 이미지입니다.
+
 ## 주요 파일
 
 | 경로 | 역할 |
@@ -45,6 +60,7 @@
 | `pages/index.js`, `pages/projects.js` | 공개 홈·전체 목록과 실제 데이터의 정적 생성·ISR |
 | `pages/archive.js`, `pages/preview.js` | 이전 홈 보관·예시 미리보기 |
 | `components/portfolio/` | Shell·홈·카드·공유 아이콘 |
+| `config/portfolio-brand.js` | 활성 브랜드와 테마별 로고·파비콘 경로 |
 | `components/preview/project-art.js` | 실제 표지와 구분한 구성 스케치·로드 실패 처리 |
 | `styles/portfolio-preview.module.css` | 메인·전체 목록·미리보기의 공유 디자인 |
 | `styles/portfolio-catalog.module.css` | 전체 목록의 검색·필터·빈 상태 |

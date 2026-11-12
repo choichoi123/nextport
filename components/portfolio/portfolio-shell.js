@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useTheme } from 'next-themes'
 import { Analytics } from '@vercel/analytics/react'
 import { Insights } from '@/components/insights'
+import PortfolioBrand, { PortfolioBrandFavicon } from './portfolio-brand'
 import Arrow from './arrow'
 import styles from '@/styles/portfolio-preview.module.css'
 
@@ -33,7 +34,6 @@ export default function PortfolioShell({
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
-        <link rel="icon" href="/favicon.ico" />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:image" content="/opengraph-image.png" />
@@ -44,6 +44,7 @@ export default function PortfolioShell({
           <meta name="google-site-verification" content="aZeJZGu7QX_-nX8d58FQ4YQ9hTjS3n9UwEW29pYZZB8" />
         </>}
       </Head>
+      <PortfolioBrandFavicon />
       <a className={styles.skipLink} href={`#${mainId}`}>본문으로 건너뛰기</a>
       {preview && <div className={styles.previewBar}>
         <div className={styles.container}>
@@ -54,8 +55,7 @@ export default function PortfolioShell({
       <header className={styles.header}>
         <div className={`${styles.container} ${styles.headerInner}`}>
           <Link href="/" className={styles.identity} aria-label="최지훈 포트폴리오 홈" aria-current={activePage === 'home' ? 'page' : undefined}>
-            <span className={styles.monogram}>jh<span>.</span></span>
-            <span>최지훈<span className={styles.identitySubtitle}>WEB DEVELOPER</span></span>
+            <PortfolioBrand />
           </Link>
           <nav aria-label="주요 메뉴">
             <Link href="/projects" aria-current={activePage === 'projects' ? 'page' : undefined}>프로젝트</Link>

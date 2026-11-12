@@ -73,6 +73,7 @@ npm start -- -p 3001
 | `lib/portfolio-preview.mjs` | 공개 실데이터 로더·미리보기 로더·카드 정규화·대표작 선정 |
 | `lib/portfolio-catalog.mjs` | 목록 검색·분야·정렬 처리 |
 | `components/portfolio/` | 공통 Shell·홈·프로젝트 카드 |
+| `config/portfolio-brand.js` | A·B·C 브랜드 선택과 테마별 로고·파비콘. [전환 방법](docs/PREVIEW.md#로고와-파비콘-전환) |
 | `components/projects/project-item.js` | 이전 프로젝트 카드 소스 보존, 현재 목록에서는 사용하지 않음 |
 | `components/animation.js` | 브라우저에서만 로드하는 Lottie 애니메이션 |
 | `components/layout.js` | 헤더·푸터·방문 및 성능 측정 |
