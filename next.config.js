@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  outputFileTracingRoot: __dirname,
+  // 프로젝트에서 직접 관리하는 AGENTS.md를 자동 수정하지 않습니다.
+  agentRules: false,
   i18n: {
     locales: ['ko', 'en'],
     defaultLocale: 'ko',
@@ -15,13 +18,13 @@ const nextConfig = {
     }))
   },
   images: {
-    domains: [
+    remotePatterns: [
       'www.notion.so',
       'app.notion.com',
       'images.unsplash.com',
       's3.us-west-2.amazonaws.com',
       'prod-files-secure.s3.us-west-2.amazonaws.com'
-    ],
+    ].map(hostname => ({ hostname, pathname: '/**' })),
     formats: ['image/webp']
   }
 }
