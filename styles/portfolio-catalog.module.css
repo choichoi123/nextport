@@ -37,6 +37,9 @@
 .closing { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; border-top: 1px solid var(--line); padding-top: 27px; margin-top: 37px; font-size: 11px; }
 .closing a { display: inline-flex; align-items: center; gap: 14px; font-size: 12px; }
 .closing a:hover { color: var(--accent); }
+.catalog:lang(en) :is(h1,h2,p) { word-break: normal; }
+.catalog:lang(en) .intro h1 { letter-spacing: -.04em; }
+.catalog:lang(en) .sortField label { flex-shrink: 0; }
 @media (max-width: 760px) {
   .catalog { padding-block: 24px 32px; }
   .backLink { font-size: 11px; }

@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { loadPortfolioPreview, selectFeaturedProjects } from '../lib/portfolio-preview.mjs'
+import { loadPortfolioProjects, loadPortfolioPreview, normalizePortfolioProjects, selectFeaturedProjects } from '../lib/portfolio-preview.mjs'
 
 const connection = { token: 'test-token', dataSourceId: 'test-source' }
 const text = (value) => [{ plain_text: value }]
@@ -124,7 +124,8 @@ test('필요한 공개 표시 필드만 반환하고 원본 응답이나 역할�
   assert.equal(projects[0].youtube, null)
   assert.equal(projects[0].cover, null)
   assert.deepEqual(Object.keys(projects[0]).sort(), [
-    'id', 'title', 'description', 'role', 'highlight', 'period', 'tags', 'href', 'github', 'youtube', 'cover', 'category', 'art',
+    'id', 'title', 'description', 'searchText', 'role', 'highlight', 'period', 'tags', 'href', 'github', 'youtube', 'cover', 'category', 'art',
+    'categoryKey', 'startMonth', 'translationPending', 'translationMissing', 'detailLanguage',
   ].sort())
   assert.doesNotMatch(JSON.stringify(projects), /created_by|비공개 작성자/)
   assert.deepEqual(page, original)
@@ -217,4 +218,94 @@ test('실제 표지와 HTTP 링크를 보존하고 실행 URL이나 인증정보
   assert.equal(projects[1].github, null)
   assert.equal(projects[1].youtube, null)
   assert.equal(projects[1].cover, null)
+})
+
+test('영문 명시 필드만 선택하고 한국어 원본 기준의 ID·분야·기간·링크는 보존한다', async () => {
+  const page = notionPage({ cover: { external: { url: 'https://images.example.com/cover.png' } } })
+  page.properties.Name.title = text('부산 관제 프로젝트')
+  page.properties.Description.rich_text = text('제가 관제 화면을 담당했습니다.')
+  page.properties.NameEn = { rich_text: [...text('English '), ...text('project')] }
+  page.properties.DescriptionEn = { rich_text: text('A web application for a transport team.') }
+  page.properties.RoleEn = { rich_text: text('Frontend implementation and API integration') }
+  const original = structuredClone(page)
+  const ko = normalizePortfolioProjects([page])[0]
+  const en = normalizePortfolioProjects([page], { locale: 'en' })[0]
+  assert.equal(ko.title, '부산 관제 프로젝트')
+  assert.equal(ko.role, '제가 관제 화면을 담당했습니다.')
+  assert.equal(en.title, 'English project')
+  assert.equal(en.description, 'A web application for a transport team.')
+  assert.equal(en.role, 'Frontend implementation and API integration')
+  for (const field of ['id', 'period', 'startMonth', 'categoryKey', 'art', 'href', 'github', 'youtube', 'cover']) assert.equal(en[field], ko[field])
+  assert.deepEqual(en.tags, ko.tags)
+  assert.equal(en.categoryKey, 'dispatch')
+  assert.equal(en.category, 'Dispatch web application')
+  assert.equal(en.detailLanguage, 'ko')
+  assert.equal(en.translationPending, false)
+  assert.deepEqual(en.translationMissing, [])
+  const dependencies = { locale: 'en', getProjects: async () => ({ results: [page] }) }
+  assert.deepEqual((await loadPortfolioProjects(connection, dependencies)).projects, [en])
+  assert.deepEqual((await loadPortfolioPreview(connection, dependencies)).projects, [en])
+  assert.deepEqual(page, original)
+})
+
+test('영어 번역 누락은 원문과 준비 상태로 남기며 영문 설명에서 개인 역할을 추론하지 않는다', async () => {
+  const page = notionPage()
+  page.properties.Description.rich_text = text('제가 한국어 화면을 담당했습니다.')
+  const missing = normalizePortfolioProjects([page], { locale: 'en' })[0]
+  assert.equal(missing.title, '실제 프로젝트')
+  assert.equal(missing.description, '제가 한국어 화면을 담당했습니다.')
+  assert.equal(missing.translationPending, true)
+  assert.deepEqual(missing.translationMissing, ['title', 'description', 'role'])
+  page.properties.NameEn = { rich_text: text('Project title') }
+  page.properties.DescriptionEn = { rich_text: text('I implemented every part of this product. Another team handled the backend.') }
+  const partial = normalizePortfolioProjects([page], { locale: 'en' })[0]
+  assert.equal(partial.role, 'See the Korean details for my role')
+  assert.notEqual(partial.role, partial.description)
+  assert.deepEqual(partial.translationMissing, ['role'])
+  assert.equal(partial.translationPending, true)
+  assert.equal(partial.highlight, 'See the Korean details for individual contributions and verification')
+  assert.equal(normalizePortfolioProjects([page])[0].role, '제가 한국어 화면을 담당했습니다.')
+})
+
+test('원문 개인 역할이 미확인일 때는 빈 RoleEn을 번역 누락으로 표시하지 않는다', () => {
+  const page = notionPage()
+  page.properties.NameEn = { rich_text: text('Project title') }
+  page.properties.DescriptionEn = { rich_text: text('A team project with a map interface.') }
+  page.properties.RoleEn = { rich_text: [] }
+  const complete = normalizePortfolioProjects([page], { locale: 'en' })[0]
+  assert.equal(complete.role, 'See the Korean details for my role')
+  assert.equal(complete.translationPending, false)
+  assert.deepEqual(complete.translationMissing, [])
+  page.properties.DescriptionEn.rich_text = []
+  assert.deepEqual(normalizePortfolioProjects([page], { locale: 'en' })[0].translationMissing, ['description'])
+  const empty = normalizePortfolioProjects([{ properties: {} }], { locale: 'en' })[0]
+  assert.equal(empty.title, 'Untitled project')
+  assert.equal(empty.translationPending, false)
+  assert.deepEqual(empty.translationMissing, [])
+})
+
+test('영문 로더도 설정·API 오류와 빈 목록을 보존하고 예시는 무설정 preview에서만 제공한다', async () => {
+  const noQuery = () => { throw new Error('무설정 preview에서는 조회하면 안 됩니다.') }
+  const preview = await loadPortfolioPreview({}, { locale: 'en', getProjects: noQuery })
+  assert.equal(preview.source, 'example')
+  assert.deepEqual(preview.projects.map(project => project.id), ['preview-wiseop', 'preview-paju', 'preview-eksys'])
+  assert.equal(preview.projects[0].title, 'Busan Accessible Transport WISEOP')
+  assert.ok(preview.projects.every(project => !project.translationPending && !project.href))
+  assert.deepEqual(await loadPortfolioPreview(connection, { locale: 'en', getProjects: async () => ({ results: [] }) }), { source: 'notion', projects: [] })
+  await assert.rejects(loadPortfolioPreview({ token: 'test-token' }, { locale: 'en' }), /Notion 설정이 불완전/)
+  const failure = new Error('영문 조회 실패')
+  await assert.rejects(loadPortfolioPreview(connection, { locale: 'en', getProjects: async () => { throw failure } }), error => error === failure)
+})
+
+test('영문 기간의 미확인 안내를 번역하되 정렬 시작 월은 실제 시작값에서만 만든다', () => {
+  const dates = [
+    { start: '2026-02', end: '2026-05' },
+    { start: '2026-02', end: null },
+    { start: null, end: '2026-05' },
+    { start: '2026-02-30', end: null },
+  ]
+  const pages = dates.map(date => notionPage({ properties: { WorkPeriod: { date } } }))
+  const projects = normalizePortfolioProjects(pages, { locale: 'en' })
+  assert.deepEqual(projects.map(project => project.period), ['2026.02–2026.05', '2026.02–End date unspecified', 'Start date unspecified–2026.05', 'Period unspecified'])
+  assert.deepEqual(projects.map(project => project.startMonth), ['2026.02', '2026.02', '', ''])
 })

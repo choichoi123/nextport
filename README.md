@@ -18,6 +18,7 @@ Next.js Pages Router로 만든 개인 포트폴리오입니다. 개발자 소개
 - Next.js 13.2.4 / React 18.2.0 / JavaScript / Tailwind CSS 3
 - Node.js 22, npm (`.nvmrc`와 `package.json` 기준)
 - 프로젝트 콘텐츠는 Notion API로 조회하며 빌드 시 생성 및 ISR을 사용합니다.
+- 한국어를 기본으로 `/en`·`/en/projects` 영어 화면과 헤더 언어 전환을 제공합니다. [번역 범위와 관리 방법](docs/PREVIEW.md#한국어와-english)을 참고합니다.
 - 현재 로컬 코드와 공개 배포본의 확인 수준은 현재 상태 문서에서 구분합니다.
 
 ## 로컬 실행
@@ -72,6 +73,7 @@ npm start -- -p 3001
 | `lib/notion.mjs` | Notion 데이터 소스 탐색·조회·오류 처리 |
 | `lib/portfolio-preview.mjs` | 공개 실데이터 로더·미리보기 로더·카드 정규화·대표작 선정 |
 | `lib/portfolio-catalog.mjs` | 목록 검색·분야·정렬 처리 |
+| `lib/portfolio-i18n.mjs`, `lib/portfolio-messages.mjs` | 한영 경로와 공통 화면 문구 |
 | `components/portfolio/` | 공통 Shell·홈·프로젝트 카드 |
 | `config/portfolio-brand.js` | A·B·C 브랜드 선택과 테마별 로고·파비콘. [전환 방법](docs/PREVIEW.md#로고와-파비콘-전환) |
 | `components/projects/project-item.js` | 이전 프로젝트 카드 소스 보존, 현재 목록에서는 사용하지 않음 |

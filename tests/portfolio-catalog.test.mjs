@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { loadPortfolioProjects } from '../lib/portfolio-preview.mjs'
+import { loadPortfolioProjects, normalizePortfolioProjects } from '../lib/portfolio-preview.mjs'
 import { filterPortfolioProjects, portfolioCategories } from '../lib/portfolio-catalog.mjs'
 
 test('공개 홈과 목록의 무설정 로더는 외부 조회와 예시 프로젝트를 사용하지 않는다', async () => {
@@ -54,4 +54,50 @@ test('분야 목록은 실제 데이터에서 중복 없이 만들고 빈 데이
   assert.deepEqual(new Set(portfolioCategories(projects)), new Set(['관제 웹 애플리케이션', '웹 프로젝트']))
   assert.deepEqual(portfolioCategories([]), [])
   assert.deepEqual(filterPortfolioProjects([]), [])
+})
+
+test('언어별 분야 이름이나 기간 표시가 바뀌어도 안정된 분야 키와 시작 월로 필터·정렬한다', () => {
+  const bilingual = [
+    { id: 'older', title: 'Older', categoryKey: 'mobile', category: 'Mobile service', startMonth: '2025.12', period: 'December 2025', tags: [] },
+    { id: 'unknown', title: 'Unknown', categoryKey: 'mobile', category: '모바일 서비스', startMonth: '', period: '2026.12', tags: [] },
+    { id: 'newer', title: 'Newer', categoryKey: 'mobile', category: 'Mobile service', startMonth: '2026.02', period: 'February 2026', tags: [] },
+    { id: 'web', title: 'Website', categoryKey: 'website', category: 'Website', startMonth: '2026.03', period: '', tags: [] },
+  ]
+  assert.deepEqual(filterPortfolioProjects(bilingual, { category: 'mobile', locale: 'en' }).map(project => project.id), ['newer', 'older', 'unknown'])
+  assert.deepEqual(new Set(portfolioCategories(bilingual, { keys: true, locale: 'en' })), new Set(['mobile', 'website']))
+  assert.deepEqual(bilingual.map(project => project.id), ['older', 'unknown', 'newer', 'web'])
+})
+
+test('영어 이름순 정렬은 표시 제목을 영어 locale 기준으로 비교한다', () => {
+  const names = ['Zulu', 'alpha 10', 'Alpha 2', 'Éclair'].map((title, index) => ({ id: String(index), title, tags: [] }))
+  assert.deepEqual(filterPortfolioProjects(names, { sort: 'title', locale: 'en' }).map(project => project.title), ['Alpha 2', 'alpha 10', 'Éclair', 'Zulu'])
+})
+
+test('같은 한영 원문에서 파생한 검색값으로 언어를 전환해도 이름·설명 검색 결과를 유지한다', () => {
+  const richText = value => ({ rich_text: [{ plain_text: value }] })
+  const pages = [
+    { id: 'paju', properties: {
+      Name: { title: [{ plain_text: '파주 바우처' }] },
+      NameEn: richText('Paju Voucher'),
+      Description: richText('주소 선택과 이용내역을 연결한 모바일 웹입니다.'),
+      DescriptionEn: richText('A mobile web service for address selection and trip history.'),
+    } },
+    { id: 'other-mobile', properties: {
+      Name: { title: [{ plain_text: '다른 모바일 프로젝트' }] },
+      NameEn: richText('Another mobile project'),
+      Description: richText('프로젝트 설명입니다.'),
+      DescriptionEn: richText('A separate project.'),
+    } },
+  ]
+  const original = structuredClone(pages)
+  const ko = normalizePortfolioProjects(pages)
+  const en = normalizePortfolioProjects(pages, { locale: 'en' })
+  assert.equal(ko[0].searchText, en[0].searchText)
+  for (const locale of ['ko', 'en']) {
+    const localized = locale === 'en' ? en : ko
+    for (const query of ['Paju', '파주', 'trip history', '이용내역']) {
+      assert.deepEqual(filterPortfolioProjects(localized, { query, category: 'mobile', sort: 'title', locale }).map(project => project.id), ['paju'])
+    }
+  }
+  assert.deepEqual(pages, original)
 })

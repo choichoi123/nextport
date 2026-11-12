@@ -6,7 +6,7 @@ export default function Preview(props) {
   return <PortfolioHome {...props} preview />
 }
 
-export async function getStaticProps() {
-  const data = await loadPortfolioPreview({ token: TOKEN, databaseId: DATABASE_ID, dataSourceId: DATA_SOURCE_ID })
+export async function getStaticProps({ locale } = {}) {
+  const data = await loadPortfolioPreview({ token: TOKEN, databaseId: DATABASE_ID, dataSourceId: DATA_SOURCE_ID }, { locale })
   return { props: data, revalidate: 1 }
 }

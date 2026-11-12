@@ -58,6 +58,12 @@
 .navContact svg { width: 15px; }
 .themeButton { display: grid; place-items: center; flex-shrink: 0; width: 39px; height: 39px; border: 1px solid var(--line); border-radius: 50%; background: transparent; }
 .themeButton:hover { background: var(--soft); }
+.headerActions { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
+.languageSwitch { display: flex; align-items: center; gap: 7px; font-size: 11px; white-space: nowrap; }
+.languageSwitch > span { color: var(--line); }
+.languageSwitch a { padding-block: 6px; color: var(--muted); }
+.languageSwitch a:hover, .languageSwitch a[aria-current="true"] { color: var(--accent); }
+.languageSwitch a[aria-current="true"] { font-weight: 650; text-decoration: underline; text-underline-offset: 4px; }
 .hero { display: grid; grid-template-columns: 1.35fr 1fr; gap: 86px; padding-top: 95px; padding-bottom: 106px; align-items: center; }
 .eyebrow { display: flex; align-items: center; gap: 11px; font-size: 10px; letter-spacing: .16em; font-weight: 600; line-height: 1.5; }
 .heroLine { width: 27px; height: 1px; background: var(--accent); }
@@ -108,6 +114,7 @@
 .projectMeta > span:first-child { color: var(--accent); font-weight: 550; }
 .projectBody .projectHeading { font-size: 24px; font-weight: 600; line-height: 1.4; letter-spacing: -.045em; margin-top: 18px; word-break: keep-all; overflow-wrap: anywhere; }
 .projectDescription { font-size: 12px; line-height: 1.85; margin-top: 12px !important; word-break: keep-all; overflow-wrap: anywhere; }
+.translationNote { font-size: 10px; line-height: 1.7; margin-top: 10px !important; padding-left: 9px; border-left: 2px solid var(--line); }
 .contribution { display: flex; flex-direction: column; gap: 11px; width: 100%; border-top: 1px solid var(--line); padding-top: 18px; margin-top: 20px !important; }
 .contribution > div { display: grid; grid-template-columns: 56px minmax(0,1fr); gap: 10px; font-size: 11px; line-height: 1.7; }
 .contribution dt { color: var(--muted); }
@@ -160,11 +167,22 @@
 .dialogCopy h2 { font-size: 27px; line-height: 1.4; letter-spacing: -.04em; margin: 12px 0 15px; word-break: keep-all; }
 .dialogCopy > p { font-size: 13px; line-height: 1.9; }
 .dialogNotice { margin-top: 24px !important; padding: 15px; background: var(--soft); border-radius: 4px; font-size: 11px !important; }
+.page[lang="en"] :is(h1,h2,h3,p,dd) { word-break: normal; }
+.page[lang="en"] .hero h1 { font-size: clamp(33px, 3.9vw, 49px); line-height: 1.25; letter-spacing: -.045em; }
+.page[lang="en"] .heroDescription { max-width: 520px; }
+.page[lang="en"] .contribution > div { grid-template-columns: 76px minmax(0,1fr); }
+.page[lang="en"] .sectionHeading h2 { font-size: 29px; }
+.page[lang="en"] .workflow > div > div { min-width: 0; }
+.page[lang="en"] .workflow > div > div > span { overflow-wrap: anywhere; }
+.page[lang="en"] .visualBottom > span:last-child { min-width: 0; }
 @media (min-width: 1500px) {
   .hero { padding-top: 110px; padding-bottom: 120px; }
 }
 @media (max-width: 1050px) {
   .container { width: calc(100% - 64px); }
+  .headerInner { gap: 18px; }
+  .header nav { gap: 20px; }
+  .headerActions { gap: 10px; }
   .hero { gap: 45px; padding-top: 70px; padding-bottom: 80px; }
   .hero h1 { font-size: 42px; }
   .heroActions { gap: 18px; }
@@ -194,8 +212,14 @@
   .navContact { gap: 3px; }
   .navContact svg { width: 12px; }
   .themeButton { grid-column: 2; grid-row: 1; width: 31px; height: 31px; }
+  .headerActions { grid-column: 2; grid-row: 1; width: 108px; min-width: 0; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
+  .headerActions .themeButton { order: 1; }
+  .languageSwitch { order: 2; flex-basis: 100%; justify-content: flex-end; gap: 5px; font-size: 10px; }
+  .languageSwitch a { padding-block: 4px; }
   .hero { grid-template-columns: 1fr; gap: 43px; padding-top: 54px; padding-bottom: 63px; }
   .hero h1 { font-size: clamp(33px, 7.7vw, 49px); margin-top: 20px; margin-bottom: 23px; }
+  .page[lang="en"] .hero h1 { font-size: clamp(29px, 7.2vw, 46px); }
+  .page[lang="en"] .sectionHeading h2 { font-size: 25px; }
   .heroIntro { font-size: 16px; }
   .heroDescription { font-size: 13px; }
   .eyebrow { font-size: 9px; letter-spacing: .12em; }
