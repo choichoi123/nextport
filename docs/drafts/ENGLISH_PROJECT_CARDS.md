@@ -12,6 +12,8 @@
 - `교통약자 이동지원`은 **accessible mobility services**, 관제는 **operations**, 재배치는 **repositioning**, 체계공학은 **systems engineering**으로 옮깁니다. 운영 배포나 실시간 기능을 추가로 주장하지 않습니다.
 - 목록 순서는 비교를 위한 편집 순서입니다. Notion의 원래 순서와 사이트의 정렬을 변경하는 지시가 아닙니다.
 
+2026-11-13 추가한 WISEVCS의 영문 카드와 상세 대조 원고는 [WISEVCS 영문 원고](WISEVCS_ENGLISH_DETAIL.md)에 있습니다. 기존 7개의 번역은 유지하고 같은 WISEVCS 행의 선택 필드를 사용합니다. 실제 반영·검증 상태는 [현재 상태](../CURRENT_STATE.md)를 따릅니다.
+
 ## 1. 부산 교통약자 이동지원 WISEOP 관제 웹 시스템 개발·고도화
 
 [기존 한국어 상세](https://app.notion.com/p/4144c6db16758078a2c5d4f55a1ba51c)
