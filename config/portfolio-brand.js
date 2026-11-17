@@ -8,8 +8,9 @@ const portfolioBrand = {
         dark: '/images/brand/logo-a-editorial.png',
       },
       favicon: {
-        light: '/images/brand/favicon-a-editorial.png',
-        dark: '/images/brand/favicon-a-editorial.png',
+        source: '/images/brand/favicon-a-editorial.png',
+        src: '/images/brand/generated/favicon-a-96.png',
+        sizes: '96x96',
       },
     },
     b: {
@@ -18,8 +19,9 @@ const portfolioBrand = {
         dark: '/images/brand/logo-b-jihoon-dark.png',
       },
       favicon: {
-        light: '/images/brand/favicon-b-connection.png',
-        dark: '/images/brand/favicon-b-connection.png',
+        source: '/images/brand/favicon-b-connection.png',
+        src: '/images/brand/generated/favicon-b-96.png',
+        sizes: '96x96',
       },
     },
     c: {
@@ -28,11 +30,12 @@ const portfolioBrand = {
         dark: '/images/brand/logo-c-electric.png',
       },
       favicon: {
-        light: '/images/brand/favicon-c-electric.png',
-        dark: '/images/brand/favicon-c-electric.png',
+        source: '/images/brand/favicon-c-electric.png',
+        src: '/images/brand/generated/favicon-c-96.png',
+        sizes: '96x96',
       },
     },
   },
 }
 
-export default portfolioBrand
+module.exports = portfolioBrand

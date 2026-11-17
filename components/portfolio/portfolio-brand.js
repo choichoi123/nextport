@@ -1,12 +1,14 @@
 import Head from 'next/head'
-import { useEffect, useState } from 'react'
-import { useTheme } from 'next-themes'
 import { useRouter } from 'next/router'
 import { getPortfolioMessages } from '@/lib/portfolio-messages.mjs'
 import portfolioBrand from '@/config/portfolio-brand'
+import portfolioSocial from '@/config/portfolio-social.mjs'
 import styles from '@/styles/portfolio-preview.module.css'
 
 const brand = portfolioBrand.variants[portfolioBrand.activeBrand]
+const faviconHref = process.env.NODE_ENV === 'development'
+  ? brand.favicon.src
+  : new URL(brand.favicon.src, portfolioSocial.siteOrigin).href
 
 export default function PortfolioBrand() {
   const { locale } = useRouter()
@@ -20,14 +22,9 @@ export default function PortfolioBrand() {
 }
 
 export function PortfolioBrandFavicon() {
-  const { resolvedTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => { setMounted(true) }, [])
-  const theme = mounted && resolvedTheme === 'dark' ? 'dark' : 'light'
-
   return (
     <Head>
-      <link key="portfolio-favicon" rel="icon" type="image/png" href={brand.favicon[theme]} />
+      <link key="portfolio-favicon" rel="icon" type="image/png" sizes={brand.favicon.sizes} href={faviconHref} />
     </Head>
   )
 }
