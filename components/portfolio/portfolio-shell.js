@@ -9,6 +9,7 @@ import PortfolioBrand, { PortfolioBrandFavicon } from './portfolio-brand'
 import Arrow from './arrow'
 import { normalizeLocale, localePath } from '@/lib/portfolio-i18n.mjs'
 import { getPortfolioMessages } from '@/lib/portfolio-messages.mjs'
+import { getPortfolioWebsiteSchema, serializePortfolioJsonLd } from '@/lib/portfolio-seo.mjs'
 import portfolioSocial, { getPortfolioSocialImage } from '@/config/portfolio-social.mjs'
 import styles from '@/styles/portfolio-preview.module.css'
 
@@ -44,6 +45,7 @@ export default function PortfolioShell({
   const { siteOrigin } = portfolioSocial
   const socialImage = getPortfolioSocialImage()
   const canonical = `${siteOrigin}${localePath(router.pathname, locale)}`
+  const websiteSchema = getPortfolioWebsiteSchema(router.pathname, { preview })
   const [hash, setHash] = useState('')
   useEffect(() => {
     const updateHash = () => setHash(window.location.hash)
@@ -59,6 +61,12 @@ export default function PortfolioShell({
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
         <link rel="canonical" href={canonical} />
+        {websiteSchema && <script
+          key="portfolio-website"
+          id="portfolio-website"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializePortfolioJsonLd(websiteSchema) }}
+        />}
         {!preview && <>
           <link rel="alternate" hrefLang="ko" href={`${siteOrigin}${localePath(router.pathname, 'ko')}`} />
           <link rel="alternate" hrefLang="en" href={`${siteOrigin}${localePath(router.pathname, 'en')}`} />

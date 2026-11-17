@@ -13,6 +13,7 @@ Next.js Pages Router로 만든 개인 포트폴리오입니다. 개발자 소개
 | [현재 상태](docs/CURRENT_STATE.md) | 구현·검증·공개 배포·미확인 사항과 다음 작업 |
 | [의존성 보안 수정](docs/DEPENDENCY_SECURITY_PLAN.md) | 치명적 경고의 수정 근거·버전 선택·검증 범위 |
 | [화면과 미리보기](docs/PREVIEW.md) | 메인·전체 목록·이전 홈·예시의 경로와 데이터 구분 |
+| [검색 결과 정비 계획](docs/drafts/SEARCH_APPEARANCE_REFRESH_PLAN.md) | 검색 문구·사이트명·파비콘·sitemap·robots의 기준과 후속 검증 |
 
 ## 기술 구성
 
@@ -79,6 +80,8 @@ Next 16의 빌드는 lint를 자동 실행하지 않으므로 별도로 검사�
 | `lib/portfolio-i18n.mjs`, `lib/portfolio-messages.mjs` | 한영 경로와 공통 화면 문구 |
 | `components/portfolio/` | 공통 Shell·홈·프로젝트 카드 |
 | `config/portfolio-brand.js` | A·B·C 브랜드 선택과 테마별 로고·파비콘. [전환 방법](docs/PREVIEW.md#로고와-파비콘-전환) |
+| `scripts/generate-favicons.mjs` | 개발·빌드 전 활성 브랜드의 기본 ICO와 검색용 PNG 동기화 |
+| `lib/portfolio-seo.mjs`, `pages/robots.txt.js`, `pages/sitemap.xml.js` | 사이트명 구조화 데이터와 한영 공개 경로의 수집 안내 |
 | `components/projects/project-item.js` | 이전 프로젝트 카드 소스 보존, 현재 목록에서는 사용하지 않음 |
 | `components/animation.js` | 브라우저에서만 로드하는 Lottie 애니메이션 |
 | `components/layout.js` | 헤더·푸터·방문 및 성능 측정 |
