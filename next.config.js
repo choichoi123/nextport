@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Next 16.4.6 Pages Router의 초기 ISR 표시기 경합을 우회합니다.
+  // Fast Refresh와 빌드·실행 오류 표시는 유지됩니다.
+  devIndicators: false,
   outputFileTracingRoot: __dirname,
   // 프로젝트에서 직접 관리하는 AGENTS.md를 자동 수정하지 않습니다.
   agentRules: false,
