@@ -102,6 +102,23 @@
         "public/images/project-covers/wiseop-concept-20261111.png (직접 시각 참고만; 생성 도구 참조 입력 없음)",
         "public/images/project-covers/eksys-concept-20261111.png (직접 시각 참고만; 생성 도구 참조 입력 없음)"
       ]
+    },
+    {
+      "key": "standard-map",
+      "prompt": "Use case: ui-mockup\nAsset type: ONE finished landscape raster portfolio project introduction image, approximately 1600x1000 (8:5). This is a conceptual illustration for a Korean web developer's portfolio card and Notion cover, not a real product screenshot.\nPrimary request: Illustrate the project '회사 공통 표준 맵 제작': an inherited common map API connected to separate Kakao Maps and Naver Maps implementations for an operations program. The visual should make two map providers behind one shared API immediately understandable. Existing portfolio style: calm editorial flat vector-like illustration on warm pale ivory/sage paper, forest green #244c3d, muted blue gray and restrained ochre accents, crisp rounded cards, fine precise lines, very subtle paper grain, generous margins. No photography, no 3D, no dramatic shadows or neon.\nComposition: A polished, balanced visual with two upright rounded map panels side by side at center, joined above by a compact common-API module with a subtle forked connector. The left panel has a muted ochre tab 'Kakao Maps'; the right panel has a muted green tab 'Naver Maps'. Inside each panel use abstract streets, a pale river, one translucent outlined polygon region, location pins, and a tiny vehicle direction symbol with a separately aligned horizontal caption bar. Use related abstract geography in both panels, no real map tiles or place names. Convey separate implementations with shared calling structure, without implying feature parity. Keep main content mostly in the middle 60% of the image and leave spacious outer margins. Use a small clear project heading near the upper-left of the central composition. Place the disclosure in a legible white rounded pill near the lower central part of the illustration, within the composition rather than at the extreme image edge.\nText verbatim, ONLY these strings, precise Korean sans-serif and clean English sans-serif:\n'회사 공통 표준 맵'\n'공통 지도 API'\n'Kakao Maps'\n'Naver Maps'\n'차량 · 경로 · 구역'\n'구성 일러스트 · 실제 화면 아님'\nMake the Korean disclosure sharp and readable even when the image is reduced to a project card. Vehicle directional arrows can be angled but any adjacent caption bars remain horizontal.\nConstraints: Use only abstract schematic map geometry, never actual Kakao/Naver tile imagery or official logos. No names, real coordinates, IDs, addresses, keys, browser address bars, code dumps, statistics, checkmarks of operational success, or performance claims. No route optimization, ETA, AI predictions, WebSocket, payment, or C++ ownership claims. No search UI or search module arrows on either provider. An abstract route line only connects example points and is not a real directions API result. This must be a single coherent illustration matching the portfolio's sage/deep-green/ivory art family.",
+      "file": "public/images/project-covers/standard-map-concept-20261117.png",
+      "notionPageId": "41b4c6db-1675-81fd-b9ca-d6128205a8a7",
+      "width": 1586,
+      "height": 992,
+      "sha256": "06f9ce8b4904e8b755160177865398140135cbd5984c20f8e4fbd004a8006254",
+      "created": "2026-11-17",
+      "role": "프로젝트 소개 이미지",
+      "references": [
+        "승인된 표준 맵 공개 소개 원고",
+        "최신 Notion 본문",
+        "기존 WISEOP·WISEVCS 소개 이미지의 색·여백"
+      ],
+      "disclosure": "구성 일러스트 · 실제 화면 아님"
     }
   ],
   "refinements": {
