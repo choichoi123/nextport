@@ -14,6 +14,9 @@
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
 }
+.immersiveShell { display: flex; flex-direction: column; height: 100svh; height: 100dvh; min-height: 0; overflow: hidden; }
+.immersiveShell > header { flex: 0 0 auto; }
+.immersiveShell > main { flex: 1 1 0; min-height: 0; overflow: hidden; }
 :global(.dark) .page {
   --paper: #142019;
   --surface: #1b2b21;
@@ -51,7 +54,7 @@
 :global(.dark) .brandLogo > .brandLogoLight { display: none; }
 :global(.dark) .brandLogo > .brandLogoDark { display: block; }
 .header nav { display: flex; align-items: center; margin-left: auto; gap: 32px; font-size: 13px; font-weight: 500; }
-.header nav a { padding-block: 8px; }
+.header nav a { padding-block: 8px; white-space: nowrap; }
 .header nav a:hover { color: var(--accent); }
 .header nav a[aria-current="page"] { color: var(--accent); text-decoration: underline; text-underline-offset: 6px; }
 .navContact { display: inline-flex; gap: 9px; align-items: center; }
@@ -207,7 +210,7 @@
   .headerInner { display: grid; grid-template-columns: minmax(0, 1fr) auto; min-height: 0; gap: 10px 16px; padding-block: 14px 10px; }
   .identity { grid-column: 1; grid-row: 1; width: fit-content; max-width: 100%; }
   .brandLogo { width: 180px; height: 60px; max-width: 100%; }
-  .header nav { grid-column: 1 / -1; grid-row: 2; width: 100%; margin-left: 0; justify-content: flex-start; flex-wrap: wrap; gap: 25px; font-size: 12px; }
+  .header nav { grid-column: 1 / -1; grid-row: 2; width: 100%; margin-left: 0; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; font-size: 12px; }
   .header nav a { padding-block: 4px; white-space: nowrap; }
   .navContact { gap: 3px; }
   .navContact svg { width: 12px; }
@@ -274,7 +277,7 @@
   .container { width: calc(100% - 32px); }
   .brandLogo { width: 171px; height: 57px; }
   .headerInner { gap: 8px; }
-  .header nav { gap: 20px; font-size: 12px; }
+  .header nav { gap: 8px; font-size: 12px; }
   .previewBar a { font-size: 8px; }
   .hero h1 { font-size: 31px; }
   .heroExpertise { gap: 6px; font-size: 9px; }
@@ -283,4 +286,25 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .page *, .page *::before, .page *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+
+.mobileMenuToggle, .mobileMenuLayer { display: none; }
+.mobileMenuLayer[hidden] { display: none; }
+@media (max-width: 1000px) {
+  .compactPlaygroundHeader { position: relative; z-index: 40; }
+  .compactPlaygroundHeader .headerInner { position: relative; z-index: 3; display: flex; width: calc(100% - 32px); min-height: 60px; height: 60px; gap: 16px; padding-block: 6px; }
+  .compactPlaygroundHeader .identity { flex: 0 1 auto; min-width: 0; }
+  .compactPlaygroundHeader .brandLogo { width: 156px; height: 48px; max-width: 100%; }
+  .compactPlaygroundHeader .desktopNavigation, .compactPlaygroundHeader .desktopHeaderActions { display: none; }
+  .compactPlaygroundHeader .mobileMenuToggle { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; margin-left: auto; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); touch-action: manipulation; }
+  .mobileMenuToggle svg { stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
+  .mobileMenuLayer:not([hidden]) { display: block; }
+  .mobileMenuBackdrop { position: fixed; inset: 0; z-index: 1; background: #071b1780; touch-action: none; }
+  .mobileMenuPanel { position: absolute; z-index: 2; top: 100%; left: 0; right: 0; max-height: calc(100svh - 61px); max-height: calc(100dvh - 61px); overflow-y: auto; overscroll-behavior: contain; padding: 16px; border-bottom: 1px solid var(--line); background: var(--paper); box-shadow: 0 18px 30px #071b1726; }
+  .mobileMenuPanel nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; margin: 0; gap: 8px; font-size: 14px; }
+  .mobileMenuPanel nav a { display: flex; align-items: center; min-height: 48px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); white-space: normal; }
+  .mobileMenuOptions { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .mobileMenuPanel .languageSwitch { order: 0; flex-basis: auto; justify-content: flex-start; gap: 12px; font-size: 12px; }
+  .mobileMenuPanel .languageSwitch a { display: inline-flex; align-items: center; min-height: 44px; padding: 8px; }
+  .mobileMenuPanel .themeButton { width: 44px; height: 44px; }
 }

@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { useTheme } from 'next-themes'
 import { Analytics } from '@vercel/analytics/react'
 import { Insights } from '@/components/insights'
@@ -26,6 +26,23 @@ function ThemeButton({ label }) {
   )
 }
 
+function HeaderNavigation({ nav, activePage, className, onNavigate }) {
+  return <nav aria-label={nav.primary} className={className}>
+    <Link href="/projects" aria-current={activePage === 'projects' ? 'page' : undefined} onClick={onNavigate}>{nav.projects}</Link>
+    <Link href="/#approach" onClick={onNavigate}>{nav.approach}</Link>
+    <Link href="/#contact" className={styles.navContact} onClick={onNavigate}>{nav.contact} <Arrow diagonal /></Link>
+    <Link href="/playground" aria-current={activePage === 'playground' ? 'page' : undefined} onClick={onNavigate}>{nav.playground}</Link>
+  </nav>
+}
+
+function LanguageSwitch({ nav, href, locale, onNavigate }) {
+  return <div className={styles.languageSwitch} role="group" aria-label={nav.language}>
+    <Link href={href} locale="ko" scroll={false} hrefLang="ko" aria-label={nav.korean} aria-current={locale === 'ko' ? 'true' : undefined} onClick={onNavigate}><span lang="ko">한국어</span></Link>
+    <span aria-hidden="true">|</span>
+    <Link href={href} locale="en" scroll={false} hrefLang="en" aria-label={nav.english} aria-current={locale === 'en' ? 'true' : undefined} onClick={onNavigate}><span lang="en">English</span></Link>
+  </div>
+}
+
 export default function PortfolioShell({
   children,
   title,
@@ -35,6 +52,7 @@ export default function PortfolioShell({
   activePage = 'home',
   mainId = 'portfolio-main',
   languageQuery,
+  immersive = false,
 }) {
   const router = useRouter()
   const locale = normalizeLocale(router.locale)
@@ -47,6 +65,37 @@ export default function PortfolioShell({
   const canonical = `${siteOrigin}${localePath(router.pathname, locale)}`
   const websiteSchema = getPortfolioWebsiteSchema(router.pathname, { preview })
   const [hash, setHash] = useState('')
+  const compactPlayground = activePage === 'playground'
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const menuToggleRef = useRef(null)
+  const menuPanelRef = useRef(null)
+  const mobileMenuId = useId()
+  const closeMobileMenu = useCallback((restoreFocus = false) => {
+    setMobileMenuOpen(false)
+    if (restoreFocus) menuToggleRef.current?.focus({ preventScroll: true })
+  }, [])
+  const menuNavigate = () => closeMobileMenu()
+  function toggleMobileMenu() {
+    if (mobileMenuOpen) { closeMobileMenu(true); return }
+    // Touch browsers do not always focus the menu button. Interrupt explicitly.
+    window.dispatchEvent(new CustomEvent('nextport:playground-menu-open'))
+    setMobileMenuOpen(true)
+  }
+  useEffect(() => {
+    if (!compactPlayground) return
+    const media = window.matchMedia('(max-width: 1000px)')
+    const routeChange = () => closeMobileMenu()
+    const mediaChange = () => { if (!media.matches) closeMobileMenu() }
+    media.addEventListener('change', mediaChange)
+    router.events.on('routeChangeStart', routeChange)
+    return () => {
+      media.removeEventListener('change', mediaChange)
+      router.events.off('routeChangeStart', routeChange)
+    }
+  }, [compactPlayground, closeMobileMenu, router.events])
+  useEffect(() => {
+    if (mobileMenuOpen) menuPanelRef.current?.querySelector('a')?.focus({ preventScroll: true })
+  }, [mobileMenuOpen])
   useEffect(() => {
     const updateHash = () => setHash(window.location.hash)
     updateHash()
@@ -56,7 +105,7 @@ export default function PortfolioShell({
   const languageHref = { pathname: router.pathname, query: languageQuery || (router.isReady ? router.query : {}), hash }
 
   return (
-    <div className={styles.page} lang={locale}>
+    <div className={`${styles.page}${immersive ? ` ${styles.immersiveShell}` : ''}`} lang={locale}>
       <Head>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
@@ -102,35 +151,54 @@ export default function PortfolioShell({
           <Link href="/archive" locale="ko">{nav.archive} <Arrow diagonal /></Link>
         </div>
       </div>}
-      <header className={styles.header}>
+      <header className={`${styles.header}${compactPlayground ? ` ${styles.compactPlaygroundHeader}` : ''}`}
+        onKeyDown={event => {
+          if (mobileMenuOpen && event.key === 'Escape') {
+            event.preventDefault()
+            event.stopPropagation()
+            closeMobileMenu(true)
+          }
+        }}
+        onBlur={event => {
+          if (mobileMenuOpen && !event.currentTarget.contains(event.relatedTarget)) closeMobileMenu()
+        }}>
         <div className={`${styles.container} ${styles.headerInner}`}>
           <Link href="/" className={styles.identity} aria-label={nav.home} aria-current={activePage === 'home' ? 'page' : undefined}>
             <PortfolioBrand />
           </Link>
-          <nav aria-label={nav.primary}>
-            <Link href="/projects" aria-current={activePage === 'projects' ? 'page' : undefined}>{nav.projects}</Link>
-            <Link href="/#approach">{nav.approach}</Link>
-            <Link href="/#contact" className={styles.navContact}>{nav.contact} <Arrow diagonal /></Link>
-          </nav>
-          <div className={styles.headerActions}>
-            <div className={styles.languageSwitch} role="group" aria-label={nav.language}>
-              <Link href={languageHref} locale="ko" scroll={false} hrefLang="ko" aria-label={nav.korean} aria-current={locale === 'ko' ? 'true' : undefined}><span lang="ko">한국어</span></Link>
-              <span aria-hidden="true">|</span>
-              <Link href={languageHref} locale="en" scroll={false} hrefLang="en" aria-label={nav.english} aria-current={locale === 'en' ? 'true' : undefined}><span lang="en">English</span></Link>
-            </div>
+          <HeaderNavigation nav={nav} activePage={activePage} className={compactPlayground ? styles.desktopNavigation : undefined} />
+          <div className={`${styles.headerActions}${compactPlayground ? ` ${styles.desktopHeaderActions}` : ''}`}>
+            <LanguageSwitch nav={nav} href={languageHref} locale={locale} />
             <ThemeButton label={nav.theme} />
           </div>
+          {compactPlayground && <button ref={menuToggleRef} className={styles.mobileMenuToggle} type="button"
+            aria-label={mobileMenuOpen ? nav.closeMenu : nav.openMenu} aria-expanded={mobileMenuOpen} aria-controls={mobileMenuId}
+            onClick={toggleMobileMenu}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              {mobileMenuOpen ? <path d="m6 6 12 12M18 6 6 18" /> : <path d="M4 6h16M4 12h16M4 18h16" />}
+            </svg>
+          </button>}
         </div>
+        {compactPlayground && <div className={styles.mobileMenuLayer} hidden={!mobileMenuOpen}>
+          <div className={styles.mobileMenuBackdrop} aria-hidden="true" onPointerDown={event => { event.preventDefault(); closeMobileMenu(true) }} />
+          <div ref={menuPanelRef} id={mobileMenuId} className={styles.mobileMenuPanel}>
+            <HeaderNavigation nav={nav} activePage={activePage} onNavigate={menuNavigate} />
+            <div className={styles.mobileMenuOptions}>
+              <LanguageSwitch nav={nav} href={languageHref} locale={locale} onNavigate={menuNavigate} />
+              <ThemeButton label={nav.theme} />
+            </div>
+          </div>
+        </div>}
       </header>
       <main id={mainId}>{children}</main>
-      <footer className={`${styles.footer} ${styles.container}`}>
+      {!immersive && <footer className={`${styles.footer} ${styles.container}`}>
         <span>CHOI JI HOON<span className={styles.footerDot}>.</span></span>
         <p>{nav.tagline}</p>
         <nav className={styles.footerLinks} aria-label={nav.footer}>
           <Link href="/projects">{nav.projects}<Arrow diagonal /></Link>
           <Link href="/#contact">{nav.contact}<Arrow diagonal /></Link>
         </nav>
-      </footer>
+      </footer>}
       {!preview && <><Analytics /><Insights /></>}
     </div>
   )

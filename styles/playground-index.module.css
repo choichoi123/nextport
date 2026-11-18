@@ -1,0 +1,284 @@
+.playgroundLanding {
+  width: calc(100% - 64px);
+  max-width: 1176px;
+  margin: 0 auto;
+  min-width: 0;
+  padding-bottom: 40px;
+}
+
+.playgroundIntro {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 48px;
+  padding: 30px 0 42px;
+  border-bottom: 1px solid var(--line);
+}
+
+.playgroundEyebrow {
+  color: var(--accent) !important;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .18em;
+}
+
+.playgroundTitle {
+  margin-top: 18px !important;
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -.055em;
+  word-break: keep-all;
+}
+
+.playgroundTitle span {
+  color: var(--accent);
+}
+
+.playgroundIntroduction {
+  max-width: 295px;
+  padding-bottom: 5px;
+  font-size: 13px;
+  line-height: 1.9;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.playgroundCollection {
+  padding-top: 32px;
+}
+
+.practiceCollection { padding-top: 34px; }
+
+.playgroundCollectionTitle {
+  margin-bottom: 17px !important;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.playgroundCard {
+  display: grid;
+  grid-template-columns: minmax(0, .95fr) minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  transition: border-color .18s ease, transform .18s ease;
+}
+
+.playgroundCard + .playgroundCard { margin-top: 22px; }
+.practiceCard { grid-template-columns: minmax(220px, .55fr) minmax(0, 1fr); }
+.practiceCard .playgroundDiagram { min-height: 235px; padding: 47px 24px 32px; }
+.practiceCard .playgroundKeyboard { width: 180px; gap: 14px; }
+.practiceCard .playgroundArrowKeys { grid-template-columns: repeat(3, 40px); gap: 8px; }
+.practiceCard .playgroundKey { width: 40px; height: 39px; font-size: 20px; }
+.practiceCard .playgroundSpaceKey { width: 100%; height: 35px; font-size: 10px; }
+.practiceCard .playgroundCardBody { padding: 27px 36px 24px; }
+.practiceCard .playgroundCardTitle { margin-top: 10px !important; font-size: 23px; }
+.practiceCard .playgroundCardDescription { max-width: 540px; margin-top: 9px !important; }
+.practiceCard .playgroundInput { margin: 14px 0 18px; }
+.sprintFeatures { display:flex; flex-wrap:wrap; gap:7px; margin:17px 0 0; padding:0; list-style:none; }
+.sprintFeatures li { padding:5px 8px; border-radius:4px; color:var(--accent); background:var(--soft); font-size:10px; line-height:1.5; }
+.sprintDiagram { position: relative; display: grid; min-height: 322px; min-width: 0; place-items: center; overflow: hidden; border-right: 1px solid var(--line); background: linear-gradient(#163c3266, #163c32bb), url('/images/playground/sprint/stadium-side-realistic.webp') center / cover; color: #f2f1e7; }
+.sprintDiagram > span { display: flex; flex-direction: column; align-items: center; font-size: 98px; font-weight: 500; line-height: 1; letter-spacing: -.08em; font-variant-numeric: tabular-nums; }
+.sprintDiagram > span > span { margin-top: 12px; padding-left: 8px; font-size: 10px; letter-spacing: .45em; }
+.sprintDiagram b { position: absolute; bottom: 25px; left: 25px; color: #d6e3c3; font-size: 9px; font-weight: 500; letter-spacing: .13em; }
+
+.playgroundCard:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+}
+
+.playgroundCard:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 5px;
+}
+
+.playgroundDiagram {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 322px;
+  place-items: center;
+  padding: 52px 24px 42px;
+  border-right: 1px solid var(--line);
+  background-color: var(--soft);
+  background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+.playgroundDiagramLabel {
+  position: absolute;
+  top: 24px;
+  left: 25px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .14em;
+}
+
+.playgroundKeyboard {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 19px;
+  width: 212px;
+  max-width: 100%;
+}
+
+.playgroundArrowKeys {
+  display: grid;
+  grid-template-columns: repeat(3, 50px);
+  grid-template-areas: ". up ." "left down right";
+  gap: 10px;
+}
+
+.playgroundKey {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 49px;
+  border: 1px solid var(--line);
+  border-bottom-width: 4px;
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 4px 0 var(--line);
+  font-family: inherit;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.playgroundKeyUp { grid-area: up; }
+.playgroundKeyLeft { grid-area: left; }
+.playgroundKeyDown { grid-area: down; }
+.playgroundKeyRight { grid-area: right; }
+
+.playgroundSpaceKey {
+  width: 100%;
+  height: 43px;
+  border-color: var(--ink);
+  border-bottom-color: var(--accent);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .08em;
+}
+
+.playgroundDiagramNumber {
+  position: absolute;
+  right: 24px;
+  bottom: 18px;
+  color: var(--accent);
+  font-family: Georgia, serif;
+  font-size: 22px;
+}
+
+.playgroundCardBody {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 35px 36px 28px;
+}
+
+.playgroundCardEyebrow {
+  color: var(--accent) !important;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .14em;
+}
+
+.playgroundCardTitle {
+  margin-top: 18px !important;
+  font-size: clamp(22px, 2.3vw, 29px);
+  font-weight: 550;
+  line-height: 1.45;
+  letter-spacing: -.04em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.playgroundCardDescription {
+  max-width: 360px;
+  margin-top: 14px !important;
+  font-size: 13px;
+  line-height: 1.9;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.playgroundInput {
+  display: inline-flex;
+  margin: 20px 0 28px;
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--muted);
+  font-size: 10px;
+  max-width: 100%;
+  line-height: 1.6;
+}
+
+.playgroundStart {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+  margin-top: auto;
+  padding-top: 17px;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.playgroundStartIcon {
+  flex-shrink: 0;
+  color: var(--accent);
+  transition: transform .18s ease;
+}
+
+.playgroundCard:hover .playgroundStartIcon {
+  transform: translateX(3px);
+}
+
+.playgroundLanding:lang(en) .playgroundTitle,
+.playgroundLanding:lang(en) .playgroundCardTitle {
+  letter-spacing: -.035em;
+  word-break: normal;
+}
+
+@media (max-width: 760px) {
+  .playgroundLanding { width: calc(100% - 40px); }
+  .playgroundIntro {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 20px;
+    padding: 25px 0 30px;
+  }
+
+  .playgroundTitle { font-size: clamp(30px, 7vw, 40px); }
+  .playgroundIntroduction { max-width: 370px; font-size: 12px; }
+  .playgroundCollection { padding-top: 26px; }
+  .playgroundCard { grid-template-columns: minmax(0, 1fr); }
+  .practiceCard { grid-template-columns: minmax(0, 1fr); }
+  .practiceCard .playgroundDiagram { min-height: 212px; }
+  .practiceCard .playgroundCardBody { padding: 24px; }
+  .playgroundDiagram { min-height: 278px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .sprintDiagram { min-height: 278px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .playgroundCardBody { padding: 27px 24px 24px; }
+  .playgroundCardTitle { font-size: 23px; }
+  .playgroundCardDescription { font-size: 12px; }
+  .playgroundInput { margin-bottom: 23px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .playgroundCard,
+  .playgroundStartIcon { transition: none; }
+  .playgroundCard:hover,
+  .playgroundCard:hover .playgroundStartIcon { transform: none; }
+}
