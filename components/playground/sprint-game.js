@@ -10,6 +10,7 @@ import SprintLeaderboard from './sprint-leaderboard'
 import useSprintLeaderboard from './use-sprint-leaderboard'
 import useSprintAudio from './use-sprint-audio'
 import { classifySprintFinish } from '@/lib/playground-sprint-record.mjs'
+import { getSprintIneligibilityNotice, getSprintRecordAction } from '@/lib/playground-sprint-registration.mjs'
 import { createSprintRace, startSprintRace, advanceSprintRace, applySprintStride, applySprintCheer, interruptSprintRace, formatSprintTime } from '@/lib/playground-sprint.mjs'
 import { getSprintStartSample } from '@/lib/playground-sprint-start.mjs'
 import { loadSprintSceneFamily } from '@/lib/playground-sprint-scene-assets.mjs'
@@ -54,7 +55,8 @@ const copy = {
     replayError: '이번 경기의 리플레이를 준비하지 못했습니다. 완주 기록은 그대로 확인할 수 있습니다.',
     playScreen: '큰 플레이 화면', devScreen: '개발 화면', celebrate: '세리머니', celebrationHint: 'Space를 눌러 기쁨을 나눠보세요', defeat: '아쉬움', defeatHint: 'Space를 눌러 아쉬움을 표현해 보세요', defeatMessage: '다음엔 더 빠르게.',
     touchCelebrationHint: '세리머니 버튼을 탭해 기쁨을 나눠보세요.', touchDefeatHint: '아쉬움 버튼을 탭해 마음을 표현해 보세요.',
-    register: '기록 등록 미리보기', onlineRegister: 'TOP10 기록 등록', registrationNote: '로컬 플레이 기록 · 온라인 등록 대상이 아닙니다.',
+    register: '기록 등록 미리보기', recordResult: '기록 판정 보기', onlineRegister: 'TOP10 기록 등록', registrationNote: '로컬 플레이 기록 · 온라인 등록 대상이 아닙니다.',
+    recordChecking: '기록 확인 중', registrationResult: '등록 결과 보기', recordSaving: '등록 중…',
     rankings: '온라인 TOP10', preparing: '경기 준비 중…', startAssetError: '출발 화면을 준비하지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.', onlineRun: '온라인 경기 · 완주 후 서버 검증', localRun: '로컬 플레이 · 온라인 기록 대상 아님',
     onlineUnavailable: '온라인 연결을 사용할 수 없어 로컬로 달립니다. 이번 경기는 온라인에 등록되지 않습니다.',
     boardNotConfigured: '온라인 기록 DB 미연결 · 로컬 플레이 가능', boardUnavailable: '온라인 기록 서비스에 연결하지 못했습니다. 로컬 플레이는 가능합니다.',
@@ -97,7 +99,8 @@ const copy = {
     replayError: 'The replay for this run could not be prepared. Your finish time is still available.',
     playScreen: 'Large play screen', devScreen: 'Developer view', celebrate: 'Celebrate', celebrationHint: 'Press Space to celebrate your finish', defeat: 'Disappointment', defeatHint: 'Press Space to react to the result', defeatMessage: 'Next time, faster.',
     touchCelebrationHint: 'Tap Celebrate to celebrate your finish.', touchDefeatHint: 'Tap Disappointment to react to the result.',
-    register: 'Preview record registration', onlineRegister: 'Register TOP10 record', registrationNote: 'Local play record · not eligible for online registration.',
+    register: 'Preview record registration', recordResult: 'View record result', onlineRegister: 'Register TOP10 record', registrationNote: 'Local play record · not eligible for online registration.',
+    recordChecking: 'Checking record', registrationResult: 'View registration result', recordSaving: 'Registering…',
     rankings: 'Online TOP10', preparing: 'Preparing your run…', startAssetError: 'The starting scene could not be prepared. Refresh the page and try again.', onlineRun: 'Online run · verified after finishing', localRun: 'Local play · not an online record',
     onlineUnavailable: 'Online records are unavailable, so this is a local run. This run cannot be registered online.',
     boardNotConfigured: 'Online record database not connected · local play available', boardUnavailable: 'Online records could not be reached. Local play is available.',
@@ -710,7 +713,9 @@ export default function SprintGame({ countries, development = false, immersive =
   const nextFootHint = pointerControls
     ? race.lastFoot === 'left' ? text.touchRight : race.lastFoot === 'right' ? text.touchLeft : text.touchEither
     : race.lastFoot === 'left' ? `→ ${text.right}` : race.lastFoot === 'right' ? `← ${text.left}` : text.either
-  const registrationNote = registration.status === 'registered' ? text.registered : registration.status === 'not_qualified' ? text.notQualified : registration.status === 'not_improved' ? text.notImproved : onlineRun.status === 'verifying' ? text.verifying : onlineRun.status === 'verification_error' ? text.verificationError : onlineRun.status === 'verified' ? onlineRun.eligible ? text.verified : text.notEligible : text.registrationNote
+  const exclusionNotice = getSprintIneligibilityNotice(onlineRun, locale, registration)
+  const recordAction = getSprintRecordAction(onlineRun, registration)
+  const registrationNote = registration.status === 'registered' ? text.registered : registration.status === 'not_qualified' ? text.notQualified : registration.status === 'not_improved' ? exclusionNotice?.shortText || text.notImproved : onlineRun.status === 'verifying' ? text.verifying : onlineRun.status === 'verification_error' ? text.verificationError : onlineRun.status === 'verified' ? onlineRun.eligible ? text.verified : exclusionNotice.shortText : text.registrationNote
 
   function renderLeaderboardButton() {
     return <button type="button" className={styles.leaderboardButton} disabled={active || preparing || modalOpen} onClick={event => {
@@ -753,6 +758,10 @@ export default function SprintGame({ countries, development = false, immersive =
     return <button type="button" className={styles.soundButton} disabled={modalOpen || preparing} aria-label={label} aria-pressed={audioEnabled} title={audioEnabled && audioStatus === 'ready' ? text.soundReady : label} onClick={() => { const next = !audioEnabled; setAudioEnabled(next); if (next) void prepareAudio(); if (!editing) focusArea() }}><span aria-hidden="true">{audioEnabled ? '♪' : '♩'}</span><span>{label}</span></button>
   }
 
+  function renderRecordButton() {
+    return <button ref={recordTriggerRef} className={styles.secondary} type="button" disabled={preparing || recordAction.disabled} aria-busy={recordAction.disabled || undefined} onClick={() => { clearInputs(); setRecordOpen(true); stopAudio() }}>{text[recordAction.labelKey]}</button>
+  }
+
   function renderLiveControls() {
     return <div className={styles.liveControls}>
       <div className={styles.inputDock}><div className={styles.feet}>
@@ -775,7 +784,7 @@ export default function SprintGame({ countries, development = false, immersive =
     </section>
   }
 
-  function closeRecordPreview() { setRecordOpen(false); requestAnimationFrame(() => recordTriggerRef.current?.isConnected ? recordTriggerRef.current.focus({ preventScroll: true }) : focusArea()) }
+  function closeRecordPreview() { setRecordOpen(false); requestAnimationFrame(() => recordTriggerRef.current?.isConnected && !recordTriggerRef.current.disabled ? recordTriggerRef.current.focus({ preventScroll: true }) : focusArea()) }
   function closeLeaderboard() { setLeaderboardOpen(false); requestAnimationFrame(() => leaderboardTriggerRef.current?.isConnected ? leaderboardTriggerRef.current.focus({ preventScroll: true }) : editing ? nameRef.current?.focus() : focusArea()) }
   function gameBlur(event) {
     if (event.currentTarget.contains(event.relatedTarget)) return
@@ -818,7 +827,7 @@ export default function SprintGame({ countries, development = false, immersive =
             <section className={styles.finishCard} data-art={art} aria-label={text.finished}>
               <SprintFinish art={art} locale={locale} kind={finishSummary.kind} timeMs={race.finishTimeMs} improvementMs={finishSummary.improvementMs} playerName={player?.name} competition={getSprintCompetitionStanding(race, runMode, runSeed, runBoss)} />
               {registration.status === 'registered' && <SprintWorldRecord worldRecord={registration.worldRecord} visualStyle={art} locale={locale} compact />}
-              <div className={styles.finishActions}>{lastRun && <button className={styles.primary} type="button" disabled={preparing} onClick={beginReplay}>↺ {text.replay}</button>}{!isDemo && <button ref={recordTriggerRef} className={styles.secondary} type="button" disabled={preparing} onClick={() => { clearInputs(); setRecordOpen(true); stopAudio() }}>{onlineRun.status === 'verified' && onlineRun.eligible ? text.onlineRegister : text.register}</button>}{canRunAgain && <button className={styles.secondary} type="button" disabled={preparing || modalOpen} onClick={() => beginRace(false)}>{text.restart} ↗</button>}{isDemo && <button className={styles.secondary} type="button" onClick={editPlayer}>{text.changePlayer}</button>}<Link href="/playground" className={styles.secondary}>← {text.backToGames}</Link></div>
+              <div className={styles.finishActions}>{lastRun && <button className={styles.primary} type="button" disabled={preparing} onClick={beginReplay}>↺ {text.replay}</button>}{!isDemo && renderRecordButton()}{canRunAgain && <button className={styles.secondary} type="button" disabled={preparing || modalOpen} onClick={() => beginRace(false)}>{text.restart} ↗</button>}{isDemo && <button className={styles.secondary} type="button" onClick={editPlayer}>{text.changePlayer}</button>}<Link href="/playground" className={styles.secondary}>← {text.backToGames}</Link></div>
               <p className={styles.finishHint}>{finishReactionHint}</p>{!isDemo && <><p className={styles.registrationNote} role="status">{registrationNote}</p>{onlineRun.status === 'verification_error' && <button type="button" className={styles.verificationRetry} onClick={retryVerification}>{text.retryVerification}</button>}</>}{replayError && <p className={styles.error} role="alert">{text.replayError}</p>}
               <p className={styles.leaveNotice}>{text.leaveNote}</p>
             </section>

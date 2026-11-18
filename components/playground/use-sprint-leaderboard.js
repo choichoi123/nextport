@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { normalizeSprintPublicRecords as publicRecords, normalizeSprintRegistrationResult } from '../../lib/playground-sprint-registration.mjs'
+import { normalizeSprintPublicRecords as publicRecords, normalizeSprintRegistrationResult, normalizeSprintEligibility } from '../../lib/playground-sprint-registration.mjs'
 import { SPRINT_RULE_VERSION } from '../../lib/playground-sprint-rules.mjs'
 
 const API = '/api/playground/sprint'
 const idleRegistration = { status: 'idle', record: null, worldRecord: null, code: null, details: null }
-const idleRun = { status: 'idle', attemptId: null, ruleVersion: null, timeCs: null, eligible: false, code: null }
+const idleRun = { status: 'idle', attemptId: null, ruleVersion: null, timeCs: null, eligible: false, personalBestTimeCs: null, ineligibleReason: null, code: null }
 
 async function request(path, { signal, body } = {}) {
   const response = await fetch(`${API}/${path}`, {
@@ -145,8 +145,9 @@ export default function useSprintLeaderboard() {
     try {
       const data = await request('finish', { body: payload, signal: controller.signal })
       if (data?.status !== 'verified' || data.attemptId !== current.attemptId || !Number.isInteger(data.timeCs) || data.timeCs <= 0 || typeof data.eligible !== 'boolean') throw new Error('invalid_response')
+      const eligibility = normalizeSprintEligibility(data)
       if (!mountedRef.current || generation !== generationRef.current) return
-      updateRun({ ...current, status: 'verified', timeCs: data.timeCs, eligible: data.eligible, code: null })
+      updateRun({ ...current, status: 'verified', timeCs: data.timeCs, eligible: data.eligible, ...eligibility, code: null })
       void refresh()
     } catch (error) {
       if (mountedRef.current && generation === generationRef.current) updateRun({ ...current, status: 'verification_error', code: error.name === 'AbortError' ? 'request_timeout' : error.message })

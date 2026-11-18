@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { PassThrough } from 'node:stream'
+import { readFile } from 'node:fs/promises'
 import { createSprintApiHandler } from '../lib/server/sprint-api.mjs'
 import { createSprintParticipant, readSprintClientIp, readSprintParticipant, sprintAddressHash, SPRINT_COOKIE_NAME } from '../lib/server/sprint-auth.mjs'
 import { createSprintStore, readSprintConfiguration, SPRINT_BOARD_ID } from '../lib/server/sprint-db.mjs'
@@ -366,6 +367,103 @@ test('all public success responses allowlist fields and never expose private dat
   assert.deepEqual(responses[0].body, { status: 'ok', records: [record], updatedAt: record.recordedAt })
   assert.deepEqual(responses[2].body, { status: 'verified', attemptId, timeCs: 950, eligible: true })
   assert.deepEqual(responses[3].body, { status: 'registered', record, records: [record], updatedAt: record.recordedAt })
+})
+
+test('authenticated finish explains personal-best and TOP10 exclusions without changing eligibility', async () => {
+  const cases = [
+    { timeCs: 893, eligible: false, personalBestTimeCs: 885, ineligibleReason: 'not_improved' },
+    { timeCs: 885, eligible: false, personalBestTimeCs: 885, ineligibleReason: 'not_improved' },
+    { timeCs: 884, eligible: true, personalBestTimeCs: 885, ineligibleReason: null },
+    { timeCs: 950, eligible: false, personalBestTimeCs: null, ineligibleReason: 'not_qualified' },
+    { timeCs: 950, eligible: true, personalBestTimeCs: null, ineligibleReason: null },
+  ]
+  for (const expected of cases) {
+    const { store, calls, cookie } = fixture({ finishAttempt: async id => ({ status: 'verified', attemptId: id,
+      ...expected, participantHash: 'private-participant', registrationIp: '203.0.113.7', privateReason: 'internal' }) })
+    const res = await invoke('finish', request({ attemptId, events: [], finishTimeMs: expected.timeCs * 10 }, { headers: { cookie } }), {
+      store, validateSubmission: () => ({ timeCs: expected.timeCs, canonicalTimeMs: expected.timeCs * 10, normalizedEvents: [] }),
+    })
+    assert.equal(res.statusCode, 200)
+    assert.deepEqual(res.body, { status: 'verified', attemptId, ...expected })
+    assert.deepEqual(calls.find(call => call.name === 'finishAttempt').args.slice(3), [expected.timeCs, expected.timeCs * 10])
+    assert.equal(calls.some(call => call.name === 'registerRecord'), false)
+    const serialized = JSON.stringify(res.body)
+    for (const privateValue of ['private-participant', '203.0.113.7', 'internal']) assert.equal(serialized.includes(privateValue), false)
+  }
+})
+
+test('cached finish results without an exclusion explanation stay compatible and do not invent a reason', async () => {
+  for (const eligible of [true, false]) {
+    const expected = { status: 'verified', attemptId, timeCs: 893, eligible }
+    const { store, cookie } = fixture({ finishAttempt: async () => expected })
+    const res = await invoke('finish', request({ attemptId, events: [], finishTimeMs: 8930 }, { headers: { cookie } }), {
+      store, validateSubmission: () => ({ timeCs: 893, canonicalTimeMs: 8930, normalizedEvents: [] }),
+    })
+    assert.equal(res.statusCode, 200)
+    assert.deepEqual(res.body, expected)
+    assert.equal(Object.hasOwn(res.body, 'personalBestTimeCs'), false)
+    assert.equal(Object.hasOwn(res.body, 'ineligibleReason'), false)
+  }
+})
+
+test('contradictory or malformed exclusion metadata never becomes a successful finish response', async () => {
+  const invalid = [
+    { personalBestTimeCs: 885 },
+    { ineligibleReason: 'not_improved' },
+    { personalBestTimeCs: '885', ineligibleReason: 'not_improved' },
+    { personalBestTimeCs: 0, ineligibleReason: 'not_improved' },
+    { personalBestTimeCs: 12001, ineligibleReason: 'not_improved' },
+    { personalBestTimeCs: 885, ineligibleReason: 'unknown' },
+    { personalBestTimeCs: null, ineligibleReason: 'not_improved' },
+    { personalBestTimeCs: 885, ineligibleReason: 'not_qualified' },
+    { personalBestTimeCs: null, ineligibleReason: null },
+    { personalBestTimeCs: 900, ineligibleReason: 'not_improved' },
+  ]
+  for (const metadata of invalid) {
+    const { store, cookie } = fixture({ finishAttempt: async () => ({ status: 'verified', attemptId, timeCs: 893,
+      eligible: false, ...metadata }) })
+    const res = await invoke('finish', request({ attemptId, events: [], finishTimeMs: 8930 }, { headers: { cookie } }), {
+      store, validateSubmission: () => ({ timeCs: 893, canonicalTimeMs: 8930, normalizedEvents: [] }),
+    })
+    assert.equal(res.statusCode, 503)
+    assert.equal(res.body.code, 'database_unavailable')
+    assert.equal(res.headers['cache-control'], 'no-store')
+    assert.equal(Object.hasOwn(res.body, 'personalBestTimeCs'), false)
+    assert.equal(Object.hasOwn(res.body, 'ineligibleReason'), false)
+  }
+})
+
+test('personal-best explanation fields are not added to public ranking, issuance or registration responses', async () => {
+  const metadata = { personalBestTimeCs: 885, ineligibleReason: 'not_improved' }
+  const record = { rank: 1, playerName: 'runner', countryCode: 'KR', timeCs: 885, recordedAt: '2026-11-18T00:00:00Z' }
+  const { store, cookie } = fixture({
+    leaderboard: async () => ({ status: 'ok', records: [record], updatedAt: record.recordedAt, ...metadata }),
+    createAttempt: async id => ({ attemptId: id, ruleVersion: SPRINT_RULE_VERSION, expiresAt: '2026-11-18T00:10:00Z', ...metadata }),
+    registerRecord: async () => ({ status: 'not_improved', record: null, records: [record], ...metadata }),
+  })
+  const responses = [
+    await invoke('leaderboard', request({}, { method: 'GET' }), { store }),
+    await invoke('attempts', request({}, { headers: { cookie } }), { store }),
+    await invoke('records', request({ attemptId, playerName: 'runner', countryCode: 'KR' }, { headers: { cookie } }), { store }),
+  ]
+  for (const res of responses) {
+    assert.equal(res.statusCode >= 200 && res.statusCode < 300, true)
+    assert.equal(Object.hasOwn(res.body, 'personalBestTimeCs'), false)
+    assert.equal(Object.hasOwn(res.body, 'ineligibleReason'), false)
+  }
+})
+
+test('fresh installation and incremental finish-explanation migration install the same RPC', async () => {
+  const base = await readFile(new URL('../db/playground-sprint.sql', import.meta.url), 'utf8')
+  const migration = await readFile(new URL('../db/migrations/20261118-sprint-finish-eligibility.sql', import.meta.url), 'utf8')
+  const definition = /CREATE OR REPLACE FUNCTION sprint_private\.sprint_finish_attempt\([\s\S]*?\$function\$;/
+  const initialDefinition = base.match(definition)
+  const upgradedDefinition = migration.match(definition)
+  assert.ok(initialDefinition)
+  assert.ok(upgradedDefinition)
+  assert.equal(initialDefinition[0], upgradedDefinition[0])
+  assert.match(migration, /REVOKE ALL ON FUNCTION sprint_private\.sprint_finish_attempt\(uuid, text, text, integer, double precision\)\s+FROM PUBLIC, sprint_runtime;/)
+  assert.match(migration, /GRANT EXECUTE ON FUNCTION sprint_private\.sprint_finish_attempt\(uuid, text, text, integer, double precision\)\s+TO sprint_runtime;/)
 })
 
 test('registration exposes only a consistent server-confirmed historical result and its public fields', async () => {

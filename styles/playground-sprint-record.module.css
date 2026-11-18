@@ -10,6 +10,8 @@
 .notice { padding: 13px 14px; border: 1px solid var(--line, #cad6cc); border-radius: 7px; background: var(--soft, #eff3e9); }
 .notice strong { color: var(--accent, #28664f); font-size: 11px; font-weight: 600; }
 .notice p { margin-top: 5px !important; color: var(--muted, #5d7064); font-size: 10px; line-height: 1.8; word-break: keep-all; }
+.notice[data-excluded=true] strong { font-size: 12px; }
+.notice[data-excluded=true] p { font-size: 12px; }
 .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
 .field { display: flex; min-width: 0; flex-direction: column; gap: 8px; }
 .field label { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; color: var(--ink, #173d32); font-size: 11px; font-weight: 500; }
@@ -30,6 +32,13 @@
 .summary dl > div { display: grid; grid-template-columns: 85px minmax(0, 1fr); gap: 12px; font-size: 11px; line-height: 1.6; }
 .summary dt { color: var(--muted, #5d7064); font-size: 10px; }
 .summary dd { min-width: 0; color: var(--ink, #173d32); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.eligibility { margin-top: 18px; padding: 16px; border: 1px solid var(--line, #cad6cc); border-radius: 7px; }
+.eligibility dl { display: grid; gap: 12px; }
+.eligibility dl > div { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 5px 16px; }
+.eligibility dt { color: var(--muted, #5d7064); font-size: 12px; }
+.eligibility dd { margin: 0; color: var(--ink, #173d32); font-size: 23px; font-weight: 600; font-variant-numeric: lining-nums tabular-nums; }
+.eligibility p { margin-top: 15px !important; padding-top: 12px; border-top: 1px solid var(--line, #cad6cc); color: var(--muted, #5d7064); font-size: 11px; line-height: 1.8; }
+.dialog[data-art=pixel] .eligibility { border-radius: 1px; }
 .footer { display: flex; flex-direction: column; gap: 11px; margin-top: 18px; }
 .unavailable { min-height: 42px; padding: 10px 12px; border: 1px solid var(--line, #cad6cc); border-radius: 6px; background: var(--soft, #eff3e9); color: var(--muted, #5d7064); font-size: 10px; cursor: not-allowed; }
 .closeButton { align-self: center; padding: 5px 16px; color: var(--muted, #5d7064); font-size: 11px; text-decoration: underline; text-underline-offset: 4px; }

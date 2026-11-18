@@ -2,12 +2,13 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { buildSprintRecordPreview } from '@/lib/playground-sprint-record.mjs'
 import { SPRINT_PLAYER_NAME_LIMIT, validateSprintPlayer } from '@/lib/playground-sprint-player.mjs'
 import { formatSprintTime } from '@/lib/playground-sprint.mjs'
+import { getSprintIneligibilityNotice } from '@/lib/playground-sprint-registration.mjs'
 import SprintWorldRecord from './sprint-world-record'
 import styles from '@/styles/playground-sprint-record.module.css'
 
 const copy = {
   ko: {
-    title: '기록 등록 미리보기', eyebrow: 'YOUR FINISH / RECORD DETAILS', close: '닫기',
+    title: '기록 등록 미리보기', resultTitle: '온라인 기록 판정', personalBest: '기존 개인 최고', eyebrow: 'YOUR FINISH / RECORD DETAILS', close: '닫기',
     disconnected: 'DB 미연결 · 미리보기 전용', notice: '등록할 내용을 확인하는 화면입니다. 현재 기록 DB는 연결하지 않았습니다.', localNotice: '온라인 시도 없이 진행한 로컬 경기입니다. 미리보기만 가능하며 나중에 온라인으로 소급 등록할 수 없습니다.',
     name: '이름 · 닉네임', nameHint: '16자 이내의 이름이나 닉네임을 입력해 주세요.', country: '국적', time: '완주 기록', date: '완주 일시',
     confirm: '등록 내용 확인', disabled: 'DB 연결 후 등록 가능', summary: '확인한 등록 내용', ready: '아래 기록 내용을 확인해 주세요.',
@@ -23,7 +24,7 @@ const copy = {
     verifying: '서버에서 완주 기록을 검증하고 있습니다.', verifyError: '온라인 완주 검증을 완료하지 못했습니다. 로컬 기록 미리보기는 계속 볼 수 있습니다.', retryVerify: '완주 검증 다시 시도', notEligible: '서버 검증은 완료했지만 현재 TOP10 등록 대상이 아닙니다.', rank: '확정 순위',
   },
   en: {
-    title: 'Record registration preview', eyebrow: 'YOUR FINISH / RECORD DETAILS', close: 'Close',
+    title: 'Record registration preview', resultTitle: 'Online record result', personalBest: 'Existing personal best', eyebrow: 'YOUR FINISH / RECORD DETAILS', close: 'Close',
     disconnected: 'DB not connected · preview only', notice: 'Review the details for your record. The record database is not connected yet.', localNotice: 'This local run did not have an online attempt. It can be previewed but cannot be registered online later.',
     name: 'Name · nickname', nameHint: 'Enter a name or nickname of up to 16 characters.', country: 'Nationality', time: 'Finish time', date: 'Finished at',
     confirm: 'Review registration details', disabled: 'Registration available after DB connection', summary: 'Reviewed record details', ready: 'Review the record details below.',
@@ -74,6 +75,8 @@ export default function SprintRecordPreview({ player, finishTimeMs, finishedAtIS
   const art = (visualStyle || player?.art) === 'pixel' ? 'pixel' : 'realistic'
   const online = onlineRun?.status === 'verified' && onlineRun.eligible
   const verified = onlineRun?.status === 'verified'
+  const excluded = verified && !online
+  const exclusionNotice = getSprintIneligibilityNotice(onlineRun, locale, registration)
   const terminal = ['registered', 'not_qualified', 'not_improved'].includes(registration.status)
   const registered = registration.status === 'registered'
   const busy = submitting || registration.status === 'saving'
@@ -93,6 +96,7 @@ export default function SprintRecordPreview({ player, finishTimeMs, finishedAtIS
     target?.focus({ preventScroll: true })
   }, [])
   useEffect(() => () => clearTimeout(nameSubmitGuardTimerRef.current), [])
+  useEffect(() => { if (excluded && !terminal) dialogRef.current?.focus({ preventScroll: true }) }, [excluded, terminal])
   useEffect(() => { if (record) summaryRef.current?.focus() }, [record])
   useEffect(() => { if (runError) alertRef.current?.focus() }, [runError])
   useEffect(() => { if (terminal) outcomeRef.current?.focus() }, [terminal])
@@ -143,7 +147,7 @@ export default function SprintRecordPreview({ player, finishTimeMs, finishedAtIS
 
   async function submit(event) {
     event.preventDefault()
-    if (terminal || submissionPendingRef.current || busy || nameComposingRef.current || nameSubmitGuardRef.current || event.nativeEvent?.isComposing) return
+    if (terminal || excluded || submissionPendingRef.current || busy || nameComposingRef.current || nameSubmitGuardRef.current || event.nativeEvent?.isComposing) return
     if (online) {
       const priorDetails = registration.details || fixedDetailsRef.current
       const result = validateSprintPlayer({ name: priorDetails?.playerName ?? name, countryCode: priorDetails?.countryCode ?? countryCode, art })
@@ -187,9 +191,13 @@ export default function SprintRecordPreview({ player, finishTimeMs, finishedAtIS
 
   return <div className={styles.backdrop} onPointerDown={event => event.stopPropagation()} onClick={event => event.stopPropagation()} onKeyDown={keyDown} onKeyUp={event => event.stopPropagation()}>
     <section ref={dialogRef} className={styles.dialog} data-art={art} role="dialog" aria-modal="true" aria-labelledby={`${id}-title`} aria-describedby={terminal ? undefined : `${id}-notice`} tabIndex={-1}>
-      <header className={styles.header}><div><p className={styles.eyebrow}>{text.eyebrow}</p><h2 id={`${id}-title`}>{registered ? text.doneTitle : online ? text.onlineTitle : text.title}</h2></div><button type="button" className={styles.closeIcon} aria-label={text.close} onClick={onClose}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg></button></header>
-      {!terminal && <div className={styles.notice} id={`${id}-notice`}><strong>{online ? text.online : onlineRun ? text.localOnly : text.disconnected}</strong><p>{online ? text.onlineNotice : onlineRun?.attemptId ? text[onlineRun.status === 'verifying' ? 'verifying' : onlineRun.status === 'verification_error' ? 'verifyError' : 'notEligible'] : onlineRun ? text.localNotice : text.notice}</p>{online && <p>{text.publicNote}</p>}{online && <p>{text.privacyNote}</p>}{onlineRun?.status === 'verification_error' && <button className={styles.retry} type="button" onClick={retryVerification}>{text.retryVerify}</button>}</div>}
-      {!terminal && <form onSubmit={submit} noValidate aria-busy={busy} data-testid="sprint-record-registration">
+      <header className={styles.header}><div><p className={styles.eyebrow}>{text.eyebrow}</p><h2 id={`${id}-title`}>{registered ? text.doneTitle : terminal || excluded ? text.resultTitle : online ? text.onlineTitle : text.title}</h2></div><button type="button" className={styles.closeIcon} aria-label={text.close} onClick={onClose}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg></button></header>
+      {!terminal && <div className={styles.notice} data-excluded={excluded} id={`${id}-notice`}><strong>{exclusionNotice ? exclusionNotice.title : online ? text.online : onlineRun ? text.localOnly : text.disconnected}</strong><p>{exclusionNotice ? exclusionNotice.description : online ? text.onlineNotice : onlineRun?.attemptId ? text[onlineRun.status === 'verifying' ? 'verifying' : onlineRun.status === 'verification_error' ? 'verifyError' : 'notEligible'] : onlineRun ? text.localNotice : text.notice}</p>{online && <p>{text.publicNote}</p>}{online && <p>{text.privacyNote}</p>}{onlineRun?.status === 'verification_error' && <button className={styles.retry} type="button" onClick={retryVerification}>{text.retryVerify}</button>}</div>}
+      {!terminal && excluded && <section className={styles.eligibility} data-testid="sprint-record-excluded" aria-label={text.resultTitle}>
+        <dl><div><dt>{text.time}</dt><dd>{timeText}</dd></div>{exclusionNotice?.personalBestTimeCs != null && <div><dt>{text.personalBest}</dt><dd>{formatSprintTime(exclusionNotice.personalBestTimeCs * 10)}s</dd></div>}</dl>
+        <p>{exclusionNotice?.policy}</p>
+      </section>}
+      {!terminal && !excluded && <form onSubmit={submit} noValidate aria-busy={busy} data-testid="sprint-record-registration">
         <div className={styles.fields}>
           <div className={styles.field}><label htmlFor={`${id}-name`}>{text.name}<span>{[...name.normalize('NFC')].length}/{SPRINT_PLAYER_NAME_LIMIT}</span></label><input id={`${id}-name`} ref={nameRef} value={name} disabled={locked} autoComplete="off" aria-required="true" aria-invalid={!!nameError} aria-describedby={`${id}-name-hint${nameError ? ` ${id}-name-error` : ''}`} onKeyDown={nameKeyDown} onCompositionStart={() => { nameComposingRef.current = true }} onCompositionEnd={() => { nameComposingRef.current = false; guardComposingSubmit() }} onChange={event => { setName(event.target.value); setRecord(null); setErrors(previous => ({ ...previous, name: undefined })) }} /><small id={`${id}-name-hint`}>{text.nameHint}</small>{nameError && <p className={styles.error} id={`${id}-name-error`} role="alert">{nameError}</p>}</div>
           <div className={styles.field}><label htmlFor={`${id}-country`}>{text.country}</label><select id={`${id}-country`} ref={countryRef} value={countryCode} disabled={locked} aria-required="true" aria-invalid={!!countryError} aria-describedby={countryError ? `${id}-country-error` : undefined} onChange={event => { setCountryCode(event.target.value); setRecord(null); setErrors(previous => ({ ...previous, countryCode: undefined })) }}>{countries.map(country => <option key={country.code} value={country.code}>{country.flag} {country.label}</option>)}</select>{countryError && <p className={styles.error} id={`${id}-country-error`} role="alert">{countryError}</p>}</div>
@@ -199,14 +207,14 @@ export default function SprintRecordPreview({ player, finishTimeMs, finishedAtIS
         {runError && <p ref={alertRef} className={styles.error} role="alert" tabIndex={-1}>{text.invalidRun}</p>}
         {(online || !locked) && <button type="submit" className={styles.confirm} data-testid="sprint-record-submit" disabled={busy || onlineRun?.status === 'verifying'}>{online ? text[busy ? 'saving' : registration.status === 'error' || submissionError ? 'retry' : 'save'] : text.confirm} <span aria-hidden="true">↗</span></button>}
       </form>}
-      {!online && !terminal && record && <section ref={summaryRef} className={styles.summary} tabIndex={-1} aria-labelledby={`${id}-summary`}><h3 id={`${id}-summary`}>{text.summary}</h3><p role="status">{text.ready}</p><dl><div><dt>{text.name}</dt><dd>{record.playerName}</dd></div><div><dt>{text.country}</dt><dd>{nationality ? `${nationality.flag} ${nationality.label}` : record.countryCode}</dd></div><div><dt>{text.time}</dt><dd>{formatSprintTime(visibleTimeMs)}s</dd></div><div><dt>{text.localDate}</dt><dd><time dateTime={record.finishedAtISO}>{localFinishDate(record.finishedAtISO, locale)}</time></dd></div></dl></section>}
+      {!online && !excluded && !terminal && record && <section ref={summaryRef} className={styles.summary} tabIndex={-1} aria-labelledby={`${id}-summary`}><h3 id={`${id}-summary`}>{text.summary}</h3><p role="status">{text.ready}</p><dl><div><dt>{text.name}</dt><dd>{record.playerName}</dd></div><div><dt>{text.country}</dt><dd>{nationality ? `${nationality.flag} ${nationality.label}` : record.countryCode}</dd></div><div><dt>{text.time}</dt><dd>{formatSprintTime(visibleTimeMs)}s</dd></div><div><dt>{text.localDate}</dt><dd><time dateTime={record.finishedAtISO}>{localFinishDate(record.finishedAtISO, locale)}</time></dd></div></dl></section>}
       {(registration.status === 'error' || submissionError) && !terminal && <p className={styles.error} role="alert">{text.failed}</p>}
       {registered ? <div ref={outcomeRef} tabIndex={-1} className={styles.result} data-testid="sprint-registration-result" aria-label={text.doneTitle}>
         <SprintWorldRecord worldRecord={registration.worldRecord} visualStyle={art} locale={locale} animate={animateRecord} />
         {!specialOutcome && <p className={styles.outcome} role="status">{text.done}</p>}
         <dl className={styles.resultDetails}><div><dt>{text.rank}</dt><dd>{registration.record?.rank}</dd></div><div><dt>{text.time}</dt><dd>{Number.isSafeInteger(registration.record?.timeCs) ? `${formatSprintTime(registration.record.timeCs * 10)}s` : '—'}</dd></div><div><dt>{text.registeredDate}</dt><dd>{registration.record?.recordedAt ? <time dateTime={registration.record.recordedAt}>{localFinishDate(registration.record.recordedAt, locale)}</time> : '—'}</dd></div></dl>
-      </div> : terminal && <p ref={outcomeRef} tabIndex={-1} className={styles.outcome} role="status">{text[registration.status === 'not_qualified' ? 'lost' : 'notImproved']}</p>}
-      <footer className={styles.footer}>{!terminal && !online && <button type="button" className={styles.unavailable} disabled>{onlineRun ? onlineRun.status === 'verifying' ? text.verifying : text.notAvailable : text.disabled}</button>}<button type="button" className={styles.closeButton} onClick={onClose}>{text.close}</button></footer>
+      </div> : terminal && <p ref={outcomeRef} tabIndex={-1} className={styles.outcome} role="status">{registration.status === 'not_improved' && exclusionNotice ? `${exclusionNotice.description} ${exclusionNotice.policy}` : text[registration.status === 'not_qualified' ? 'lost' : 'notImproved']}</p>}
+      <footer className={styles.footer}>{!terminal && !online && !excluded && <button type="button" className={styles.unavailable} disabled>{onlineRun ? onlineRun.status === 'verifying' ? text.verifying : text.notAvailable : text.disabled}</button>}<button type="button" className={styles.closeButton} onClick={onClose}>{text.close}</button></footer>
     </section>
   </div>
 }

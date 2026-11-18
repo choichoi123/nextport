@@ -235,7 +235,10 @@ BEGIN
   v_eligible := CASE WHEN v_existing IS NOT NULL THEN p_time_cs < v_existing
     ELSE v_count < 10 OR p_time_cs < v_worst END;
   v_result := jsonb_build_object('status', 'verified', 'attemptId', p_id,
-    'timeCs', p_time_cs, 'eligible', v_eligible);
+    'timeCs', p_time_cs, 'eligible', v_eligible,
+    'personalBestTimeCs', v_existing,
+    'ineligibleReason', CASE WHEN v_eligible THEN NULL
+      WHEN v_existing IS NOT NULL THEN 'not_improved' ELSE 'not_qualified' END);
   UPDATE sprint_private.sprint_attempts SET finish_hash = p_input_hash,
     verified_time_cs = p_time_cs, finish_result = v_result WHERE id = p_id;
   RETURN v_result;
