@@ -1,0 +1,33 @@
+{
+  "created": "2026-11-17",
+  "purpose": "100m 달리기 선수 아트 방향 비교",
+  "mode": "built-in image_gen",
+  "status": "concept-only",
+  "appliedToGame": false,
+  "assets": [
+    {
+      "file": "runner-realistic-v1.png",
+      "useCase": "photorealistic-natural",
+      "description": "사진 질감의 성인 단거리 선수와 경기장",
+      "prompt": "Use case: photorealistic-natural. Asset type: visual direction concept for the runner in an existing 100 metre browser athletics game, not a gameplay screenshot. Primary request: a convincingly real adult elite sprinter, photographed in a major athletics stadium, replacing the flat illustrated look with genuine human anatomy, material depth and believable light. Landscape 16:9 composition, one original adult male athlete only, full body entirely visible from head to both spike shoes, strict lateral side profile facing and sprinting to the RIGHT. Keep the runner large and central enough to study the face, torso and leg anatomy, occupying about 60 percent of image height; this is a character-design study in context. Lean powerful sprinter physique with natural 7.5-head proportions, realistic shoulders, ribcage, pelvis, quadriceps, calf and Achilles tendon, short dark hair and natural medium-tan skin with subtle pores and light sweat. Deep forest-green technical racing singlet, very dark green split sprint shorts, ivory sprint spikes with subtle warm-gold details; no branding or number bib. Anatomically correct mid-stride sprint pose with slightly forward leaning trunk, clearly separated thighs and lower legs, one knee driving forward, opposite leg pushing back, elbows bent and opposite arm swinging forward; natural joint directions, two arms and two legs. Backdrop: warm terracotta rubber track with parallel WHITE lane lines running perfectly horizontally left to right, fresh green infield, densely populated but indistinct grandstands, elegant low curved cream-colored stadium canopy, distant trees and pale blue sky. Warm late-afternoon sunlight, soft cool sky fill, realistic cast/contact shadow and subtle ambient occlusion, physically plausible skin and cloth, slight wind in cloth. Premium high-shutter-speed 85mm sports editorial photography, restrained depth of field so the athlete is crisp and the stadium is gently softened. The runner should feel grounded in the same photographic world as the stadium, never pasted on. No 3/4 or frontal camera, no tilted horizon or diagonal running direction, no superhero musculature, no plastic mannequin, no cartoon outline, no flat vector shading, no extreme motion blur. No rivals or other foreground athletes, no UI, no HUD, no panels, no captions, no text or logos, no Olympic rings, no watermark."
+    },
+    {
+      "file": "runner-voxel-v1.png",
+      "useCase": "stylized-concept",
+      "description": "작은 입체 복셀로 표현한 선수와 경기장",
+      "prompt": "Use case: stylized-concept. Asset type: visual direction concept for the 3D pixel-art runner and world of a 100 metre browser athletics game, not a gameplay screenshot. Primary request: sophisticated premium 3D voxel pixel art with convincing volume, fine block construction and rich directional lighting. Landscape 16:9 composition, one original adult sprinter only, full body entirely visible, strict LATERAL SIDE PROFILE facing and sprinting to the RIGHT, not an isometric camera. The athlete is large and central enough to study, about 60 percent of image height, matching a realistic athletic character study. Natural mature athlete proportions with a slightly stylized expressive face, short dark hair, warm medium-tan skin, deep forest-green racing singlet, very dark green shorts, ivory spikes with restrained warm-gold accents, no branding or number bib. Build the athlete with many SMALL precisely placed voxel blocks: readable quadriceps and calf volumes, shoulder and ribcage planes, articulated elbows and knees, small stepped edges, sharply controlled pixel clusters; anatomical silhouette and contralateral arm/leg motion must remain clear. Show a believable mid-sprint pose with one knee driving forward, opposite leg pushing back, slight forward trunk lean and naturally bent elbows. This must feel like a polished 3D pixel-art game character rendered with tiny sculpted cubes, not a flat 2D pixel drawing, not giant Minecraft blocks, not a toy or chibi figure. Construct the WHOLE stadium in a coherent matching 3D voxel style: terracotta track made of finely stepped pixel-textured surfaces, parallel white lane markings perfectly HORIZONTAL left to right, layered green infield, rhythmic grandstand blocks with abstract tiny spectator color clusters, an elegant cream stadium canopy, distant cubic trees and pale blue sky. Warm late-afternoon key light, cool fill, soft ambient occlusion in voxel crevices, subtle material roughness, grounded soft cast/contact shadows, exquisite face-by-face color variation, refined sports-game art direction. Orthographic-like telephoto side camera with visible form from lighting, no diagonal depth lines through the track, no isometric top view. Avoid smooth clay sculpture, flat vector outlines, flat 2D sprites, fuzzy pixels, muddy gradients, giant block limbs, tiny child proportions, malformed joints, extra arms or legs, motion blur. No rivals, no UI, no HUD, no panels, no captions, no typography, no Olympic rings, no logos, no watermark."
+    }
+  ],
+  "invariants": [
+    "좌→우 사이드뷰",
+    "딥그린 유니폼과 아이보리 스파이크",
+    "수평 트랙과 따뜻한 낮광",
+    "단독 주자"
+  ],
+  "notes": [
+    "정지된 방향 확인용 시안이며 현재 Canvas 러너를 교체하지 않음",
+    "전체 경기장을 포함하는 이미지이므로 선수 전용 투명 스프라이트가 아님",
+    "적용 단계에서는 인물·의상·신체 비율·카메라·접지선을 고정한 연속 동작 프레임이나 별도 3D 리그가 필요",
+    "탑뷰 리플레이용 시점은 별도 제작 필요"
+  ]
+}

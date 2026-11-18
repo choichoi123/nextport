@@ -1,0 +1,83 @@
+{
+  "created": "2026-11-17",
+  "source": "built-in image_gen",
+  "status": "active-render-assets",
+  "consumer": "components/playground/sprint-scene.js",
+  "referenceSet": "../../concepts/20261117/prompts.json",
+  "assets": [
+    {
+      "file": "runner-realistic-side.png",
+      "reference": "runner-realistic-v1.png",
+      "prompt": "Use case: identity-preserve. Edit the supplied image into a production-ready character SPRITE ATLAS. The input image is the reference for the ONE SAME original athlete's identity, face, short dark hair, medium-tan skin, deep forest-green singlet, almost-black green shorts and ivory sprint spikes with subdued gold detail. Preserve this exact character and the reference's visual quality. Remove the stadium, track, crowd and every background pixel. Deliver a real transparent-alpha PNG, no matte, no fake checkerboard, no ground plane, no shadows baked into the image, no UI, no text, no frame numbers, no grid lines. Each character is a clean isolated full-body cutout. Same camera, body proportions, head size, uniform, lighting and color in every cell. No clipping of head, hands, elbows or shoes. No overlapping neighboring cells, no duplicate bodies or extra limbs. Transparent margins between characters. Layout: exactly FOUR COLUMNS and THREE ROWS, twelve equal square cells, a 4:3 landscape atlas about 1536x1152. Read cells left to right, then top to bottom. All figures face RIGHT in STRICT LATERAL SIDE VIEW, not 3/4. Fixed hip horizontal center at 50 percent of each cell. Fixed imaginary ground line at 90 percent cell height; at least one supported foot reaches that line for contact poses. Maintain the SAME scale: ordinary standing head about 18 percent cell height and soles at 90 percent, leaving room above head for raised arms without shrinking the person. Upper two rows are eight DISTINCT successive phases of ONE anatomically correct running cycle, evenly spaced: cell 0 near leg forward landing and far heel tucked back; 1 near leg in grounded mid-stance under hip and far knee recovering forward; 2 near leg pushing backward at toe-off and far knee driven forward; 3 flight/recovery as the far leg extends to land; 4 opposite-leg landing, swapping the near/far roles of cell 0; 5 opposite grounded mid-stance; 6 opposite toe-off; 7 opposite flight/recovery returning to cell 0. Contralateral arm swing, elbows naturally bent, normal knee direction. Row three has FOUR different full-body poses at the same scale and ground baseline: cell 8 relaxed standing ready, arms down, right-facing profile; cell 9 standing after finish catching breath, both feet planted, hands at waist, profile facing right; cell 10 both arms half-raised in a victory gesture with both feet planted; cell 11 full overhead V victory arms, both feet planted, hands not clipped. No jumping displacement in the standing/victory cells. This sheet will animate in a game: clean silhouette and CONSISTENT POSITION AND SCALE are more important than decorative composition. Style: genuinely photorealistic sports photography as in the reference: detailed skin, believable muscle/tendon anatomy and natural technical fabric, warm directional afternoon key light with soft cool fill; no flat vector shading or painterly illustration.",
+      "transparentBackground": true,
+      "columns": 4,
+      "rows": 3
+    },
+    {
+      "file": "runner-realistic-top.png",
+      "reference": "runner-realistic-v1.png",
+      "prompt": "Use case: identity-preserve. Edit the supplied image into a production-ready character SPRITE ATLAS. The input image is the reference for the ONE SAME original athlete's identity, face, short dark hair, medium-tan skin, deep forest-green singlet, almost-black green shorts and ivory sprint spikes with subdued gold detail. Preserve this exact character and the reference's visual quality. Remove the stadium, track, crowd and every background pixel. Deliver a real transparent-alpha PNG, no matte, no fake checkerboard, no ground plane, no shadows baked into the image, no UI, no text, no frame numbers, no grid lines. Each character is a clean isolated full-body cutout. Same camera, body proportions, head size, uniform, lighting and color in every cell. No clipping of head, hands, elbows or shoes. No overlapping neighboring cells, no duplicate bodies or extra limbs. Transparent margins between characters. Layout: exactly THREE COLUMNS and TWO ROWS, six equal square cells, a 3:2 landscape atlas about 1536x1024. Read cells left to right, then top to bottom. A STRICT VERTICAL 90-DEGREE OVERHEAD camera looks down on the SAME athlete: see top of hair, shoulders and back, limbs correctly foreshortened from above. Absolutely no horizon, side face, 3/4 camera or isometric view. In every cell, the head is toward the RIGHT edge and feet toward the LEFT edge; the athlete runs horizontally RIGHT. Keep pelvis centered at 50 percent width/50 percent height in every cell and fixed consistent scale; the whole athlete occupies about 75 percent cell width. Cells 0,1,2,3 are four distinct successive quarters of one natural sprint cycle, alternate bent legs and opposite arms while keeping the same torso and head center. Cell 4 is a stationary idle/finished stance, arms relaxed and both feet planted, from overhead. Cell 5 is a victory pose with both arms lifted toward/above the head from overhead, feet planted, same orientation and scale. Use the top-down anatomy of a real adult sprinter, not a sideways person pasted on a horizontal layout. Every cell is independent with generous transparent separation. Style: photographic realism matching the reference athlete, natural skin, technical fabric and clear material depth. Warm directional afternoon key light and soft cool fill. Clean overhead photographic sports-game character cutouts.",
+      "transparentBackground": true,
+      "columns": 3,
+      "rows": 2
+    },
+    {
+      "file": "runner-voxel-side.png",
+      "reference": "runner-voxel-v1.png",
+      "prompt": "Use case: identity-preserve. Edit the supplied image into a production-ready character SPRITE ATLAS. The input image is the reference for the ONE SAME original athlete's identity, face, short dark hair, medium-tan skin, deep forest-green singlet, almost-black green shorts and ivory sprint spikes with subdued gold detail. Preserve this exact character and the reference's visual quality. Remove the stadium, track, crowd and every background pixel. Deliver a real transparent-alpha PNG, no matte, no fake checkerboard, no ground plane, no shadows baked into the image, no UI, no text, no frame numbers, no grid lines. Each character is a clean isolated full-body cutout. Same camera, body proportions, head size, uniform, lighting and color in every cell. No clipping of head, hands, elbows or shoes. No overlapping neighboring cells, no duplicate bodies or extra limbs. Transparent margins between characters. Layout: exactly FOUR COLUMNS and THREE ROWS, twelve equal square cells, a 4:3 landscape atlas about 1536x1152. Read cells left to right, then top to bottom. All figures face RIGHT in STRICT LATERAL SIDE VIEW, not 3/4. Fixed hip horizontal center at 50 percent of each cell. Fixed imaginary ground line at 90 percent cell height; at least one supported foot reaches that line for contact poses. Maintain the SAME scale: ordinary standing head about 18 percent cell height and soles at 90 percent, leaving room above head for raised arms without shrinking the person. Upper two rows are eight DISTINCT successive phases of ONE anatomically correct running cycle, evenly spaced: cell 0 near leg forward landing and far heel tucked back; 1 near leg in grounded mid-stance under hip and far knee recovering forward; 2 near leg pushing backward at toe-off and far knee driven forward; 3 flight/recovery as the far leg extends to land; 4 opposite-leg landing, swapping the near/far roles of cell 0; 5 opposite grounded mid-stance; 6 opposite toe-off; 7 opposite flight/recovery returning to cell 0. Contralateral arm swing, elbows naturally bent, normal knee direction. Row three has FOUR different full-body poses at the same scale and ground baseline: cell 8 relaxed standing ready, arms down, right-facing profile; cell 9 standing after finish catching breath, both feet planted, hands at waist, profile facing right; cell 10 both arms half-raised in a victory gesture with both feet planted; cell 11 full overhead V victory arms, both feet planted, hands not clipped. No jumping displacement in the standing/victory cells. This sheet will animate in a game: clean silhouette and CONSISTENT POSITION AND SCALE are more important than decorative composition. Style: preserve the reference's premium dense 3D VOXEL pixel art, hundreds of tiny sculpted cubes, rich face-by-face shading, natural mature sprinter proportions and subtle material roughness. Keep stepped silhouettes and visible block geometry, warm afternoon key light and cool fill. Do not flatten into low-resolution 2D pixels, do not change to smooth plastic, chibi or giant-block toy proportions.",
+      "transparentBackground": true,
+      "columns": 4,
+      "rows": 3
+    },
+    {
+      "file": "runner-voxel-top.png",
+      "reference": "runner-voxel-v1.png",
+      "prompt": "Use case: identity-preserve. Edit the supplied image into a production-ready character SPRITE ATLAS. The input image is the reference for the ONE SAME original athlete's identity, face, short dark hair, medium-tan skin, deep forest-green singlet, almost-black green shorts and ivory sprint spikes with subdued gold detail. Preserve this exact character and the reference's visual quality. Remove the stadium, track, crowd and every background pixel. Deliver a real transparent-alpha PNG, no matte, no fake checkerboard, no ground plane, no shadows baked into the image, no UI, no text, no frame numbers, no grid lines. Each character is a clean isolated full-body cutout. Same camera, body proportions, head size, uniform, lighting and color in every cell. No clipping of head, hands, elbows or shoes. No overlapping neighboring cells, no duplicate bodies or extra limbs. Transparent margins between characters. Layout: exactly THREE COLUMNS and TWO ROWS, six equal square cells, a 3:2 landscape atlas about 1536x1024. Read cells left to right, then top to bottom. A STRICT VERTICAL 90-DEGREE OVERHEAD camera looks down on the SAME athlete: see top of hair, shoulders and back, limbs correctly foreshortened from above. Absolutely no horizon, side face, 3/4 camera or isometric view. In every cell, the head is toward the RIGHT edge and feet toward the LEFT edge; the athlete runs horizontally RIGHT. Keep pelvis centered at 50 percent width/50 percent height in every cell and fixed consistent scale; the whole athlete occupies about 75 percent cell width. Cells 0,1,2,3 are four distinct successive quarters of one natural sprint cycle, alternate bent legs and opposite arms while keeping the same torso and head center. Cell 4 is a stationary idle/finished stance, arms relaxed and both feet planted, from overhead. Cell 5 is a victory pose with both arms lifted toward/above the head from overhead, feet planted, same orientation and scale. Use the top-down anatomy of a real adult sprinter, not a sideways person pasted on a horizontal layout. Every cell is independent with generous transparent separation. Style: preserve the reference's premium dense 3D VOXEL pixel art, tiny sculpted cubes with distinct warm/cool face shading and mature athletic proportions. Top of dark block hair and green singlet remain clear. Orthographic overhead rendered voxel cutouts, not flat 2D pixel sprites, no plastic smoothness and no giant-block child/toy proportions.",
+      "transparentBackground": true,
+      "columns": 3,
+      "rows": 2
+    }
+  ],
+  "animation": {
+    "phaseSource": "getSprintPose(race, celebration)",
+    "side": {
+      "run": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "idle": 8,
+      "finish": 9,
+      "celebration": [
+        9,
+        10,
+        11
+      ]
+    },
+    "top": {
+      "run": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "idle": 4,
+      "finish": 4,
+      "celebration": [
+        4,
+        5
+      ]
+    }
+  },
+  "notes": [
+    "2D 스프라이트로 사진·3D 복셀 질감을 표현하며 실제 3D 메시 자산은 아님",
+    "경기 거리 기반으로 프레임을 선택해 입력·시간·기록·리플레이 규칙은 그대로 유지",
+    "소스 PNG의 알파와 셀 경계 검사 후 side 접지 앵커를 보정",
+    "원본 콘셉트 이미지와 기존 절차 렌더러를 보존"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "created": "2026-11-17",
+  "purpose": "Local 100m sprint visual comparisons",
+  "assets": [
+    {
+      "file": "stadium-side-realistic.webp",
+      "source": "generated",
+      "mode": "built-in image_gen",
+      "prompt": "Use case: photorealistic-natural. Asset type: background plate for a 2D browser 100 metre running game, photorealistic arena, not a UI screenshot. Create a wide 16:9 landscape image, around 1536x864, of a grand international athletics stadium in clear late-afternoon daylight. Viewpoint: strict lateral broadcast side view, with the straight sprint lanes running perfectly horizontally across the image left to right; no diagonal lane vanishing point. Composition is crucial: the top 40 percent contains pale blue sky, distant trees, a gracefully curving stadium roof and densely textured grandstands with indistinct tiny spectators; the bottom 60 percent is broad, flat, unobstructed reddish terracotta synthetic running track with subtle fine-grain rubber material. Keep the playing field horizontally flat so a separately animated runner and lane-line overlay can be drawn in front of it. A little green infield beyond the track is welcome. Rich natural materials, atmospheric architectural detail, realistic photographic daylight, clear legible silhouette zones, premium sports photography. No athletes or foreground people, no starting blocks, no finish tape, no scoreboards, no text, no numbers, no lettering, no logos, no Olympic rings, no sponsor signage, no watermark. The track should not bend or turn within the frame.",
+      "composition": {
+        "trackStartsAtRatio": 0.58
+      }
+    },
+    {
+      "file": "stadium-top-realistic.webp",
+      "source": "generated",
+      "mode": "built-in image_gen",
+      "prompt": "Use case: photorealistic-natural. Asset type: background plate for a top-down 2D browser 100 metre athletics game, photographic architectural aerial texture, no UI. Wide 16:9 landscape composition around 1536x864. A large international athletics stadium seen from directly vertically overhead, orthographic drone-plan viewpoint, absolutely no oblique perspective or visible horizon. A straight reddish terracotta rubber sprint track runs horizontally from the left edge to the right edge. The broad red track occupies approximately y=25% through y=80% of the frame. Fine realistic synthetic rubber texture and very subtle horizontal lane boundaries; keep the whole middle as clean and unobstructed as possible for later animated runner, white lane lines, metre marks and finish line overlays. At the upper edge are the top-down roofs/seating strips of a grandstand, walkways and small planted trees; along the lower edge are a strip of fresh green stadium grass and a neat service walkway. Both upper and lower stadium details create a sense of a serious sports venue. Warm clear daytime light with subtle directly-downward shadows, photorealistic natural surfaces and architecture, fresh greens and terracotta, high quality sports facility aerial photography. No athletes, no foreground people, no running figures, no text, no lane numbers, no logos, no Olympic rings, no sponsor signs, no start/finish line or tape, no watermark. Do not show a curved running track, a complete oval stadium, diagonal track lanes, or an angled camera.",
+      "composition": {
+        "trackStartsAtRatio": 0.305,
+        "trackEndsAtRatio": 0.823
+      }
+    }
+  ]
+}
