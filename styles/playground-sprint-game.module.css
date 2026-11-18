@@ -244,6 +244,14 @@
 .stageTools .soundButton { border-color:#8ea18166; }
 .immersive .arena[data-art=pixel] :is(.stageTools,.styleSwitcher,.soundButton,.primary,.secondary,.foot,.cheerButton) { border-radius:0; font-family:'Courier New','Malgun Gothic',monospace; }
 .stageBottom { position:absolute; z-index:6; bottom:max(14px,env(safe-area-inset-bottom)); left:22px; right:22px; color:var(--ink); }
+.stageBottom[data-start-preview=true] { display:none; }
+@media(max-width:1000px), (pointer:coarse) {
+ .stageBottom[data-start-preview=true] { display:block; }
+ .immersive .arena:is([data-status=countdown],[data-start-signal=go]) .stageTools { visibility:hidden; }
+ .stageBottom[data-start-preview=true] .liveControls { background:#102c2773; border-color:#d9dfbc22; }
+ .game .stageBottom[data-start-preview=true] .foot:disabled { opacity:.55; cursor:default; }
+ .stageBottom[data-start-preview=true] .cheerButton, .stageBottom[data-start-preview=true] .raceActions { visibility:hidden; }
+}
 .stageBottom .liveControls { display:flex; align-items:flex-end; justify-content:space-between; gap:18px; padding:12px 15px; border:1px solid #d9dfbc33; border-radius:7px; background:#102c27d9; }
 .stageBottom .inputDock { margin:0; gap:22px; }
 .stageBottom .rhythm { display:none; }
@@ -331,12 +339,17 @@
 }
 @media(max-width:1000px) {
  .stageBottom .liveControls { flex-wrap:wrap; }
- .stageBottom .touchHint { display:block; flex:1 0 100%; order:3; margin:0 !important; color:var(--muted); font-size:10px; line-height:1.5; overflow-wrap:anywhere; }
+ .stageBottom .touchHint { display:block; flex:1 0 100%; order:3; min-height:3em; margin:0 !important; color:var(--muted); font-size:10px; line-height:1.5; overflow-wrap:anywhere; }
 }
 @media(max-width:760px) {
  .game .stageBottom .foot, .game .stageBottom .cheerButton { min-height:60px; }
 }
 @media(max-width:1000px) and (max-height:600px) and (orientation:landscape) {
+ .immersive .arena[data-mode=race] .countdown { top:clamp(76px,25%,96px); gap:4px; }
+ .immersive .arena[data-mode=race] .countdown > span { font-size:20px; padding-bottom:4px; }
+ .immersive .arena[data-mode=race] .countdown[data-art=pixel] > span { padding:3px 6px; }
+ .immersive .arena[data-mode=race] .countdown > strong { font-size:clamp(58px,18vh,78px); }
+ .immersive .arena[data-mode=race] .countdown[data-signal=go] > strong { font-size:clamp(64px,20vh,84px); }
  .stageTools, .arena[data-race-mode=competition] .stageTools { top:20px; max-width:calc(100% - 24px); gap:5px; padding:5px; }
  .game .stageTools .styleSwitcher button { min-width:44px; padding:6px 7px; font-size:9px; }
  .game .stageTools .soundButton { white-space:nowrap; }

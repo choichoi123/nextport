@@ -42,6 +42,7 @@ const copy = {
     touchSetupInstructions: '출발 후 화면의 왼발·오른발을 번갈아 탭하세요. 응원 버튼도 사용할 수 있습니다.',
     touchInstructions: '화면 아래 왼발·오른발을 번갈아 탭하세요. 응원 버튼으로 함성을 보내고, 메뉴를 열면 경기가 중단됩니다. 키보드 ←·→·Space도 사용할 수 있습니다.',
     touchHint: '왼발·오른발 번갈아 탭 · 길게 눌러도 연타되지 않아요.',
+    touchStartHint: '버튼 위치를 확인하세요 · GO!부터 번갈아 탭',
     touchFocused: '화면 버튼으로 조작 중', touchUnfocused: '왼발·오른발 버튼으로 조작',
     touchLeft: '왼발 탭', touchRight: '오른발 탭', touchEither: '왼발·오른발 교대', touchInterruptedHint: '다시 달리기를 눌러 새 경기로 출발하세요.',
     hint: '길게 누르기는 연타가 아닙니다. 한 발씩 번갈아 내딛으면 가속합니다.', cheerMessage: '끝까지, 한 걸음 더!',
@@ -86,6 +87,7 @@ const copy = {
     touchSetupInstructions: 'After the start, alternate the left- and right-foot buttons. Tap Cheer for the crowd.',
     touchInstructions: 'Alternate taps on the left-foot and right-foot buttons below. Tap Cheer for the crowd, or open the menu to stop the run. Arrow keys and Space also work.',
     touchHint: 'Alternate left and right taps · holding is not repeated tapping.',
+    touchStartHint: 'Find the buttons · alternate taps after GO!',
     touchFocused: 'Using on-screen controls', touchUnfocused: 'Use the left- and right-foot buttons',
     touchLeft: 'Tap left foot', touchRight: 'Tap right foot', touchEither: 'Alternate left and right', touchInterruptedHint: 'Choose Run again to start a new run.',
     hint: 'Holding a key is not repeated tapping. Alternate your feet to accelerate.', cheerMessage: 'One more stride. You’ve got this!',
@@ -670,7 +672,7 @@ export default function SprintGame({ countries, development = false, immersive =
     setPressed([...keysRef.current, ...pointersRef.current.values()])
   }
   function pointerDown(event, code) {
-    if (event.button !== 0) return
+    if (event.button !== 0 || raceRef.current.status !== 'running' || editing || preparing || replayModeRef.current || modalOpen || demoRef.current) return
     selectInputMode('pointer')
     event.preventDefault()
     event.currentTarget.setPointerCapture(event.pointerId)
@@ -705,6 +707,7 @@ export default function SprintGame({ countries, development = false, immersive =
   const displayedFinishReaction = getSprintFinishReaction(displayedRace, displayedMode, displayedSeed, displayedBoss)
   const finishAction = finishReaction === 'defeat' ? text.defeat : text.celebrate
   const pointerControls = inputMode === 'pointer'
+  const startControlsPreview = immersive && !replayMode && displayedRace.status === 'countdown'
   const instructions = pointerControls ? text.touchInstructions : text.instructions
   const replayHelp = pointerControls ? text.touchReplayHelp : text.replayHelp
   const finishReactionHint = pointerControls
@@ -762,13 +765,13 @@ export default function SprintGame({ countries, development = false, immersive =
     return <button ref={recordTriggerRef} className={styles.secondary} type="button" disabled={preparing || recordAction.disabled} aria-busy={recordAction.disabled || undefined} onClick={() => { clearInputs(); setRecordOpen(true); stopAudio() }}>{text[recordAction.labelKey]}</button>
   }
 
-  function renderLiveControls() {
+  function renderLiveControls(startPreview = false) {
     return <div className={styles.liveControls}>
       <div className={styles.inputDock}><div className={styles.feet}>
-        {race.status !== 'finished' && ['left','right'].map(code => <button key={code} type="button" className={styles.foot} disabled={!active || isDemo} aria-label={text[code]} aria-pressed={pressed.includes(code)} onPointerDown={event => pointerDown(event,code)} onPointerUp={pointerEnd} onPointerCancel={pointerEnd} onLostPointerCapture={pointerEnd} onClick={event => { if(event.detail === 0) {selectInputMode('keyboard');focusArea();act(code)} }}>{pointerControls ? <span className={styles.touchMark} aria-hidden="true">TAP</span> : <kbd>{code === 'left' ? '←' : '→'}</kbd>}<span>{text[code]}</span></button>)}
-        <button className={styles.cheerButton} type="button" aria-label={`${pointerControls ? '' : 'Space · '}${race.status === 'finished' ? finishAction : text.cheer}`} onClick={event => { selectInputMode(event.detail === 0 ? 'keyboard' : 'pointer'); focusArea(); act('cheer') }}>{!pointerControls && <kbd>Space</kbd>} {race.status === 'finished' && finishReaction === 'defeat' ? '↘' : '✦'} {race.status === 'finished' ? finishAction : text.cheer}</button>
+        {race.status !== 'finished' && ['left','right'].map(code => <button key={code} type="button" className={styles.foot} disabled={race.status !== 'running' || isDemo} aria-label={text[code]} aria-pressed={pressed.includes(code)} onPointerDown={event => pointerDown(event,code)} onPointerUp={pointerEnd} onPointerCancel={pointerEnd} onLostPointerCapture={pointerEnd} onClick={event => { if(event.detail === 0) {selectInputMode('keyboard');focusArea();act(code)} }}>{pointerControls || startPreview ? <span className={styles.touchMark} aria-hidden="true">TAP</span> : <kbd>{code === 'left' ? '←' : '→'}</kbd>}<span>{text[code]}</span></button>)}
+        <button className={styles.cheerButton} type="button" disabled={startPreview} aria-label={`${pointerControls ? '' : 'Space · '}${race.status === 'finished' ? finishAction : text.cheer}`} onClick={event => { selectInputMode(event.detail === 0 ? 'keyboard' : 'pointer'); focusArea(); act('cheer') }}>{!pointerControls && <kbd>Space</kbd>} {race.status === 'finished' && finishReaction === 'defeat' ? '↘' : '✦'} {race.status === 'finished' ? finishAction : text.cheer}</button>
       </div><div className={styles.rhythm}><span>{race.status === 'finished' ? text.best : text.next}<strong>{race.status === 'finished' ? bestTime === null ? '—' : `${formatSprintTime(bestTime)}s` : nextFootHint}</strong></span><span>{text.strides}<strong data-testid="sprint-strides">{race.steps}</strong></span></div></div>
-      {pointerControls && <p className={styles.touchHint}>{race.status === 'finished' ? finishReactionHint : race.status === 'interrupted' ? text.touchInterruptedHint : text.touchHint}</p>}
+      {(pointerControls || startPreview) && <p className={styles.touchHint}>{startPreview ? text.touchStartHint : race.status === 'finished' ? finishReactionHint : race.status === 'interrupted' ? text.touchInterruptedHint : text.touchHint}</p>}
       <div className={styles.raceActions}><div className={styles.raceStatus}><span className={styles.onlineRunNote} role="status">{isDemo ? text.demoNotice : preparing ? text.preparing : onlineRun.status === 'local' ? text.localRun : onlineRun.status === 'online' ? text.onlineRun : race.status === 'finished' ? registrationNote : ''}</span><span className={styles.connection}><i data-active={focused} />{pointerControls ? focused ? text.touchFocused : text.touchUnfocused : focused ? text.focused : text.unfocused}</span></div><div className={styles.buttonRow}>{active ? <button type="button" className={styles.textButton} onClick={interrupt}>{text.stop}</button> : <>{canRunAgain && <button className={styles.secondary} type="button" disabled={preparing || modalOpen} onClick={() => beginRace(false)}>{text.restart}</button>}<button className={styles.textButton} type="button" onClick={editPlayer}>{text.changePlayer}</button></>}</div></div>
       {startAssetError && !preparing && <p className={styles.startAssetError} role="alert">{text.startAssetError}</p>}
       {!immersive && <p className={styles.inputHint}>{instructions}{!pointerControls && <><br />{text.hint}</>}</p>}
@@ -835,7 +838,7 @@ export default function SprintGame({ countries, development = false, immersive =
           {leaderboardOpen && <SprintLeaderboard leaderboard={leaderboard} countries={countries} locale={locale} art={art} onClose={closeLeaderboard} onRefresh={refreshLeaderboard} />}
           {recordOpen && finishedAtISO && <SprintRecordPreview player={{...player,art}} visualStyle={art} finishTimeMs={race.finishTimeMs} finishedAtISO={finishedAtISO} countries={countries} locale={locale} onClose={closeRecordPreview} onlineRun={onlineRun} registration={registration} onRegister={registerRecord} onRetryVerification={retryVerification} />}
           {immersive && !editing && race.status === 'interrupted' && <div className={styles.interruptionOverlay}><section><h2>{text.interrupted}</h2><p>{text.interruptedNote}</p><div className={styles.buttonRow}>{canRunAgain && <button className={styles.primary} type="button" disabled={preparing || modalOpen} onClick={() => beginRace(false)}>{text.restart}</button>}<button className={styles.secondary} type="button" onClick={editPlayer}>{text.changePlayer}</button><Link href="/playground" className={styles.secondary}>← {text.backToGames}</Link></div><p className={styles.leaveNotice}>{text.leaveNote}</p></section></div>}
-          {immersive && !editing && !modalOpen && (replayMode || displayedRace.status !== 'countdown') && <div className={styles.stageBottom} data-art={art}>{replayMode && lastRun ? renderReplayControls() : renderLiveControls()}</div>}
+          {immersive && !editing && !modalOpen && <div className={styles.stageBottom} data-art={art} data-start-preview={startControlsPreview}>{replayMode && lastRun ? renderReplayControls() : renderLiveControls(startControlsPreview)}</div>}
         </div>
         {!immersive && <div className={styles.telemetry}><span>{replayMode ? text[replayView] : text[race.status]}</span><dl><div><dt>{text.time}</dt><dd>{formatSprintTime(displayedRace.elapsedMs)}s</dd></div><div><dt>{text.distance}</dt><dd>{displayedRace.distance.toFixed(1)}m</dd></div><div><dt>{text.speed}</dt><dd>{(displayedRace.speed*3.6).toFixed(1)}km/h</dd></div><div><dt>Audio</dt><dd>{audioStatus} / {audioPlays}</dd></div></dl></div>}
       </div>
