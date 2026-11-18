@@ -298,7 +298,7 @@ test('v1·중단·완료·비정상 시각에는 응원이 새 추진력을 주�
   assert.strictEqual(applySprintCheer(finished, gunAt + 2000), finished)
 })
 
-test('응원을 섞은 경기도 화면 갱신 간격과 무관하게 같은 미세 가속·완주 기록을 만든다', () => {
+test('응원을 섞은 경기도 화면 갱신 간격과 무관하게 같은 가속·완주 기록을 만든다', () => {
   function complete({ cheer = false, extraFrames = false, ruleVersion = SPRINT_RULE_VERSION } = {}) {
     let race = startSprintRace(0, ruleVersion)
     for (let index = 0; index < 700 && race.status !== 'finished'; index++) {
@@ -318,8 +318,8 @@ test('응원을 섞은 경기도 화면 갱신 간격과 무관하게 같은 미
   const highFps = complete({ cheer: true, extraFrames: true })
   assert.equal(legacy.finishTimeMs, 9584.846622489975)
   assert.equal(baseline.finishTimeMs, legacy.finishTimeMs)
-  assert.ok(boosted.finishTimeMs < baseline.finishTimeMs)
-  assert.ok(baseline.finishTimeMs - boosted.finishTimeMs < 150)
+  const improvementMs = baseline.finishTimeMs - boosted.finishTimeMs
+  assert.ok(improvementMs > 100 && improvementMs < 250)
   assert.ok(boosted.cheers > 0)
   near(boosted.finishTimeMs, highFps.finishTimeMs)
   assert.equal(boosted.cheers, highFps.cheers)
