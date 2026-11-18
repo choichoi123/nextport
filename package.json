@@ -16,6 +16,7 @@
     "node": "22.x"
   },
   "dependencies": {
+    "@neondatabase/serverless": "1.2.1",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
     "dotenv": "^16.0.3",
