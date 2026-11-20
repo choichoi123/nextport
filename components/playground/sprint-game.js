@@ -9,6 +9,7 @@ import SprintWorldRecord from './sprint-world-record'
 import SprintLeaderboard from './sprint-leaderboard'
 import useSprintLeaderboard from './use-sprint-leaderboard'
 import useSprintAudio from './use-sprint-audio'
+import useSprintFinishGuard from './use-sprint-finish-guard'
 import { classifySprintFinish } from '@/lib/playground-sprint-record.mjs'
 import { getSprintIneligibilityNotice, getSprintRecordAction } from '@/lib/playground-sprint-registration.mjs'
 import { createSprintRace, startSprintRace, advanceSprintRace, applySprintStride, applySprintCheer, interruptSprintRace, formatSprintTime } from '@/lib/playground-sprint.mjs'
@@ -710,6 +711,8 @@ export default function SprintGame({ countries, development = false, immersive =
   const displayedBoss = editing ? false : replayMode && lastRun ? lastRun.bossEncounter === true : runBoss
   const competition = getSprintCompetitionStanding(displayedRace, displayedMode, displayedSeed, displayedBoss)
   const bossState = withSprintBossPresentation(getSprintBossState(displayedRace, displayedMode, displayedSeed, displayedBoss), displayedBossExtraMs)
+  const finishVisible = race.status === 'finished' && !editing && !replayMode && !!finishSummary && !modalOpen && !celebrating && !bossState?.celebrating
+  const finishGuard = useSprintFinishGuard({ pending: race.status === 'finished' && !editing, visible: finishVisible })
   const displayedPlayer = replayMode && lastRun ? lastRun.player : player
   const nationality = countries.find(country => country.code === displayedPlayer?.countryCode)
   const startSample = getSprintStartSample(displayedRace)
@@ -779,7 +782,7 @@ export default function SprintGame({ countries, development = false, immersive =
   }
 
   function renderRecordButton() {
-    return <button ref={recordTriggerRef} className={styles.secondary} type="button" disabled={preparing || recordAction.disabled} aria-busy={recordAction.disabled || undefined} onClick={() => { clearInputs(); setRecordOpen(true); stopAudio() }}>{text[recordAction.labelKey]}</button>
+    return <button ref={recordTriggerRef} data-sprint-finish-action className={styles.secondary} type="button" disabled={finishGuard.locked || preparing || recordAction.disabled} aria-busy={recordAction.disabled || undefined} onClick={() => { clearInputs(); setRecordOpen(true); stopAudio() }}>{text[recordAction.labelKey]}</button>
   }
 
   function renderLiveControls(startPreview = false) {
@@ -789,7 +792,7 @@ export default function SprintGame({ countries, development = false, immersive =
         <button className={styles.cheerButton} type="button" disabled={startPreview} aria-label={`${pointerControls ? '' : 'Space · '}${race.status === 'finished' ? finishAction : text.cheer}`} onClick={event => { selectInputMode(event.detail === 0 ? 'keyboard' : 'pointer'); focusArea(); act('cheer') }}>{!pointerControls && <kbd>Space</kbd>} {race.status === 'finished' && finishReaction === 'defeat' ? '↘' : '✦'} {race.status === 'finished' ? finishAction : text.cheer}</button>
       </div><div className={styles.rhythm}><span>{race.status === 'finished' ? text.best : text.next}<strong>{race.status === 'finished' ? bestTime === null ? '—' : `${formatSprintTime(bestTime)}s` : nextFootHint}</strong></span><span>{text.strides}<strong data-testid="sprint-strides">{race.steps}</strong></span></div></div>
       {(pointerControls || startPreview) && <p className={styles.touchHint}>{startPreview ? text.touchStartHint : race.status === 'finished' ? finishReactionHint : race.status === 'interrupted' ? text.touchInterruptedHint : text.touchHint}</p>}
-      <div className={styles.raceActions}><div className={styles.raceStatus}><span className={styles.shortRunNote} aria-hidden="true">{preparing ? text.preparing : isDemo ? text.demoNotice : text[onlineRun.attemptId ? 'shortOnline' : 'shortLocal']}</span><span className={styles.onlineRunNote} role="status">{isDemo ? text.demoNotice : preparing ? text.preparing : onlineRun.status === 'local' ? text.localRun : onlineRun.status === 'online' ? text.onlineRun : race.status === 'finished' ? registrationNote : ''}</span><span className={styles.connection}><i data-active={focused} />{pointerControls ? focused ? text.touchFocused : text.touchUnfocused : focused ? text.focused : text.unfocused}</span></div><div className={styles.buttonRow}>{active ? <button type="button" className={styles.textButton} onClick={interrupt}>{text.stop}</button> : <>{canRunAgain && <button className={styles.secondary} type="button" disabled={preparing || modalOpen} onClick={() => beginRace(false)}>{text.restart}</button>}<button className={styles.textButton} type="button" onClick={editPlayer}>{text.changePlayer}</button></>}</div></div>
+      <div className={styles.raceActions}><div className={styles.raceStatus}><span className={styles.shortRunNote} aria-hidden="true">{preparing ? text.preparing : isDemo ? text.demoNotice : text[onlineRun.attemptId ? 'shortOnline' : 'shortLocal']}</span><span className={styles.onlineRunNote} role="status">{isDemo ? text.demoNotice : preparing ? text.preparing : onlineRun.status === 'local' ? text.localRun : onlineRun.status === 'online' ? text.onlineRun : race.status === 'finished' ? registrationNote : ''}</span><span className={styles.connection}><i data-active={focused} />{pointerControls ? focused ? text.touchFocused : text.touchUnfocused : focused ? text.focused : text.unfocused}</span></div><div className={styles.buttonRow}>{active ? <button type="button" className={styles.textButton} onClick={interrupt}>{text.stop}</button> : <>{canRunAgain && <button data-sprint-finish-action className={styles.secondary} type="button" disabled={finishGuard.locked || preparing || modalOpen} onClick={() => beginRace(false)}>{text.restart}</button>}<button data-sprint-finish-action className={styles.textButton} type="button" disabled={finishGuard.locked} onClick={editPlayer}>{text.changePlayer}</button></>}</div></div>
       {startAssetError && !preparing && <p className={styles.startAssetError} role="alert">{text.startAssetError}</p>}
       {!immersive && <p className={styles.inputHint}>{instructions}{!pointerControls && <><br />{text.hint}</>}</p>}
     </div>
@@ -847,7 +850,7 @@ export default function SprintGame({ countries, development = false, immersive =
       <section className={styles.intro} aria-labelledby="sprint-title"><div><p className={styles.eyebrow}>PLAYGROUND / 100M SPRINT</p><h1 id="sprint-title">{text.heading[0]} <span>{text.heading[1]}</span></h1></div><p>{text.intro}</p></section>
     </>}
     {immersive && <h1 className={styles.srOnly}>{text.heading.join(' ')}</h1>}
-    <section className={styles.game} aria-label={locale === 'ko' ? '100m 달리기' : '100m sprint'} onBlur={gameBlur}>
+    <section className={styles.game} aria-label={locale === 'ko' ? '100m 달리기' : '100m sprint'} onBlur={gameBlur} onClickCapture={finishGuard.onClickCapture} data-finish-actions-locked={finishGuard.locked}>
       {editing && !immersive && renderSetup()}
       <div className={styles.stadium} data-art={art}>
         {!immersive && <div className={styles.stadiumTop}><div className={styles.runnerBadge}><span className={styles.liveDot} data-replay={replayMode} /><div><span className={styles.stageLabel}>{replayMode ? text.replayKicker : editing ? 'START LINE / 100M' : text.live}</span><h2>{editing ? text.preview : displayedPlayer?.name}</h2>{!editing && <p>{nationality?.flag} {nationality?.label}{isDemo ? ` · ${text.demoNotice}` : ''}</p>}</div></div><div className={styles.stageToolsInline}>{!editing && renderLeaderboardButton()}{renderStyleSwitch()}{!editing && renderSoundButton()}</div></div>}
@@ -867,7 +870,7 @@ export default function SprintGame({ countries, development = false, immersive =
           {cheering && !replayMode && !celebrating && <div className={styles.cheerOverlay} aria-hidden="true">✦ {text.cheerMessage} ✦</div>}
           {celebrating && <div className={styles.celebrationLabel} data-reaction={celebration.kind || 'victory'} aria-hidden="true">{celebration.kind === 'defeat' ? text.defeatMessage : `✦ ${text.celebrate} ✦`}</div>}
           </div>
-          {race.status === 'finished' && !editing && !replayMode && finishSummary && !modalOpen && !celebrating && !bossState?.celebrating && <div className={styles.resultOverlay}>
+          {finishVisible && <div className={styles.resultOverlay}>
             <section className={styles.finishCard} data-art={art} aria-label={text.finished}>
               <div className={styles.finishBody}>
               <SprintFinish immersive={immersive} art={art} locale={locale} kind={finishSummary.kind} timeMs={race.finishTimeMs} improvementMs={finishSummary.improvementMs} playerName={player?.name} competition={getSprintCompetitionStanding(race, runMode, runSeed, runBoss)} />
@@ -876,7 +879,7 @@ export default function SprintGame({ countries, development = false, immersive =
               <p className={styles.leaveNotice}>{text.leaveNote}</p>
               <Link href="/playground" className={styles.returnLink}>← {text.backToGames}</Link>
               </div>
-              <div className={styles.finishActions}>{lastRun && <button className={styles.primary} type="button" disabled={preparing} onClick={beginReplay}>↺ {text.replay}</button>}{!isDemo && renderRecordButton()}{canRunAgain && <button className={styles.secondary} type="button" disabled={preparing || modalOpen} onClick={() => beginRace(false)}>{text.restart} ↗</button>}<button className={styles.secondary} type="button" onClick={editPlayer}>{text.changePlayer}</button></div>
+              <div className={styles.finishActions}>{lastRun && <button data-sprint-finish-action className={styles.primary} type="button" disabled={finishGuard.locked || preparing} onClick={beginReplay}>↺ {text.replay}</button>}{!isDemo && renderRecordButton()}{canRunAgain && <button data-sprint-finish-action className={styles.secondary} type="button" disabled={finishGuard.locked || preparing || modalOpen} onClick={() => beginRace(false)}>{text.restart} ↗</button>}<button data-sprint-finish-action className={styles.secondary} type="button" disabled={finishGuard.locked} onClick={editPlayer}>{text.changePlayer}</button></div>
             </section>
           </div>}
           {leaderboardOpen && <SprintLeaderboard leaderboard={leaderboard} countries={countries} locale={locale} art={art} onClose={closeLeaderboard} onRefresh={refreshLeaderboard} />}
