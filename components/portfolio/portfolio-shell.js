@@ -83,7 +83,7 @@ export default function PortfolioShell({
   }
   useEffect(() => {
     if (!compactPlayground) return
-    const media = window.matchMedia('(max-width: 1000px)')
+    const media = window.matchMedia('(max-width: 1000px), (pointer: coarse)')
     const routeChange = () => closeMobileMenu()
     const mediaChange = () => { if (!media.matches) closeMobileMenu() }
     media.addEventListener('change', mediaChange)
