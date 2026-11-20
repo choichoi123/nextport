@@ -56,7 +56,8 @@ export default function SprintLeaderboard({ leaderboard, countries, locale = 'ko
 
   return <div className={styles.backdrop} onPointerDown={event => event.stopPropagation()} onClick={event => event.stopPropagation()} onKeyDown={keyDown} onKeyUp={event => event.stopPropagation()}>
     <section ref={dialogRef} className={styles.dialog} data-art={art} role="dialog" aria-modal="true" aria-labelledby={`${id}-title`} aria-describedby={`${id}-policy`} tabIndex={-1} aria-busy={loading}>
-      <header className={styles.header}><div><p className={styles.eyebrow}>ONLINE / 100M SPRINT</p><h2 id={`${id}-title`}>{text.title}</h2></div><button ref={closeRef} type="button" className={styles.close} aria-label={text.close} onClick={onClose}>×</button></header>
+      <header className={styles.header}><div><p className={styles.eyebrow}>ONLINE / 100M SPRINT</p><h2 id={`${id}-title`}>{text.title}</h2></div><button ref={closeRef} type="button" className={styles.close} aria-label={text.close} onClick={onClose}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg></button></header>
+      <div className={styles.body}>
       <p className={styles.policy} id={`${id}-policy`}>{text.policy}</p>
       {loading && <p className={styles.message} role="status">{text.loading}</p>}
       {!loading && !ready && <div className={styles.message} role="status"><strong>{text[leaderboard.status === 'unavailable' ? leaderboard.code === 'not_configured' ? 'disconnected' : 'unavailable' : 'error']}</strong><p>{text.local}</p></div>}
@@ -65,7 +66,9 @@ export default function SprintLeaderboard({ leaderboard, countries, locale = 'ko
         const country = countries.find(item => item.code === record.countryCode)
         return <tr key={record.rank}><td className={styles.rank} data-label={text.rank}>{String(record.rank).padStart(2, '0')}</td><th scope="row" className={styles.name}>{record.playerName}</th><td className={styles.country} data-label={text.country}>{country ? `${country.flag} ${country.label}` : record.countryCode}</td><td className={styles.time} data-label={text.time}>{(record.timeCs / 100).toFixed(2)}s</td><td className={styles.date} data-label={text.date}><time dateTime={record.recordedAt}>{dateLabel(record.recordedAt, locale)}</time></td></tr>
       })}</tbody></table></div>}
-      <footer className={styles.footer}><div><p>{text.dateNote}</p>{ready && leaderboard.updatedAt && <p>{text.updated} · <time dateTime={leaderboard.updatedAt}>{dateLabel(leaderboard.updatedAt, locale)}</time></p>}</div><button type="button" className={styles.refresh} onClick={refresh} disabled={loading}>↻ {text.refresh}</button></footer>
+      <div className={styles.updateNote}><p>{text.dateNote}</p>{ready && leaderboard.updatedAt && <p>{text.updated} · <time dateTime={leaderboard.updatedAt}>{dateLabel(leaderboard.updatedAt, locale)}</time></p>}</div>
+      </div>
+      <footer className={styles.footer}><button type="button" className={styles.refresh} onClick={refresh} disabled={loading}>↻ {text.refresh}</button></footer>
     </section>
   </div>
 }

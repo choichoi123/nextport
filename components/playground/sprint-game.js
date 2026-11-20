@@ -49,7 +49,7 @@ const copy = {
     focused: '키보드 연결됨', unfocused: '경기장을 클릭해 키보드를 연결하세요', live: 'LIVE / SIDE VIEW', side: '사이드뷰', top: '탑뷰', artSwitch: '그림체 전환',
     finishTitle: '당신의 완주 기록', demoFinish: '자동 시연 완주', best: '이번 방문 최고', noBest: '아직 직접 완주한 기록이 없어요',
     replay: '리플레이 보기', replayKicker: 'REPLAY / 100M', replayView: '리플레이 시점', play: '재생', pause: '일시정지', replayRestart: '처음부터', exitReplay: '결과로 돌아가기',
-    replayPosition: '리플레이 재생 위치', replaySpeed: '재생 속도', replayHelp: 'Space 재생·정지 · ← → 1초 이동 · Esc 결과로 돌아가기',
+    replayPosition: '리플레이 재생 위치', replaySpeed: '재생 속도', replayOptions: '리플레이 설정', gameOptions: '경기 설정', replayHelp: 'Space 재생·정지 · ← → 1초 이동 · Esc 결과로 돌아가기',
     touchReplayHelp: '재생·일시정지 버튼과 시간 슬라이더로 리플레이를 확인하세요. 결과로 돌아가기 버튼으로 종료합니다.',
     replayNote: '출발 준비 4초부터 결승까지 재생하고, 루사인의 남은 우승 세레머니와 마지막 자세 1초를 포함합니다. 재생 위치는 영상 시간이며 완주 기록은 그대로입니다. 크라우칭 자세는 사이드뷰에서 볼 수 있습니다.',
     replayPreparation: '출발 준비', replayRace: '경기', replayFinish: '피니시', replayRecord: '완주 기록',
@@ -58,7 +58,7 @@ const copy = {
     touchCelebrationHint: '세리머니 버튼을 탭해 기쁨을 나눠보세요.', touchDefeatHint: '아쉬움 버튼을 탭해 마음을 표현해 보세요.',
     register: '기록 등록 미리보기', recordResult: '기록 판정 보기', onlineRegister: 'TOP10 기록 등록', registrationNote: '로컬 플레이 기록 · 온라인 등록 대상이 아닙니다.',
     recordChecking: '기록 확인 중', registrationResult: '등록 결과 보기', recordSaving: '등록 중…',
-    rankings: '온라인 TOP10', preparing: '경기 준비 중…', startAssetError: '출발 화면을 준비하지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.', onlineRun: '온라인 경기 · 완주 후 서버 검증', localRun: '로컬 플레이 · 온라인 기록 대상 아님',
+    rankings: '온라인 TOP10', preparing: '경기 준비 중…', startAssetError: '출발 화면을 준비하지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.', onlineRun: '온라인 경기 · 완주 후 서버 검증', localRun: '로컬 플레이 · 온라인 기록 대상 아님', shortOnline: '온라인 경기', shortLocal: '로컬 경기',
     onlineUnavailable: '온라인 연결을 사용할 수 없어 로컬로 달립니다. 이번 경기는 온라인에 등록되지 않습니다.',
     boardNotConfigured: '온라인 기록 DB 미연결 · 로컬 플레이 가능', boardUnavailable: '온라인 기록 서비스에 연결하지 못했습니다. 로컬 플레이는 가능합니다.',
     verifying: '서버에서 완주 기록을 검증하고 있습니다…', verified: '서버 검증 완료 · 등록 시 최신 TOP10을 다시 확인합니다.', notEligible: '서버 검증 완료 · 현재 TOP10 등록 대상이 아닙니다.',
@@ -94,7 +94,7 @@ const copy = {
     focused: 'Keyboard connected', unfocused: 'Click the track to connect your keyboard', live: 'LIVE / SIDE VIEW', side: 'Side view', top: 'Top-down', artSwitch: 'Change visual style',
     finishTitle: 'Your finish time', demoFinish: 'Demo completed', best: 'Best this visit', noBest: 'Your first manual finish is ahead',
     replay: 'Watch replay', replayKicker: 'REPLAY / 100M', replayView: 'Replay camera', play: 'Play', pause: 'Pause', replayRestart: 'From the start', exitReplay: 'Back to result',
-    replayPosition: 'Replay position', replaySpeed: 'Playback speed', replayHelp: 'Space play/pause · ← → seek 1 second · Esc back to result',
+    replayPosition: 'Replay position', replaySpeed: 'Playback speed', replayOptions: 'Replay settings', gameOptions: 'Game settings', replayHelp: 'Space play/pause · ← → seek 1 second · Esc back to result',
     touchReplayHelp: 'Use Play, Pause and the timeline slider to watch the replay. Choose Back to result to leave it.',
     replayNote: 'Replay the four-second preparation, the race, any remaining Lusain victory ceremony and a one-second final pose. Playback time is separate from your unchanged finish time. View crouching poses from the side.',
     replayPreparation: 'Start preparation', replayRace: 'Race', replayFinish: 'Finish', replayRecord: 'Finish time',
@@ -103,7 +103,7 @@ const copy = {
     touchCelebrationHint: 'Tap Celebrate to celebrate your finish.', touchDefeatHint: 'Tap Disappointment to react to the result.',
     register: 'Preview record registration', recordResult: 'View record result', onlineRegister: 'Register TOP10 record', registrationNote: 'Local play record · not eligible for online registration.',
     recordChecking: 'Checking record', registrationResult: 'View registration result', recordSaving: 'Registering…',
-    rankings: 'Online TOP10', preparing: 'Preparing your run…', startAssetError: 'The starting scene could not be prepared. Refresh the page and try again.', onlineRun: 'Online run · verified after finishing', localRun: 'Local play · not an online record',
+    rankings: 'Online TOP10', preparing: 'Preparing your run…', startAssetError: 'The starting scene could not be prepared. Refresh the page and try again.', onlineRun: 'Online run · verified after finishing', localRun: 'Local play · not an online record', shortOnline: 'Online run', shortLocal: 'Local run',
     onlineUnavailable: 'Online records are unavailable, so this is a local run. This run cannot be registered online.',
     boardNotConfigured: 'Online record database not connected · local play available', boardUnavailable: 'Online records could not be reached. Local play is available.',
     verifying: 'The server is verifying your finish…', verified: 'Server verified · the latest TOP10 is checked when you register.', notEligible: 'Server verified · not currently eligible for TOP10 registration.',
@@ -168,6 +168,8 @@ export default function SprintGame({ countries, development = false, immersive =
   const [replayTime, setReplayTime] = useState(0)
   const [replayPlaying, setReplayPlaying] = useState(false)
   const [replayRate, setReplayRate] = useState(1)
+  const [toolsOpen, setToolsOpen] = useState(false)
+  const [replayOptionsOpen, setReplayOptionsOpen] = useState(false)
   const [cheering, setCheering] = useState(false)
   const [finishSummary, setFinishSummary] = useState(null)
   const [finishedAtISO, setFinishedAtISO] = useState(null)
@@ -178,6 +180,8 @@ export default function SprintGame({ countries, development = false, immersive =
   const introRef = useRef(null)
   const startSequenceRef = useRef(0)
   const leaderboardTriggerRef = useRef(null)
+  const toolsToggleRef = useRef(null)
+  const replayOptionsRef = useRef(null)
   const recordTriggerRef = useRef(null)
   const [celebration, setCelebration] = useState(null)
   const celebrationStartedRef = useRef(null)
@@ -188,6 +192,7 @@ export default function SprintGame({ countries, development = false, immersive =
   }, [playCheer])
   const areaRef = useRef(null)
   const nameRef = useRef(null)
+  const setupRef = useRef(null)
   const raceRef = useRef(race)
   const keysRef = useRef(new Set())
   const pointersRef = useRef(new Map())
@@ -212,6 +217,11 @@ export default function SprintGame({ countries, development = false, immersive =
   const active = race.status === 'countdown' || race.status === 'running'
   const preparing = onlineRun.status === 'preparing' || startAssetsPreparing || bossIntro !== null
   const modalOpen = recordOpen || leaderboardOpen
+
+  useEffect(() => {
+    setToolsOpen(false)
+    if (!replayMode) setReplayOptionsOpen(false)
+  }, [editing, replayMode, race.status, modalOpen])
 
   // This preference only changes labels. Keyboard and pointer inputs always
   // keep the same engine, held-input state, timing and online submission.
@@ -586,7 +596,11 @@ export default function SprintGame({ countries, development = false, immersive =
     setFinishSummary(null)
     setFinishedAtISO(null)
     commit(createSprintRace())
-    requestAnimationFrame(() => nameRef.current?.focus())
+    requestAnimationFrame(() => {
+      const touchLayout = window.matchMedia('(max-width: 1000px), (pointer: coarse)').matches
+      const target = touchLayout ? setupRef.current : nameRef.current
+      target?.focus({ preventScroll: true })
+    })
   }
   function setReplayPosition(value) {
     const time = Math.max(0, Math.min(replayTimelineFor(lastRun)?.durationMs || 0, value))
@@ -732,8 +746,9 @@ export default function SprintGame({ countries, development = false, immersive =
   }
 
   function renderSetup() {
-    return <form className={styles.setup} onSubmit={submit} noValidate aria-busy={preparing}>
-      <div className={styles.setupHeading}><button type="button" className={styles.secretTrigger} disabled={preparing || modalOpen} onClick={tapSetupTitle} onKeyDown={event => { if (event.repeat && ['Enter', ' '].includes(event.key)) event.preventDefault() }}>{text.setupKicker}</button><h2>{text.setup}</h2></div>
+    return <form ref={setupRef} className={styles.setup} tabIndex={-1} aria-labelledby="runner-setup-title" onSubmit={submit} noValidate aria-busy={preparing}>
+      <div className={styles.setupBody}>
+      <div className={styles.setupHeading}><button type="button" className={styles.secretTrigger} disabled={preparing || modalOpen} onClick={tapSetupTitle} onKeyDown={event => { if (event.repeat && ['Enter', ' '].includes(event.key)) event.preventDefault() }}>{text.setupKicker}</button><h2 id="runner-setup-title">{text.setup}</h2></div>
       <p className={styles.modeNote}>{pointerControls ? text.touchSetupInstructions : text.setupInstructions}</p>
       {secretArmed && <div className={styles.secretNotice} data-art={art} role="status"><span className={styles.secretBadge} aria-hidden="true">⚡</span><p><strong>{text.secretTitle}</strong><span>{text.secretHint}</span></p><button type="button" className={styles.secretCancel} disabled={preparing || modalOpen} onClick={clearSecretCall}>{text.secretCancel}</button></div>}
       <div className={styles.setupGrid}>
@@ -743,12 +758,14 @@ export default function SprintGame({ countries, development = false, immersive =
       <fieldset className={styles.artOptions}><legend>{text.raceMode}</legend><div>{['solo','competition'].map(value => <label key={value} className={styles.artOption} data-selected={raceMode === value}><input type="radio" disabled={preparing || modalOpen} name="runner-mode" value={value} checked={raceMode === value} onChange={() => setRaceMode(value)} /><span className={styles.modeSwatch} aria-hidden="true">{value === 'solo' ? '01' : '06'}</span><span><strong>{text[value]}</strong><small>{value === 'solo' ? text.soloHint : text.competitionHint}</small></span><span className={styles.radioMark} aria-hidden="true" /></label>)}</div>{raceMode === 'competition' && <p className={styles.modeNote}>{text.competitionNote}</p>}</fieldset>
       <fieldset className={styles.artOptions}><legend>{text.appearance}</legend><div>{['realistic','pixel'].map(value => <label key={value} className={styles.artOption} data-selected={art === value}><input type="radio" disabled={preparing || modalOpen} name="runner-art" value={value} checked={art === value} onChange={() => selectArt(value)} /><span className={`${styles.artSwatch} ${value === 'pixel' ? styles.pixelSwatch : ''}`} aria-hidden="true">{value === 'pixel' ? '▟' : '◒'}</span><span><strong>{text[value]}</strong><small>{value === 'pixel' ? text.pixelHint : text.realisticHint}</small></span><span className={styles.radioMark} aria-hidden="true" /></label>)}</div>{errors.art && <p className={styles.error} role="alert">{text.artInvalid}</p>}</fieldset>
       {development && !immersive && <div className={styles.formField}><label htmlFor="sprint-boss-preview">{locale === 'ko' ? '강적 검수 · 개발 전용' : 'Boss preview · development only'}</label><select id="sprint-boss-preview" disabled={preparing || modalOpen} value={bossPreview} onChange={event => setBossPreview(event.target.value)}><option value="auto">{locale === 'ko' ? '실제 확률 · 30%' : 'Normal chance · 30%'}</option><option value="always">{locale === 'ko' ? '항상 등장 · 경쟁 모드' : 'Always appear · competition'}</option><option value="never">{locale === 'ko' ? '등장하지 않음' : 'Never appear'}</option></select></div>}
-      <div className={styles.setupBottom}><p>{text.localNote}</p><div><button className={styles.primary} type="submit" disabled={preparing || modalOpen}>{preparing ? text.preparing : `${text.start} ↗`}</button>{development && !immersive && <button className={styles.secondary} type="button" disabled={preparing || modalOpen} onClick={() => beginRace(true)}>{text.demo}</button>}</div></div>
-      <div className={styles.setupLinks}><Link href="/playground" className={styles.returnLink}>← {text.backToGames}</Link>{renderLeaderboardButton()}{renderSoundButton()}<a href="/audio/playground/sprint/CREDITS.md" target="_blank" rel="noreferrer">{text.credits} ↗</a>{development && immersive && <Link href="/playground/sprint">{text.devScreen} ↗</Link>}</div>
+      <p className={styles.modeNote}>{text.localNote}</p>
+      <div className={styles.setupLinks}>{renderLeaderboardButton()}{renderSoundButton()}<a href="/audio/playground/sprint/CREDITS.md" target="_blank" rel="noreferrer">{text.credits} ↗</a>{development && immersive && <Link href="/playground/sprint">{text.devScreen} ↗</Link>}</div>
       <p className={styles.leaveNotice}>{text.leaveNote}</p>
       {preparing && <p className={styles.onlineSetupNotice} role="status">{text.preparing}</p>}
       {startAssetError && !preparing && <p className={styles.startAssetError} role="alert">{text.startAssetError}</p>}
       {!preparing && ['unavailable', 'error'].includes(leaderboard.status) && <p className={styles.onlineSetupNotice} role="status">{leaderboard.code === 'not_configured' ? text.boardNotConfigured : text.boardUnavailable}</p>}
+      </div>
+      <div className={styles.setupBottom}><div><button className={styles.primary} type="submit" disabled={preparing || modalOpen}>{preparing ? text.preparing : `${text.start} ↗`}</button>{development && !immersive && <button className={styles.secondary} type="button" disabled={preparing || modalOpen} onClick={() => beginRace(true)}>{text.demo}</button>}</div><Link href="/playground" className={styles.returnLink}>← {text.backToGames}</Link></div>
     </form>
   }
 
@@ -772,23 +789,45 @@ export default function SprintGame({ countries, development = false, immersive =
         <button className={styles.cheerButton} type="button" disabled={startPreview} aria-label={`${pointerControls ? '' : 'Space · '}${race.status === 'finished' ? finishAction : text.cheer}`} onClick={event => { selectInputMode(event.detail === 0 ? 'keyboard' : 'pointer'); focusArea(); act('cheer') }}>{!pointerControls && <kbd>Space</kbd>} {race.status === 'finished' && finishReaction === 'defeat' ? '↘' : '✦'} {race.status === 'finished' ? finishAction : text.cheer}</button>
       </div><div className={styles.rhythm}><span>{race.status === 'finished' ? text.best : text.next}<strong>{race.status === 'finished' ? bestTime === null ? '—' : `${formatSprintTime(bestTime)}s` : nextFootHint}</strong></span><span>{text.strides}<strong data-testid="sprint-strides">{race.steps}</strong></span></div></div>
       {(pointerControls || startPreview) && <p className={styles.touchHint}>{startPreview ? text.touchStartHint : race.status === 'finished' ? finishReactionHint : race.status === 'interrupted' ? text.touchInterruptedHint : text.touchHint}</p>}
-      <div className={styles.raceActions}><div className={styles.raceStatus}><span className={styles.onlineRunNote} role="status">{isDemo ? text.demoNotice : preparing ? text.preparing : onlineRun.status === 'local' ? text.localRun : onlineRun.status === 'online' ? text.onlineRun : race.status === 'finished' ? registrationNote : ''}</span><span className={styles.connection}><i data-active={focused} />{pointerControls ? focused ? text.touchFocused : text.touchUnfocused : focused ? text.focused : text.unfocused}</span></div><div className={styles.buttonRow}>{active ? <button type="button" className={styles.textButton} onClick={interrupt}>{text.stop}</button> : <>{canRunAgain && <button className={styles.secondary} type="button" disabled={preparing || modalOpen} onClick={() => beginRace(false)}>{text.restart}</button>}<button className={styles.textButton} type="button" onClick={editPlayer}>{text.changePlayer}</button></>}</div></div>
+      <div className={styles.raceActions}><div className={styles.raceStatus}><span className={styles.shortRunNote} aria-hidden="true">{preparing ? text.preparing : isDemo ? text.demoNotice : text[onlineRun.status === 'online' ? 'shortOnline' : 'shortLocal']}</span><span className={styles.onlineRunNote} role="status">{isDemo ? text.demoNotice : preparing ? text.preparing : onlineRun.status === 'local' ? text.localRun : onlineRun.status === 'online' ? text.onlineRun : race.status === 'finished' ? registrationNote : ''}</span><span className={styles.connection}><i data-active={focused} />{pointerControls ? focused ? text.touchFocused : text.touchUnfocused : focused ? text.focused : text.unfocused}</span></div><div className={styles.buttonRow}>{active ? <button type="button" className={styles.textButton} onClick={interrupt}>{text.stop}</button> : <>{canRunAgain && <button className={styles.secondary} type="button" disabled={preparing || modalOpen} onClick={() => beginRace(false)}>{text.restart}</button>}<button className={styles.textButton} type="button" onClick={editPlayer}>{text.changePlayer}</button></>}</div></div>
       {startAssetError && !preparing && <p className={styles.startAssetError} role="alert">{text.startAssetError}</p>}
       {!immersive && <p className={styles.inputHint}>{instructions}{!pointerControls && <><br />{text.hint}</>}</p>}
     </div>
   }
 
   function renderReplayControls() {
-    return <section className={styles.replayControls} aria-label={text.replay}>
-      <div className={styles.replayToolbar}><div className={styles.buttonRow}><button type="button" className={styles.primary} onClick={() => { toggleReplay(); focusArea() }}>{replayPlaying ? `Ⅱ ${text.pause}` : `▶ ${text.play}`}</button><button type="button" className={styles.secondary} onClick={() => { setReplayPosition(0); setReplayPlaying(true); focusArea() }}>{text.replayRestart}</button></div><div className={styles.styleSwitcher} role="group" aria-label={text.replayView}>{['side','top'].map(view => <button key={view} type="button" aria-pressed={replayView === view} onClick={() => { setReplayView(view); focusArea() }}>{text[view]}</button>)}</div></div>
+    return <section className={styles.replayControls} aria-label={text.replay} onKeyDown={event => closeOptionsWithEscape(event, 'replay')}>
+      <div className={styles.replayToolbar}><button type="button" className={styles.primary} onClick={() => { toggleReplay(); focusArea() }}>{replayPlaying ? `Ⅱ ${text.pause}` : `▶ ${text.play}`}</button><div className={styles.styleSwitcher} role="group" aria-label={text.replayView}>{['side','top'].map(view => <button key={view} type="button" aria-pressed={replayView === view} onClick={() => { setReplayView(view); focusArea() }}>{text[view]}</button>)}</div><button ref={replayOptionsRef} type="button" className={styles.replayIconButton} aria-label={text.replayOptions} title={text.replayOptions} aria-expanded={replayOptionsOpen} aria-controls="sprint-replay-options" onClick={() => setReplayOptionsOpen(value => !value)}>⋯</button><button className={styles.replayExit} type="button" aria-label={text.exitReplay} title={text.exitReplay} onClick={exitReplay}><span aria-hidden="true">↩</span><span className={styles.controlLabel}>{text.exitReplay}</span></button></div>
       <div className={styles.replayMeta}><span>{text[replayPresentation?.phase === 'preparation' ? 'replayPreparation' : replayPresentation?.phase === 'finish' ? 'replayFinish' : 'replayRace']}</span><span>{text.replayRecord} <strong>{formatSprintTime(lastRun.clip.finishTimeMs)}s</strong></span></div>
       <div className={styles.seekRow}><span>{formatSprintTime(replayTime)}s</span><input type="range" min="0" max={replayTimeline.durationMs} step="1" value={replayTime} aria-label={text.replayPosition} aria-valuetext={locale === 'ko' ? `${formatSprintTime(replayTime)}초 / ${formatSprintTime(replayTimeline.durationMs)}초` : `${formatSprintTime(replayTime)} / ${formatSprintTime(replayTimeline.durationMs)} seconds`} onChange={event => { setReplayPlaying(false); setReplayPosition(Number(event.target.value)) }} /><span>{formatSprintTime(replayTimeline.durationMs)}s</span></div>
-      <div className={styles.replayBottom}><label>{text.replaySpeed}<select aria-label={text.replaySpeed} value={replayRate} onChange={event => setReplayRate(Number(event.target.value))}><option value={.5}>0.5×</option><option value={1}>1×</option></select></label><button className={styles.textButton} type="button" onClick={exitReplay}>{text.exitReplay} ↗</button></div>{!immersive && <p>{text.replayNote}</p>}
+      <div id="sprint-replay-options" className={styles.replayBottom} hidden={!replayOptionsOpen}><label>{text.replaySpeed}<select aria-label={text.replaySpeed} value={replayRate} onChange={event => setReplayRate(Number(event.target.value))}><option value={.5}>0.5×</option><option value={1}>1×</option></select></label><button type="button" className={styles.secondary} onClick={() => { setReplayPosition(0); setReplayPlaying(true); focusArea() }}>{text.replayRestart}</button></div>{!immersive && <p>{text.replayNote}</p>}
     </section>
   }
 
   function closeRecordPreview() { setRecordOpen(false); requestAnimationFrame(() => recordTriggerRef.current?.isConnected && !recordTriggerRef.current.disabled ? recordTriggerRef.current.focus({ preventScroll: true }) : focusArea()) }
-  function closeLeaderboard() { setLeaderboardOpen(false); requestAnimationFrame(() => leaderboardTriggerRef.current?.isConnected ? leaderboardTriggerRef.current.focus({ preventScroll: true }) : editing ? nameRef.current?.focus() : focusArea()) }
+  function closeLeaderboard() {
+    setLeaderboardOpen(false)
+    requestAnimationFrame(() => {
+      const trigger = leaderboardTriggerRef.current
+      if (trigger?.isConnected && trigger.getClientRects().length) trigger.focus({ preventScroll: true })
+      else if (toolsToggleRef.current?.getClientRects().length) toolsToggleRef.current.focus({ preventScroll: true })
+      else if (editing) setupRef.current?.focus({ preventScroll: true })
+      else focusArea()
+    })
+  }
+
+  function closeOptionsWithEscape(event, kind) {
+    if (event.key !== 'Escape') return
+    event.preventDefault()
+    event.stopPropagation()
+    if (kind === 'replay') {
+      setReplayOptionsOpen(false)
+      replayOptionsRef.current?.focus({ preventScroll: true })
+    } else {
+      setToolsOpen(false)
+      toolsToggleRef.current?.focus({ preventScroll: true })
+    }
+  }
   function gameBlur(event) {
     if (event.currentTarget.contains(event.relatedTarget)) return
     // A disabled setup control losing focus is an internal preparation change.
@@ -817,22 +856,27 @@ export default function SprintGame({ countries, development = false, immersive =
           style={{ '--sprint-camera-position': `${getSprintTrackFrame(displayedRace.distance, replayMode ? replayView : 'side').runnerX / SPRINT_TRACK.WIDTH * 100}%` }}
           onFocus={event => { if(event.target === event.currentTarget) setFocused(true) }} onBlur={event => { if(event.target === event.currentTarget) { clearInputs(); setFocused(false) } }}
           onKeyDown={keyDown} onKeyUp={keyUp} onPointerDown={event => { if (!editing && !modalOpen && !preparing && !event.target.closest('button,input,select,a,textarea,label')) focusArea() }}>
+          {(!editing || !immersive) && <div className={immersive ? styles.stageHeader : undefined}><SprintHUD immersive={immersive} race={displayedRace} art={art} locale={locale} playerName={displayedPlayer?.name} playerCountryLabel={nationality?.label} replayMode={replayMode} nextFoot={nextFoot} focused={focused} inputMode={inputMode} competition={competition} />
+          {immersive && !editing && <div className={styles.stageTools} data-open={toolsOpen} onKeyDown={event => closeOptionsWithEscape(event, 'game')}><button ref={toolsToggleRef} type="button" className={styles.toolsToggle} aria-label={text.gameOptions} title={text.gameOptions} aria-expanded={toolsOpen} aria-controls="sprint-game-options" onClick={() => setToolsOpen(value => !value)}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2" fill="currentColor"/><circle cx="15" cy="12" r="2" fill="currentColor"/><circle cx="9" cy="18" r="2" fill="currentColor"/></svg></button><div id="sprint-game-options" className={styles.stageToolOptions}>{renderLeaderboardButton()}{renderStyleSwitch()}{renderSoundButton()}{development && <Link href="/playground/sprint">{text.devScreen} ↗</Link>}</div></div>}</div>}
+          <div className={styles.sceneViewport}>
           <SprintScene race={displayedRace} view={replayMode ? replayView : 'side'} art={art} locale={locale} className={styles.canvas} fit={immersive ? 'cover' : 'natural'} celebration={replayMode ? null : celebration} raceMode={displayedMode} rivalSeed={displayedSeed} bossEncounter={displayedBoss} bossVictoryExtraMs={displayedBossExtraMs} />
-          {(!editing || !immersive) && <SprintHUD race={displayedRace} art={art} locale={locale} playerName={displayedPlayer?.name} playerCountryLabel={nationality?.label} replayMode={replayMode} nextFoot={nextFoot} focused={focused} inputMode={inputMode} competition={competition} />}
-          {immersive && !editing && <div className={styles.stageTools}>{renderLeaderboardButton()}{renderStyleSwitch()}{renderSoundButton()}{development && <Link href="/playground/sprint">{text.devScreen} ↗</Link>}</div>}
           {immersive && editing && <div className={styles.setupOverlay}>{renderSetup()}</div>}
           {bossIntro && <SprintBossIntro art={art} locale={locale} elapsedMs={bossIntro.elapsedMs} durationMs={SPRINT_BOSS.introDurationMs} />}
           {!editing && !bossIntro && !modalOpen && <SprintBossWinCue art={art} locale={locale} bossState={bossState} />}
           {startSignal && <div className={styles.countdown} data-art={art} data-phase={startSample.phase} data-signal={startSignal === 'GO' ? 'go' : 'marks'} data-testid="sprint-start-signal" aria-hidden="true">{startSignal !== 'GO' && <span>{startSignal}</span>}<strong key={startSample.count || startSignal}>{startSignal === 'GO' ? 'GO!' : startSample.count}</strong></div>}
           {cheering && !replayMode && !celebrating && <div className={styles.cheerOverlay} aria-hidden="true">✦ {text.cheerMessage} ✦</div>}
           {celebrating && <div className={styles.celebrationLabel} data-reaction={celebration.kind || 'victory'} aria-hidden="true">{celebration.kind === 'defeat' ? text.defeatMessage : `✦ ${text.celebrate} ✦`}</div>}
+          </div>
           {race.status === 'finished' && !editing && !replayMode && finishSummary && !modalOpen && !celebrating && !bossState?.celebrating && <div className={styles.resultOverlay}>
             <section className={styles.finishCard} data-art={art} aria-label={text.finished}>
-              <SprintFinish art={art} locale={locale} kind={finishSummary.kind} timeMs={race.finishTimeMs} improvementMs={finishSummary.improvementMs} playerName={player?.name} competition={getSprintCompetitionStanding(race, runMode, runSeed, runBoss)} />
+              <div className={styles.finishBody}>
+              <SprintFinish immersive={immersive} art={art} locale={locale} kind={finishSummary.kind} timeMs={race.finishTimeMs} improvementMs={finishSummary.improvementMs} playerName={player?.name} competition={getSprintCompetitionStanding(race, runMode, runSeed, runBoss)} />
               {registration.status === 'registered' && <SprintWorldRecord worldRecord={registration.worldRecord} visualStyle={art} locale={locale} compact />}
-              <div className={styles.finishActions}>{lastRun && <button className={styles.primary} type="button" disabled={preparing} onClick={beginReplay}>↺ {text.replay}</button>}{!isDemo && renderRecordButton()}{canRunAgain && <button className={styles.secondary} type="button" disabled={preparing || modalOpen} onClick={() => beginRace(false)}>{text.restart} ↗</button>}{isDemo && <button className={styles.secondary} type="button" onClick={editPlayer}>{text.changePlayer}</button>}<Link href="/playground" className={styles.secondary}>← {text.backToGames}</Link></div>
               <p className={styles.finishHint}>{finishReactionHint}</p>{!isDemo && <><p className={styles.registrationNote} role="status">{registrationNote}</p>{onlineRun.status === 'verification_error' && <button type="button" className={styles.verificationRetry} onClick={retryVerification}>{text.retryVerification}</button>}</>}{replayError && <p className={styles.error} role="alert">{text.replayError}</p>}
               <p className={styles.leaveNotice}>{text.leaveNote}</p>
+              <Link href="/playground" className={styles.returnLink}>← {text.backToGames}</Link>
+              </div>
+              <div className={styles.finishActions}>{lastRun && <button className={styles.primary} type="button" disabled={preparing} onClick={beginReplay}>↺ {text.replay}</button>}{!isDemo && renderRecordButton()}{canRunAgain && <button className={styles.secondary} type="button" disabled={preparing || modalOpen} onClick={() => beginRace(false)}>{text.restart} ↗</button>}<button className={styles.secondary} type="button" onClick={editPlayer}>{text.changePlayer}</button></div>
             </section>
           </div>}
           {leaderboardOpen && <SprintLeaderboard leaderboard={leaderboard} countries={countries} locale={locale} art={art} onClose={closeLeaderboard} onRefresh={refreshLeaderboard} />}

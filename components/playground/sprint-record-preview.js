@@ -92,7 +92,11 @@ export default function SprintRecordPreview({ player, finishTimeMs, finishedAtIS
 
   useEffect(() => {
     if (terminal) return
-    const target = nameRef.current && !nameRef.current.disabled ? nameRef.current : dialogRef.current
+    const touchLayout = window.matchMedia?.('(max-width: 1000px), (pointer: coarse)')?.matches
+    const input = nameRef.current
+    // Keep the result readable without opening a mobile keyboard just to
+    // review a name that was already entered before the race.
+    const target = !touchLayout && input && !input.disabled && !input.value.trim() ? input : dialogRef.current
     target?.focus({ preventScroll: true })
   }, [])
   useEffect(() => () => clearTimeout(nameSubmitGuardTimerRef.current), [])
@@ -192,12 +196,13 @@ export default function SprintRecordPreview({ player, finishTimeMs, finishedAtIS
   return <div className={styles.backdrop} onPointerDown={event => event.stopPropagation()} onClick={event => event.stopPropagation()} onKeyDown={keyDown} onKeyUp={event => event.stopPropagation()}>
     <section ref={dialogRef} className={styles.dialog} data-art={art} role="dialog" aria-modal="true" aria-labelledby={`${id}-title`} aria-describedby={terminal ? undefined : `${id}-notice`} tabIndex={-1}>
       <header className={styles.header}><div><p className={styles.eyebrow}>{text.eyebrow}</p><h2 id={`${id}-title`}>{registered ? text.doneTitle : terminal || excluded ? text.resultTitle : online ? text.onlineTitle : text.title}</h2></div><button type="button" className={styles.closeIcon} aria-label={text.close} onClick={onClose}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg></button></header>
+      <div className={styles.body}>
       {!terminal && <div className={styles.notice} data-excluded={excluded} id={`${id}-notice`}><strong>{exclusionNotice ? exclusionNotice.title : online ? text.online : onlineRun ? text.localOnly : text.disconnected}</strong><p>{exclusionNotice ? exclusionNotice.description : online ? text.onlineNotice : onlineRun?.attemptId ? text[onlineRun.status === 'verifying' ? 'verifying' : onlineRun.status === 'verification_error' ? 'verifyError' : 'notEligible'] : onlineRun ? text.localNotice : text.notice}</p>{online && <p>{text.publicNote}</p>}{online && <p>{text.privacyNote}</p>}{onlineRun?.status === 'verification_error' && <button className={styles.retry} type="button" onClick={retryVerification}>{text.retryVerify}</button>}</div>}
       {!terminal && excluded && <section className={styles.eligibility} data-testid="sprint-record-excluded" aria-label={text.resultTitle}>
         <dl><div><dt>{text.time}</dt><dd>{timeText}</dd></div>{exclusionNotice?.personalBestTimeCs != null && <div><dt>{text.personalBest}</dt><dd>{formatSprintTime(exclusionNotice.personalBestTimeCs * 10)}s</dd></div>}</dl>
         <p>{exclusionNotice?.policy}</p>
       </section>}
-      {!terminal && !excluded && <form onSubmit={submit} noValidate aria-busy={busy} data-testid="sprint-record-registration">
+      {!terminal && !excluded && <form id={`${id}-form`} onSubmit={submit} noValidate aria-busy={busy} data-testid="sprint-record-registration">
         <div className={styles.fields}>
           <div className={styles.field}><label htmlFor={`${id}-name`}>{text.name}<span>{[...name.normalize('NFC')].length}/{SPRINT_PLAYER_NAME_LIMIT}</span></label><input id={`${id}-name`} ref={nameRef} value={name} disabled={locked} autoComplete="off" aria-required="true" aria-invalid={!!nameError} aria-describedby={`${id}-name-hint${nameError ? ` ${id}-name-error` : ''}`} onKeyDown={nameKeyDown} onCompositionStart={() => { nameComposingRef.current = true }} onCompositionEnd={() => { nameComposingRef.current = false; guardComposingSubmit() }} onChange={event => { setName(event.target.value); setRecord(null); setErrors(previous => ({ ...previous, name: undefined })) }} /><small id={`${id}-name-hint`}>{text.nameHint}</small>{nameError && <p className={styles.error} id={`${id}-name-error`} role="alert">{nameError}</p>}</div>
           <div className={styles.field}><label htmlFor={`${id}-country`}>{text.country}</label><select id={`${id}-country`} ref={countryRef} value={countryCode} disabled={locked} aria-required="true" aria-invalid={!!countryError} aria-describedby={countryError ? `${id}-country-error` : undefined} onChange={event => { setCountryCode(event.target.value); setRecord(null); setErrors(previous => ({ ...previous, countryCode: undefined })) }}>{countries.map(country => <option key={country.code} value={country.code}>{country.flag} {country.label}</option>)}</select>{countryError && <p className={styles.error} id={`${id}-country-error`} role="alert">{countryError}</p>}</div>
@@ -205,7 +210,6 @@ export default function SprintRecordPreview({ player, finishTimeMs, finishedAtIS
         <div className={styles.readOnly} data-online={online} aria-describedby={`${id}-fixed-note`}><div className={styles.field}><label htmlFor={`${id}-time`}>{text.time}</label><input id={`${id}-time`} readOnly value={timeText} /></div>{!online && <div className={styles.field}><label htmlFor={`${id}-date`}>{text.localDate}</label><input id={`${id}-date`} readOnly value={dateText} /></div>}</div>
         <p className={styles.fixedNote} id={`${id}-fixed-note`}>{verified ? text.onlineFixed : text.readOnly}</p>
         {runError && <p ref={alertRef} className={styles.error} role="alert" tabIndex={-1}>{text.invalidRun}</p>}
-        {(online || !locked) && <button type="submit" className={styles.confirm} data-testid="sprint-record-submit" disabled={busy || onlineRun?.status === 'verifying'}>{online ? text[busy ? 'saving' : registration.status === 'error' || submissionError ? 'retry' : 'save'] : text.confirm} <span aria-hidden="true">↗</span></button>}
       </form>}
       {!online && !excluded && !terminal && record && <section ref={summaryRef} className={styles.summary} tabIndex={-1} aria-labelledby={`${id}-summary`}><h3 id={`${id}-summary`}>{text.summary}</h3><p role="status">{text.ready}</p><dl><div><dt>{text.name}</dt><dd>{record.playerName}</dd></div><div><dt>{text.country}</dt><dd>{nationality ? `${nationality.flag} ${nationality.label}` : record.countryCode}</dd></div><div><dt>{text.time}</dt><dd>{formatSprintTime(visibleTimeMs)}s</dd></div><div><dt>{text.localDate}</dt><dd><time dateTime={record.finishedAtISO}>{localFinishDate(record.finishedAtISO, locale)}</time></dd></div></dl></section>}
       {(registration.status === 'error' || submissionError) && !terminal && <p className={styles.error} role="alert">{text.failed}</p>}
@@ -214,7 +218,12 @@ export default function SprintRecordPreview({ player, finishTimeMs, finishedAtIS
         {!specialOutcome && <p className={styles.outcome} role="status">{text.done}</p>}
         <dl className={styles.resultDetails}><div><dt>{text.rank}</dt><dd>{registration.record?.rank}</dd></div><div><dt>{text.time}</dt><dd>{Number.isSafeInteger(registration.record?.timeCs) ? `${formatSprintTime(registration.record.timeCs * 10)}s` : '—'}</dd></div><div><dt>{text.registeredDate}</dt><dd>{registration.record?.recordedAt ? <time dateTime={registration.record.recordedAt}>{localFinishDate(registration.record.recordedAt, locale)}</time> : '—'}</dd></div></dl>
       </div> : terminal && <p ref={outcomeRef} tabIndex={-1} className={styles.outcome} role="status">{registration.status === 'not_improved' && exclusionNotice ? `${exclusionNotice.description} ${exclusionNotice.policy}` : text[registration.status === 'not_qualified' ? 'lost' : 'notImproved']}</p>}
-      <footer className={styles.footer}>{!terminal && !online && !excluded && <button type="button" className={styles.unavailable} disabled>{onlineRun ? onlineRun.status === 'verifying' ? text.verifying : text.notAvailable : text.disabled}</button>}<button type="button" className={styles.closeButton} onClick={onClose}>{text.close}</button></footer>
+      {!terminal && !online && !excluded && <p className={styles.unavailable}>{onlineRun ? onlineRun.status === 'verifying' ? text.verifying : text.notAvailable : text.disabled}</p>}
+      </div>
+      <footer className={styles.footer}>
+        {!terminal && !excluded && (online || !locked) && <button type="submit" form={`${id}-form`} className={styles.confirm} data-testid="sprint-record-submit" disabled={busy || onlineRun?.status === 'verifying'}>{online ? text[busy ? 'saving' : registration.status === 'error' || submissionError ? 'retry' : 'save'] : text.confirm} <span aria-hidden="true">↗</span></button>}
+        <button type="button" className={styles.closeButton} onClick={onClose}>{text.close}</button>
+      </footer>
     </section>
   </div>
 }

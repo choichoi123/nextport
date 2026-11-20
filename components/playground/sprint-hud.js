@@ -78,7 +78,7 @@ function validCompetition(competition) {
     && Number.isInteger(competition.position) && competition.position >= 1 && competition.position <= competition.total
 }
 
-export default function SprintHUD({ race, art, locale = 'ko', playerName, playerCountryLabel, replayMode = false, nextFoot, focused = false, inputMode = 'keyboard', competition = null }) {
+export default function SprintHUD({ race, art, locale = 'ko', playerName, playerCountryLabel, replayMode = false, nextFoot, focused = false, inputMode = 'keyboard', competition = null, immersive = false }) {
   const text = copy[locale === 'en' ? 'en' : 'ko']
   const pixel = art === 'pixel'
   const distance = Number.isFinite(race.distance) ? Math.max(0, Math.min(100, race.distance)) : 0
@@ -97,7 +97,7 @@ export default function SprintHUD({ race, art, locale = 'ko', playerName, player
   const gap = showCompetition && Number.isFinite(competition.leaderGapMeters) ? Math.max(0, competition.leaderGapMeters).toFixed(1) : null
 
   return (
-    <div className={`${styles.hud} ${pixel ? styles.pixel : styles.realistic}`} data-art={pixel ? 'pixel' : 'realistic'}>
+    <div className={`${styles.hud} ${pixel ? styles.pixel : styles.realistic}`} data-art={pixel ? 'pixel' : 'realistic'} data-layout={immersive ? 'play' : undefined}>
       <div className={styles.topRow}>
         <div className={`${styles.panel} ${styles.clockPanel}`}>
           <div className={styles.panelHeading}><span className={styles.metricLabel}>{!pixel && <TimerMark />}{text.time}</span><span className={styles.raceType}>100M</span></div>
@@ -108,6 +108,10 @@ export default function SprintHUD({ race, art, locale = 'ko', playerName, player
           <Measure pixel={pixel} value={distance.toFixed(1)} unit="m" testId="sprint-distance" className={styles.distance} />
           <div className={styles.progress} aria-hidden="true"><span style={{ width: `${distance}%` }} /></div>
         </div>
+        {immersive && <div className={styles.compactState} title={showCompetition ? text.competition.separate : undefined}>
+          <span>{status}</span>
+          {showCompetition && <strong>{waiting ? locale === 'en' ? `${competition.total - 1} rivals` : `가상 ${competition.total - 1}명` : rank}</strong>}
+        </div>}
       </div>
       <div className={styles.metaRow}>
         <div className={styles.player}><span className={styles.playerNumber} aria-hidden="true">01</span><strong>{name}</strong>{playerCountryLabel && <span className={styles.country}>{playerCountryLabel}</span>}</div>
@@ -129,14 +133,14 @@ function Laurel() {
   return <svg className={styles.laurel} viewBox="0 0 120 76" fill="none" aria-hidden="true"><path d="M45 64C18 55 17 25 35 11M75 64c27-9 28-39 10-53" stroke="currentColor" strokeWidth="1.2" /><path d="M30 48c-11 0-12-7-12-7 8-1 12 7 12 7Zm-4-12c-10-3-9-10-9-10 8 2 9 10 9 10Zm2-12c-8-6-5-12-5-12 7 4 5 12 5 12Zm9 32c-2-9 4-12 4-12 4 7-4 12-4 12Zm-9-12c1-9 7-10 7-10 2 8-7 10-7 10Zm0-14c4-8 10-7 10-7-1 8-10 7-10 7Zm62 18c11 0 12-7 12-7-8-1-12 7-12 7Zm4-12c10-3 9-10 9-10-8 2-9 10-9 10Zm-2-12c8-6 5-12 5-12-7 4-5 12-5 12Zm-9 32c2-9-4-12-4-12-4 7 4 12 4 12Zm9-12c-1-9-7-10-7-10-2 8 7 10 7 10Zm0-14c-4-8-10-7-10-7 1 8 10 7 10 7Z" fill="currentColor" /><path d="m60 20 3.2 7.2 7.8.8-5.8 5.3 1.6 7.7-6.8-4-6.8 4 1.6-7.7-5.8-5.3 7.8-.8L60 20Z" fill="currentColor" /></svg>
 }
 
-export function SprintFinish({ art, locale = 'ko', kind = 'finish', timeMs, improvementMs, playerName, competition = null }) {
+export function SprintFinish({ art, locale = 'ko', kind = 'finish', timeMs, improvementMs, playerName, competition = null, immersive = false }) {
   const text = copy[locale === 'en' ? 'en' : 'ko']
   const pixel = art === 'pixel'
   const title = text.kinds[kind] || text.kinds.finish
   const name = Array.from(playerName || text.player).slice(0, 16).join('')
 
   return (
-    <div className={`${styles.finish} ${pixel ? styles.pixel : styles.realistic}`} data-testid="sprint-finish" data-kind={kind}>
+    <div className={`${styles.finish} ${pixel ? styles.pixel : styles.realistic}`} data-testid="sprint-finish" data-kind={kind} data-layout={immersive ? 'play' : undefined}>
       {pixel ? <div className={styles.chequered} aria-hidden="true" /> : <Laurel />}
       <p className={styles.finishWord}>{pixel ? <><span className={styles.srOnly}>FINISH</span><PixelType value="FINISH" /></> : 'FINISH'}</p>
       <p className={styles.finishKind}>{title}</p>
