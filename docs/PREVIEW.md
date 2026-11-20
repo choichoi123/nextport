@@ -187,13 +187,35 @@ activeImage: 'deep-green', // 'deep-green' 또는 'light'
 - Vercel에서는 플랫폼의 `x-vercel-forwarded-for` 단일 IP만 검증해 사용합니다. 로컬에서는 socket 주소를 사용하므로 로컬 검증값은 방문자의 공인 IP가 아닙니다. 값이 없거나 불명확하면 IP를 저장하지 않으며, 요청 본문이나 일반 전달 헤더로 IP를 지정할 수 없습니다. 같은 등록의 재시도는 기존 IP와 만료 시각을 유지합니다.
 - DB 소유자는 기본 설치 → [IP 보관 마이그레이션](../db/migrations/20261118-sprint-registration-ips.sql) → [역대 최고 마이그레이션](../db/migrations/20261118-sprint-world-records.sql) 순서로 실행합니다. 기본 파일이나 앞 단계만 다시 실행했다면 마지막 단계까지 순서대로 재적용해야 최종 등록 함수가 유지됩니다. 기존 순위는 유지하며 과거 IP를 추정해 채우지 않습니다. 앱 역할은 등록·정리 RPC만 실행하며 IP 테이블·관리자 뷰를 직접 읽을 수 없습니다.
 - IP는 등록 시점부터 **30일** 뒤 만료됩니다. 순위 탈락·기록 삭제 때는 더 일찍 삭제합니다. 개인 최고 갱신은 새 등록의 IP·기간으로 교체합니다. 만료 즉시 관리자 뷰에서 제외하고, 물리 삭제는 매일 정리 작업이 실행될 때 이루어집니다. 정기 실행의 지연·실패는 별도 관리 대상이며 정확히 30일 시점의 물리 삭제를 보장하는 방식은 아닙니다.
-- `vercel.json`은 매일 **00:00 UTC(09:00 KST)**에 `GET /api/playground/sprint/maintenance`를 호출하도록 설정합니다. 운영에 별도의 무작위 **32바이트 이상 `CRON_SECRET`**을 서버 환경변수로 넣고 배포해야 활성화됩니다. Vercel이 보내는 정확한 Bearer 인증이 필요하며 서명 비밀을 재사용하거나 `NEXT_PUBLIC_`로 공개하지 않습니다. 순위 기능을 비활성화해도 정리는 독립적으로 작동하며 성공 응답에는 상태와 삭제 건수만 있습니다. 운영 Cron 실행 여부는 Vercel 실행 기록에서 확인합니다. [Vercel의 Cron 보안·실행 안내](https://vercel.com/docs/schedules/cron-jobs/manage-cron-jobs)
+- `vercel.json`은 매일 **00:00 UTC(09:00 KST)**에 `GET /api/playground/sprint/maintenance`를 호출하도록 설정합니다. 운영에 별도의 무작위 **32바이트 이상 `CRON_SECRET`**을 서버 환경변수로 넣고 배포해야 활성화됩니다. Vercel이 보내는 정확한 Bearer 인증이 필요하며 서명 비밀을 재사용하거나 `NEXT_PUBLIC_`로 공개하지 않습니다. 순위 기능을 비활성화해도 정리는 독립적으로 작동하며 성공 응답에는 상태와 삭제 건수만 있습니다. 운영 Cron의 자동 트리거는 Vercel 실행 기록으로, DB에서 완료한 정리 결과는 아래 비공개 이력으로 구분해 확인합니다. [Vercel의 Cron 보안·실행 안내](https://vercel.com/docs/schedules/cron-jobs/manage-cron-jobs)
 - 관리자 확인은 Neon SQL Editor에서 **기존 DB 소유자 권한**으로 아래 뷰를 읽습니다. 별도 공개 관리자 API는 만들지 않습니다. 조회 결과·내보내기·캡처를 공개 자료나 Git에 넣지 않으며, 필요 시 원본 대신 최소한의 비식별 처리 결과만 기록합니다. IP는 NAT·VPN·공유망 때문에 사람을 단정하는 근거가 아닙니다.
 
 ```sql
 SELECT player_name, country_code, time_cs, recorded_at, registration_ip, expires_at
 FROM sprint_private.sprint_registration_ip_admin
 ORDER BY recorded_at DESC;
+```
+
+#### Cron 비공개 실행 이력
+
+- DB 소유자가 [실행 이력 마이그레이션](../db/migrations/20261120-sprint-maintenance-history.sql)을 IP 보관 마이그레이션 이후에 적용하면 기존 정리 RPC가 `sprint_private.sprint_ip_cleanup_runs`에 **`executed_at`·`succeeded`·`deleted_count` 세 항목만** 저장합니다. 시각은 요청값 대신 DB 실행 시작 시각(시간대 포함)이며 성공 건수0도 정상입니다. 실패 건수는 확정할 수 없어 `NULL`입니다. IP·토큰·요청 헤더·URL·예외 내용·방문자 식별자를 이력에 저장하지 않습니다.
+- 기존 설치의 등록·역대 최고·v2·완주 판정 마이그레이션 순서는 유지하고 이 마이그레이션을 마지막에 적용합니다. 앞선 IP 보관 SQL을 다시 실행하면 정리 함수도 이전 본문으로 교체되므로 실행 이력 SQL까지 재적용합니다. 이력 SQL은 재적용해도 기존 순위·역대 최고·시도·IP 만료 정책·저장된 이력을 삭제하지 않습니다. 새 환경변수나 연결 문자열 변경은 필요하지 않습니다.
+- 만료 IP 삭제와 성공 이력 저장은 **같은 DB 트랜잭션**입니다. 삭제 오류는 해당 삭제를 롤백하고 실패 이력만 남기며 API는503을 반환합니다. 이력 저장 자체가 실패하면 삭제까지 롤백하여 이력 없는 삭제를 성공으로 표시하지 않습니다. 무인증·잘못된 메서드·설정 오류는 DB 호출 전에 거절되므로 이력을 만들지 않습니다. DB 연결 단절·요청 취소·프로세스 종료처럼 트랜잭션이 완료되지 않은 실패는 같은 DB에 남길 수 없으므로 Vercel 로그와 함께 확인합니다.
+- 이력은 DB 소유자만 조회하며 `PUBLIC`·`sprint_runtime`의 직접 조회·쓰기를 허용하지 않습니다. 별도 공개 관리자 API나 화면은 없습니다. 인증된 수동 정리도 같은 이력을 남기므로 세 항목만으로 자동/수동 출처를 식별하지 않습니다. 과거 실행을 소급 생성하지 않으며 실제 운영 적용 여부는 [현재 상태](CURRENT_STATE.md)를 확인합니다.
+
+```sql
+SELECT executed_at, succeeded, deleted_count
+FROM sprint_private.sprint_ip_cleanup_runs
+ORDER BY executed_at DESC
+LIMIT 30;
+```
+
+로컬 SQL 검증은 운영 접속 없이 메모리 PostgreSQL인 PGlite를 별도 검증 폴더에 준비한 뒤 아래처럼 실행합니다. `PGLITE_MODULE_PATH`는 설치된 패키지의 모듈 진입 파일이며 URL·DB 연결 문자열을 넣는 값이 아닙니다. 루트의 package·lock·설치와 로컬 빈 연동 설정은 유지합니다.
+
+```powershell
+$env:PGLITE_MODULE_PATH = 'C:/path/to/isolated/node_modules/@electric-sql/pglite/dist/index.js'
+node scripts/verify-sprint-maintenance-history.mjs
+Remove-Item Env:PGLITE_MODULE_PATH
 ```
 
 #### 역대 전체 1위 확정과 등록 연출

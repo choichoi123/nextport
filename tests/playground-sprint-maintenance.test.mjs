@@ -123,10 +123,23 @@ test('request scope, body and client time cannot alter the zero-argument purge',
 test('successful maintenance exposes only status and a validated deletion count', async () => {
   const res = await invoke(request(), { store: { purgeRegistrationIps: async () => ({
     status: 'ok', deletedCount: 3, ips: ['private-address'], sql: 'private-sql', token: 'private-token',
+    executed_at: '2026-11-20T00:00:00Z', succeeded: true,
   }) } })
   assert.equal(res.statusCode, 200)
   assert.deepEqual(res.body, { status: 'ok', deletedCount: 3 })
   assert.deepEqual(Object.keys(res.body), ['status', 'deletedCount'])
+})
+
+test('a recorded SQL cleanup failure returns 503 without retrying or exposing history', async () => {
+  let calls = 0
+  const res = await invoke(request(), { store: { purgeRegistrationIps: async () => {
+    calls++
+    return { status: 'unavailable', deletedCount: null,
+      executed_at: '2026-11-20T00:00:00Z', succeeded: false }
+  } } })
+  assert.equal(calls, 1)
+  assert.equal(res.statusCode, 503)
+  assert.deepEqual(res.body, { status: 'unavailable', code: 'maintenance_unavailable' })
 })
 
 test('malformed RPC results fail closed and never leak SQL data or IPs', async () => {
