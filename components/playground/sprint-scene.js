@@ -10,6 +10,7 @@ import { getSprintReactionSample, drawSprintReactionSprite, drawSprintDefeatFall
 import { getSprintFinishReaction } from '@/lib/playground-sprint-finish-reaction.mjs'
 import { getSprintSceneFamilyKey, loadSprintSceneFamily, selectSprintSceneFamily } from '@/lib/playground-sprint-scene-assets.mjs'
 import { getSprintStartSpriteSample, drawSprintStartSprite } from '@/lib/playground-sprint-start-sprites.mjs'
+import { getSprintViewportCamera } from '@/lib/playground-sprint-viewport.mjs'
 
 const WIDTH = SPRINT_TRACK.WIDTH
 const HEIGHT = SPRINT_TRACK.HEIGHT
@@ -51,7 +52,9 @@ function assetNotice(ctx, canvas, fit, text, centered = false) {
   const available = Math.max(100, visibleWidth - 24 / scale)
   const font = Math.min((centered ? 18 : 14) / scale, available / (text.length * .57))
   const width = Math.min(available, text.length * font * .57 + 24 / scale)
-  const y = centered ? HEIGHT / 2 : (HEIGHT + visibleHeight) / 2 - 26 / scale
+  const storedCropTop = Number(canvas.dataset.viewportCropTop)
+  const cropTop = canvas.dataset.viewportCropTop !== undefined && Number.isFinite(storedCropTop) ? storedCropTop : (HEIGHT - visibleHeight) / 2
+  const y = centered ? cropTop + visibleHeight / 2 : cropTop + visibleHeight - 26 / scale
   if (!centered) rect(ctx, (WIDTH - width) / 2, y - 16 / scale, width, 32 / scale, 'rgba(10,30,25,.9)')
   label(ctx, text, WIDTH / 2, y + font * .33, font, '#f5f4e9', 'center')
 }
@@ -723,11 +726,25 @@ export default function SprintScene({ race, view, art, locale = 'ko', className,
     offscreen.height = 125
     offscreenRef.current = offscreen
     const background = {}
+    let viewportBox = { width: 0, height: 0 }
     let disposed = false
     const redraw = () => {
       if (disposed) return
       const latest = currentRef.current
       const family = familyRef.current
+      if (fit === 'cover') {
+        const renderedView = family?.view || latest.view
+        const track = getSprintTrackFrame(latest.race.distance, renderedView)
+        const boss = getSprintBossState(latest.race, latest.raceMode, latest.rivalSeed, latest.bossEncounter)
+        const bossX = boss ? track.startX + boss.distance * track.metersToPixels : -1
+        const bossLane = boss?.won && bossX >= 0 && bossX <= WIDTH ? getSprintRivalLane(boss.lane, renderedView) : null
+        const focusY = bossLane === null ? track.runnerY : track.top + (bossLane + .5) * track.laneHeight
+        const camera = getSprintViewportCamera({ ...viewportBox, view: renderedView, focusY })
+        const position = `${camera.objectPositionY}%`
+        if (canvas.style.getPropertyValue('--sprint-camera-y') !== position) canvas.style.setProperty('--sprint-camera-y', position)
+        canvas.dataset.viewportCropTop = String(camera.cropTop)
+        canvas.dataset.viewportVisibleHeight = String(camera.visibleHeight)
+      }
       if (family) {
         const status = drawScene(canvas, offscreen, latest.race, family.view, family.art,
           family.background.image, family.sprite, family.runSprite, background, latest.celebration,
@@ -779,6 +796,7 @@ export default function SprintScene({ race, view, art, locale = 'ko', className,
     redrawRef.current = redraw
     const resize = () => {
       const box = canvas.getBoundingClientRect()
+      viewportBox = { width: box.width, height: box.height }
       const width = fit === 'cover' ? Math.max(box.width, box.height * WIDTH / HEIGHT) || WIDTH : box.width || WIDTH
       const ratio = Math.min(window.devicePixelRatio || 1, 2)
       canvas.width = Math.max(1, Math.min(3840, Math.round(width * ratio)))

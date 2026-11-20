@@ -14,6 +14,7 @@ import * as reactions from '../lib/playground-sprint-reactions.mjs'
 import * as finish from '../lib/playground-sprint-finish-reaction.mjs'
 import * as assets from '../lib/playground-sprint-scene-assets.mjs'
 import * as startSprites from '../lib/playground-sprint-start-sprites.mjs'
+import * as viewport from '../lib/playground-sprint-viewport.mjs'
 import { startSprintRace, advanceSprintRace, applySprintStride } from '../lib/playground-sprint.mjs'
 
 const require = createRequire(import.meta.url)
@@ -27,7 +28,7 @@ const libraries = { 'playground-sprint-pose': pose, 'playground-sprint-sprites':
   'playground-sprint-motion': motion, 'playground-sprint-track': track, 'playground-sprint-rivals': rivals,
   'playground-sprint-boss': boss, 'playground-sprint-boss-sprites': bossSprites,
   'playground-sprint-reactions': reactions, 'playground-sprint-finish-reaction': finish,
-  'playground-sprint-start-sprites': startSprites }
+  'playground-sprint-start-sprites': startSprites, 'playground-sprint-viewport': viewport }
 const drain = async () => { for (let count = 0; count < 16; count++) await Promise.resolve() }
 const artOf = src => src.includes('voxel') ? 'pixel' : 'realistic'
 const isBossSource = src => src.includes('/boss/') || src.includes('/lusain-')
@@ -75,7 +76,9 @@ function scene(cache, initial = {}) {
     set: () => true,
   })
   const context = makeContext(true)
+  const cssProperties = new Map()
   const canvas = { width: 960, height: 500, dataset: {}, attributes: {}, getContext: () => context,
+    style: { getPropertyValue: name => cssProperties.get(name) || '', setProperty: (name, value) => cssProperties.set(name, String(value)) },
     getBoundingClientRect: () => ({ width: 960, height: 500 }), setAttribute(name, value) { this.attributes[name] = value } }
   const react = {
     useRef(value) { const at = cursor++; if (!hooks[at]) hooks[at] = { current: value }; return hooks[at] },
