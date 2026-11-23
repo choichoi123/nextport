@@ -14,7 +14,8 @@ Next.js Pages Router로 만든 개인 포트폴리오입니다. 개발자 소개
 | [의존성 보안 수정](docs/DEPENDENCY_SECURITY_PLAN.md) | 치명적 경고의 수정 근거·버전 선택·검증 범위 |
 | [화면과 미리보기](docs/PREVIEW.md) | 메인·전체 목록·이전 홈·예시의 경로와 데이터 구분 |
 | [검색 결과 정비 계획](docs/drafts/SEARCH_APPEARANCE_REFRESH_PLAN.md) | 검색 문구·사이트명·파비콘·sitemap·robots의 기준과 후속 검증 |
-| [100m TOP10 DB 계획](docs/drafts/SPRINT_LEADERBOARD_DB_PLAN.md) | Neon 선택·저장 항목·순위 정책과 단계별 연결 계획 |
+| [100m 작업 재개](docs/PREVIEW.md#100m-달리기-작업-재개) | 읽기 순서·기능별 파일·실행·회귀 검증. 최신 운영 상태는 [마감·재개 기준](docs/CURRENT_STATE.md#100m-달리기-마감과-재개-기준) |
+| [100m TOP10 초기 DB 계획](docs/drafts/SPRINT_LEADERBOARD_DB_PLAN.md) | 연결 전 설계 기록. 현재 API·SQL·운영 상태는 재개 안내를 우선 |
 
 ## 기술 구성
 
