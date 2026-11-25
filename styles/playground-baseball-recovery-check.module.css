@@ -1,0 +1,9 @@
+.check { max-width:1100px; margin:0 auto; padding:24px 16px; color:var(--foreground,#17392e); }
+.check h1 { font-size:23px; font-weight:700; }
+.check p { margin:10px 0; font-size:13px; line-height:1.6; }
+.controls { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0; }
+.controls button { min-height:44px; padding:9px 13px; border:1px solid #77987e; border-radius:6px; background:#e5d8a5; color:#17392e; font:inherit; font-size:13px; cursor:pointer; }
+.controls button:disabled { opacity:.45; cursor:default; }
+.controls button:focus-visible { outline:3px solid #b87035; outline-offset:3px; }
+.field { height:clamp(320px,55vw,560px); }
+.readout { padding:15px; border:1px solid #77987e; white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; }

@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-23",
+  "mode": "built-in image_gen edit",
+  "useCase": "identity-preserve",
+  "status": "selected for local foot-placement review and gameplay; not committed or deployed",
+  "source": "/images/playground/baseball/poses/20261123/batter-follow-right-angle-v4.png",
+  "output": "right-follow-v6.png",
+  "requestedSize": {
+    "width": 1024,
+    "height": 1536
+  },
+  "transparentBackground": true,
+  "prompt": "Use case: identity-preserve. Asset type: one whole-body photorealistic baseball game sprite, a conservative local candidate edit of an approved existing pose. The single input is the EDIT TARGET. Output exactly1024x1536 portrait with a genuine transparent alpha background, the complete athlete and entire wooden bat visible.\nKeep this exact man's face, skin texture, head direction, dark-blue glossy helmet and highlights, blue jersey and every torso fold, torso twist, both shoulders/elbows/hands/gloves/grip, and entire wooden bat at their current source-pixel positions. Keep everything from the waist upward unchanged. Same camera, crop, athlete height, shoe size, lighting and photographic realism. Change only the white pants with blue piping and lower legs/feet to narrow the stride through anatomically coherent leg positioning. Keep hips fixed. No whole-body shrinking, horizontal squeezing, detached limbs, rigs or segmented compositing. Retain natural joint alignment and the trailing foot's raised heel/toe-pivot; do not flatten it to the ground. No text, labels, jersey number, sponsors, logo, watermark, floor/stadium, second bat, cartoon, plastic3D, extra/fused limbs, broken knees/ankles, fake checkerboard.\nPrimary request: preserve this exact RIGHT-HANDED FOLLOW-THROUGH/FINISH phase, with the wooden bat high at image upper-left and the blue jersey back facing camera exactly as in the target. Narrow only the lower-leg stance about18–22percent. Current lead sole at image right has heel x699/toe x921 around y1470; move this shoe inward to heel approximately640/toe850, the same ground height. Current trailing toe at image left is x194/y1511; move it inward to x270–300, the samey1511. Keep its heel high and naturally pivoted on the toe, with coherent hip/knee/ankle rotation. Keep the whole back/shoulder panel unchanged and blank for a later dynamic number. Preserve upper body, helmet, head, arms, hands and high bat position.",
+  "selection": {
+    "date": "2026-11-23",
+    "scope": "Lower-leg stance only; original16 files preserved; whole-pose support registration",
+    "review": "Viewed original and generated whole PNGs and compared on the same local ballpark. No segmented rig or body stretching. Photographic identity, slanted upper-body pose and wooden bat retained visually; not pixel-identical.",
+    "runtime": "lib/playground-baseball-animation.mjs POSE_EDITS",
+    "rollback": "Each active frame retains originalSrc."
+  }
+}

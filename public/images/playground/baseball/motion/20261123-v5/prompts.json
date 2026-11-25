@@ -1,0 +1,148 @@
+{
+  "createdAt": "2026-11-23",
+  "method": "built-in image_gen",
+  "status": "game-animation",
+  "purpose": "승인 v4 사선 준비/끝 자세를 기준으로 양타석의 연속 스윙 중간 프레임과 복귀 제작",
+  "sourcePolicy": "생성 PNG 원본을 가공하지 않고 보존. 팀색·등번호·접지 배치는 게임 Canvas에서 처리.",
+  "reusedEndpoints": [
+    "../../poses/20261123/batter-ready-right-angle-v4.png",
+    "../../poses/20261123/batter-follow-right-angle-v4.png",
+    "../../poses/20261123/batter-ready-left-angle-v4.png",
+    "../../poses/20261123/batter-follow-left-angle-v4.png"
+  ],
+  "physics": "판정 110ms 접촉·520ms 스윙 유지. 900ms까지의 마무리는 화면 표현에만 적용.",
+  "assets": [
+    {
+      "file": "right-load-v5.png",
+      "width": 1024,
+      "height": 1536,
+      "transparentBackground": true,
+      "prompt": "Use case: photorealistic-natural. Production asset: ONE high-resolution transparent full-body RIGHT-HANDED batter animation keyframe, not a sprite sheet.\nImage1 is the approved INITIAL READY stance and Image2 the approved FOLLOW-THROUGH. Preserve the same original adult Korean male, blue jersey, ivory/navy plain UNBRANDED gloves and cleats, helmet, wooden bat, camera height/lens, body scale, 1024x1536 portrait canvas and warm upper-left lighting. Fixed catcher-camera geometry: athlete occupies left batter's box, looks toward pitcher diagonally upper-right, no eye contact. Use these two reference poses as endpoints of ONE consistent continuous baseball swing. Do NOT show a new camera angle, different face or changed limbs.\nEntire helmet, both cleats, both hands and entire bat fit with clear margins. Feet remain in one batter's-box ground plane. True transparent alpha surrounds the athlete and between the limbs, NO opaque blur/gradient/floor, no drop shadow, no colored matte. Blank jersey with no lettering/number; no team logo, sponsor, shoe swoosh, watermark or brand shapes. Crisp realistic cloth and anatomy. Two hands correctly hold ONE bat. Do not copy text or draw UI. ONE isolated pose only, no montage.\nStage: EARLY LOAD, roughly 35 milliseconds after swing input, BEFORE stride or impact. Stay very close to Image1: knees flex a little more and weight coils subtly into rear RIGHT hip, hands/bat move only slightly back behind RIGHT shoulder. Lead LEFT foot unweights just a few centimeters without a high leg kick; body/torso are still mostly side-on like ready, head completely stable watching upper right. This is a small transitional load, NOT the end-of-swing pose, NOT contact and NOT a jump. Keep ready feet scale and near positions.",
+      "references": [
+        "../../poses/20261123/batter-ready-right-angle-v4.png",
+        "../../poses/20261123/batter-follow-right-angle-v4.png"
+      ]
+    },
+    {
+      "file": "right-plant-v5.png",
+      "width": 1024,
+      "height": 1536,
+      "transparentBackground": true,
+      "prompt": "Use case: photorealistic-natural. Production asset: ONE high-resolution transparent full-body RIGHT-HANDED batter animation keyframe, not a sprite sheet.\nImage1 is the approved INITIAL READY stance and Image2 the approved FOLLOW-THROUGH. Preserve the same original adult Korean male, blue jersey, ivory/navy plain UNBRANDED gloves and cleats, helmet, wooden bat, camera height/lens, body scale, 1024x1536 portrait canvas and warm upper-left lighting. Fixed catcher-camera geometry: athlete occupies left batter's box, looks toward pitcher diagonally upper-right, no eye contact. Use these two reference poses as endpoints of ONE consistent continuous baseball swing. Do NOT show a new camera angle, different face or changed limbs.\nEntire helmet, both cleats, both hands and entire bat fit with clear margins. Feet remain in one batter's-box ground plane. True transparent alpha surrounds the athlete and between the limbs, NO opaque blur/gradient/floor, no drop shadow, no colored matte. Blank jersey with no lettering/number; no team logo, sponsor, shoe swoosh, watermark or brand shapes. Crisp realistic cloth and anatomy. Two hands correctly hold ONE bat. Do not copy text or draw UI. ONE isolated pose only, no montage.\nStage: FRONT FOOT PLANT / HIP FIRE, about 75 milliseconds after swing input, just BEFORE contact. Lead LEFT foot has made a small diagonal step toward the pitcher and is planting; rear RIGHT heel starts lifting and hip drives. Hands slot down from rear shoulder, bat is accelerating from behind head but barrel is STILL BEHIND hands, diagonal high-left-to-low-right, not yet extended through the ball. Torso has started to unwind by about 25–35 degrees from Image1 toward Image2, front knee firms, rear knee turns inward. Head holds contact direction upper-right. Anatomically believable compact swing, not a leg kick or golf stroke.",
+      "references": [
+        "../../poses/20261123/batter-ready-right-angle-v4.png",
+        "../../poses/20261123/batter-follow-right-angle-v4.png"
+      ]
+    },
+    {
+      "file": "right-precontact-v5.png",
+      "width": 1024,
+      "height": 1536,
+      "transparentBackground": true,
+      "prompt": "Use case: photorealistic-natural. ONE single full-body realistic RIGHT-HANDED baseball batter animation keyframe. Reference1 is the approved ready pose, reference2 the approved follow-through: same original adult Korean athlete, blue jersey, ivory pants, blue helmet, wooden bat and unbranded gloves/cleats, fixed catcher-camera, body height and scale. Pitcher is diagonally away toward upper-right; batter occupies left batter's box. Crisp cloth, upper-left warm lighting. Entire head, two hands, both shoes and full bat fit inside a 1024x1536 portrait with margins. TRUE transparent RGBA game cutout, no scene, floor, opaque blur, halo, logos, shoe swooshes, sponsor, number, text, watermarks, extra limbs or collage. Blank jersey back for separate game number. Do not change camera or show a different athlete.\nStage: LATE ACCELERATION just BEFORE impact (~95ms after swing input). The lead LEFT foot is firmly planted slightly up-right, rear RIGHT foot pivots on toe with heel raised. Hips have turned before shoulders; torso is midway between the supplied endpoints. Hands accelerate across the lower chest toward upper-right, elbows opening, barrel just behind the hands moving from rear-left toward the center contact zone. Bat is roughly low diagonal to nearly horizontal, still approaching the ball plane, NOT the high finish behind the head. Head stays down the line to pitcher, balanced front knee. This must be visibly between front-foot-plant and full arm extension/contact, not identical to ready or finish.",
+      "references": [
+        "../../poses/20261123/batter-ready-right-angle-v4.png",
+        "../../poses/20261123/batter-follow-right-angle-v4.png"
+      ]
+    },
+    {
+      "file": "right-contact-v5.png",
+      "width": 1024,
+      "height": 1536,
+      "transparentBackground": true,
+      "prompt": "Use case: photorealistic-natural. ONE single full-body realistic RIGHT-HANDED baseball batter animation keyframe. Reference1 is the approved ready pose, reference2 the approved follow-through: same original adult Korean athlete, blue jersey, ivory pants, blue helmet, wooden bat and unbranded gloves/cleats, fixed catcher-camera, body height and scale. Pitcher is diagonally away toward upper-right; batter occupies left batter's box. Crisp cloth, upper-left warm lighting. Entire head, two hands, both shoes and full bat fit inside a 1024x1536 portrait with margins. TRUE transparent RGBA game cutout, no scene, floor, opaque blur, halo, logos, shoe swooshes, sponsor, number, text, watermarks, extra limbs or collage. Blank jersey back for separate game number. Do not change camera or show a different athlete.\nStage: EXACT BAT-BALL CONTACT (~110ms after swing input), one frame of a compact powerful baseball swing. Front LEFT leg firm and planted toward upper-right, back RIGHT heel raised rotating on toe, hips/shoulders rotate through; hands and both arms extend in front of torso toward the ball's contact point on screen RIGHT, at belt-to-lower-chest height. Wooden bat passes NEARLY HORIZONTALLY across the body with the full barrel reaching to screen RIGHT beyond the hands and toward the plate. Bat is NOT above the head and NOT wrapped behind the shoulder yet. Rear/side of jersey has begun coming into view as torso turns from ready toward follow; clean back panel if visible. The head watches the contact point, no viewer eye contact. Correct hand grip right above left, no detached floating hands, front knee not over-bent. Do not draw a ball or impact spark; game renders them separately.",
+      "references": [
+        "../../poses/20261123/batter-ready-right-angle-v4.png",
+        "../../poses/20261123/batter-follow-right-angle-v4.png"
+      ]
+    },
+    {
+      "file": "right-recovery-v5.png",
+      "width": 1024,
+      "height": 1536,
+      "transparentBackground": true,
+      "prompt": "Use case: photorealistic-natural. ONE full-body RIGHT-HANDED baseball animation recovery keyframe. Image1 is approved READY and Image2 approved FOLLOW-THROUGH of the same athlete. Preserve original adult Korean male identity, blue jersey, ivory pants, navy helmet, plain unbranded gloves/cleats, full wooden bat, fixed catcher camera, same body scale/portrait 1024x1536 and warm upper-left lighting. Pitcher toward upper-right, hitter in left batter's box. No camera change, no model identity drift. Entire head/shoes/bat in clear margins, correct two-handed grip. TRUE transparent RGBA outside body; no studio blur, floor, glow, scene, logo, swoosh, sponsor, text, baked number or sheet.\nStage: RECOVERY after follow-through, approximately 600ms after swing input. Not a second swing: body calmly unwinds halfway from Image2 back toward Image1. Bat lowers from above left shoulder to a relaxed diagonal across the upper chest while both gloved hands stay together. Torso is rear-side/side-on in the middle of that return, knees soften, rear RIGHT heel lowers, weight starts balancing across both feet. Front LEFT foot remains on its planted spot without sliding. Head still watches upper-right/pitcher, not viewer. A controlled return rather than a celebration or frozen finish. This should be visibly halfway between endpoints, not identical to either.",
+      "references": [
+        "../../poses/20261123/batter-ready-right-angle-v4.png",
+        "../../poses/20261123/batter-follow-right-angle-v4.png"
+      ]
+    },
+    {
+      "file": "right-reset-v5.png",
+      "width": 1024,
+      "height": 1536,
+      "transparentBackground": true,
+      "prompt": "Use case: photorealistic-natural. ONE full-body RIGHT-HANDED baseball animation recovery keyframe. Image1 is approved READY and Image2 approved FOLLOW-THROUGH of the same athlete. Preserve original adult Korean male identity, blue jersey, ivory pants, navy helmet, plain unbranded gloves/cleats, full wooden bat, fixed catcher camera, same body scale/portrait 1024x1536 and warm upper-left lighting. Pitcher toward upper-right, hitter in left batter's box. No camera change, no model identity drift. Entire head/shoes/bat in clear margins, correct two-handed grip. TRUE transparent RGBA outside body; no studio blur, floor, glow, scene, logo, swoosh, sponsor, text, baked number or sheet.\nStage: LATE RESET returning almost exactly to Image1, approximately 800ms after swing input. This is the last small transition before the ready pose: torso and bent knees already nearly match the READY silhouette, both feet return to the same balanced batter's-box stance, RIGHT rear heel grounded, LEFT lead foot at the same farther point. Hands lift the bat back beside rear RIGHT shoulder with the barrel pointing upper-left, only slightly lower than Image1. Head fixed toward pitcher upper-right. Do not show the high follow-through over left shoulder. This must look like a gentle settling into the original ready pose, not a new stance or a second swing.",
+      "references": [
+        "../../poses/20261123/batter-ready-right-angle-v4.png",
+        "../../poses/20261123/batter-follow-right-angle-v4.png"
+      ]
+    },
+    {
+      "file": "left-load-v5.png",
+      "width": 1024,
+      "height": 1536,
+      "transparentBackground": true,
+      "prompt": "Use case: precise-object-edit. Create ONE LEFT-HANDED baseball batter LOAD transitional animation frame.\nImage1 is the RIGHT-HANDED load frame showing the exact action stage. Image2 is the approved LEFT-HANDED ready pose for the correct opposite-side camera, original athlete and initial stance.\nMatch the action progress of Image1 using LEFT-HANDED mechanics naturally: athlete in RIGHT batter's box, head/lead RIGHT shoulder toward pitcher diagonally UPPER LEFT. Rear LEFT shoulder is closer camera, LEFT hand above RIGHT on bat, load onto LEFT rear hip; lead RIGHT foot unweights only a few centimeters with soft knees, hands/bat coil slightly behind LEFT shoulder; no big leg kick. Bat approaches from behind/upper RIGHT. Camera/torso/scale must continue Image2 into the opposite-handed counterpart of Image1; no eye contact or new camera angle. Preserve the same adult Korean athlete, royal-blue blank jersey, ivory pants, navy helmet, unbranded ivory/navy shoes and gloves, full wood bat. Keep warm lighting from upper-left, not a lighting mirror.\nOne full-body pose on 1024x1536 portrait canvas, full head/bat/two cleats in generous margins, same athlete size as both references. TRUE transparent RGBA around and between limbs. No opaque studio blur, glow, floor, scene, numbers, logos, lettering, shoe swooshes, sponsor, watermark, extra limbs, montage or sheet. This is a subtle pre-swing LOAD, not contact or finish.",
+      "references": [
+        "right-load-v5.png",
+        "../../poses/20261123/batter-ready-left-angle-v4.png"
+      ]
+    },
+    {
+      "file": "left-plant-v5.png",
+      "width": 1024,
+      "height": 1536,
+      "transparentBackground": true,
+      "prompt": "Use case: precise-object-edit. Create ONE LEFT-HANDED baseball batter PLANT transitional animation frame.\nImage1 is the RIGHT-HANDED plant frame showing the exact action stage. Image2 is the approved LEFT-HANDED ready pose for the correct opposite-side camera, original athlete and initial stance.\nMatch the action progress of Image1 using LEFT-HANDED mechanics naturally: athlete in RIGHT batter's box, head/lead RIGHT shoulder toward pitcher diagonally UPPER LEFT. Rear LEFT shoulder is closer camera, LEFT hand above RIGHT on bat, load onto LEFT rear hip; lead RIGHT foot plants toward upper-left as LEFT rear heel starts lifting, hips begin unwinding and hands slot down; bat still behind hands before contact. Bat approaches from behind/upper RIGHT. Camera/torso/scale must continue Image2 into the opposite-handed counterpart of Image1; no eye contact or new camera angle. Preserve the same adult Korean athlete, royal-blue blank jersey, ivory pants, navy helmet, unbranded ivory/navy shoes and gloves, full wood bat. Keep warm lighting from upper-left, not a lighting mirror.\nOne full-body pose on 1024x1536 portrait canvas, full head/bat/two cleats in generous margins, same athlete size as both references. TRUE transparent RGBA around and between limbs. No opaque studio blur, glow, floor, scene, numbers, logos, lettering, shoe swooshes, sponsor, watermark, extra limbs, montage or sheet. This is front-foot PLANT / early hip turn, not contact or high follow-through.",
+      "references": [
+        "right-plant-v5.png",
+        "../../poses/20261123/batter-ready-left-angle-v4.png"
+      ]
+    },
+    {
+      "file": "left-precontact-v5.png",
+      "width": 1024,
+      "height": 1536,
+      "transparentBackground": true,
+      "prompt": "Use case: precise-object-edit. ONE LEFT-HANDED baseball batter PRECONTACT animation keyframe, same fixed camera and photographic original athlete.\nImage1 shows the RIGHT-HANDED precontact action to translate into opposite-hand mechanics. Image2 gives the approved LEFT-HANDED ready pose, camera direction, body and clothing. Keep identity, scale, warm upper-left light, blue jersey, ivory pants, navy helmet, plain unbranded gloves/cleats and wood bat consistent.\nLEFT-HANDED action: front RIGHT leg planted toward pitcher diagonally UPPER LEFT; rear LEFT foot pivots on toe with heel raised; hips/shoulders unwind from Image2 toward a back-visible follow-through. Head watches contact toward upper-left, never the viewer. Both hands together, LEFT hand above RIGHT on the handle.\nBEFORE contact (~95ms): hands accelerate across lower chest toward left, barrel is still behind hands on screen RIGHT, bat low-diagonal/near-horizontal approaching the contact plane; torso halfway through rotation, not high finish.\nMatch the stage of Image1 without turning it into a golf swing. Full helmet, entire bat, both shoes fit in 1024x1536 portrait, source body scale unchanged. Single isolated pose with true TRANSPARENT RGBA alpha, no backdrop/blur/floor/glow, no text, logos, numbers, shoe swoosh, sponsors, watermark, extra limbs or sheet. Do not render a ball or impact effect.",
+      "references": [
+        "right-precontact-v5.png",
+        "../../poses/20261123/batter-ready-left-angle-v4.png"
+      ]
+    },
+    {
+      "file": "left-contact-v5.png",
+      "width": 1024,
+      "height": 1536,
+      "transparentBackground": true,
+      "prompt": "Use case: precise-object-edit. ONE LEFT-HANDED baseball batter CONTACT animation keyframe, same fixed camera and photographic original athlete.\nImage1 shows the RIGHT-HANDED contact action to translate into opposite-hand mechanics. Image2 gives the approved LEFT-HANDED ready pose, camera direction, body and clothing. Keep identity, scale, warm upper-left light, blue jersey, ivory pants, navy helmet, plain unbranded gloves/cleats and wood bat consistent.\nLEFT-HANDED action: front RIGHT leg planted toward pitcher diagonally UPPER LEFT; rear LEFT foot pivots on toe with heel raised; hips/shoulders unwind from Image2 toward a back-visible follow-through. Head watches contact toward upper-left, never the viewer. Both hands together, LEFT hand above RIGHT on the handle.\nEXACT CONTACT (~110ms): arms extend toward plate on screen LEFT at belt/lower-chest height; bat passes NEARLY HORIZONTALLY and full barrel reaches LEFT beyond both hands. The side/back jersey rotates into view. Do NOT place bat above head or already wrapped behind shoulder.\nMatch the stage of Image1 without turning it into a golf swing. Full helmet, entire bat, both shoes fit in 1024x1536 portrait, source body scale unchanged. Single isolated pose with true TRANSPARENT RGBA alpha, no backdrop/blur/floor/glow, no text, logos, numbers, shoe swoosh, sponsors, watermark, extra limbs or sheet. Do not render a ball or impact effect.",
+      "references": [
+        "right-contact-v5.png",
+        "../../poses/20261123/batter-ready-left-angle-v4.png"
+      ]
+    },
+    {
+      "file": "left-recovery-v5.png",
+      "width": 1024,
+      "height": 1536,
+      "transparentBackground": true,
+      "prompt": "Use case: precise-object-edit. ONE LEFT-HANDED baseball RECOVERY animation pose on transparent RGBA.\nImage1 is the RIGHT-HANDED recovery frame (exact action progress); Image2 is the approved LEFT-HANDED ready stance (identity/camera/end position). Create the natural opposite-hand counterpart in the right batter's box. Same adult Korean male, plain blue jersey, ivory pants, navy helmet, wooden bat, unbranded gloves/cleats, upper-left warm light, 1024x1536 portrait body scale and full margins.\nHead watches pitcher diagonally upper-left. Two hands grip with LEFT hand above RIGHT. After a completed left-handed follow-through over the RIGHT shoulder, calmly unwind halfway back toward the approved ready stance. Lower the bat diagonally across upper chest with both hands together, soften knees, LEFT rear heel lowering and weight balancing, RIGHT lead foot stays planted. This is not another swing or a victory pose.\nDo not mirror light or switch camera. Preserve correct anatomy and one whole bat, no extra limbs or leg kick. Entire helmet, full bat and both shoes within frame. True transparent alpha, no studio blur/cloud, background, floor, halo, number, brand, swoosh, text, sponsor, watermark, sheet or collage.",
+      "references": [
+        "right-recovery-v5.png",
+        "../../poses/20261123/batter-ready-left-angle-v4.png"
+      ]
+    },
+    {
+      "file": "left-reset-v5.png",
+      "width": 1024,
+      "height": 1536,
+      "transparentBackground": true,
+      "prompt": "Use case: precise-object-edit. ONE LEFT-HANDED baseball RESET animation pose on transparent RGBA.\nImage1 is the RIGHT-HANDED reset frame (exact action progress); Image2 is the approved LEFT-HANDED ready stance (identity/camera/end position). Create the natural opposite-hand counterpart in the right batter's box. Same adult Korean male, plain blue jersey, ivory pants, navy helmet, wooden bat, unbranded gloves/cleats, upper-left warm light, 1024x1536 portrait body scale and full margins.\nHead watches pitcher diagonally upper-left. Two hands grip with LEFT hand above RIGHT. Almost exactly match Image2's left-handed ready silhouette. Balanced bent-knee stance with LEFT rear heel grounded and RIGHT front foot in its farther spot. Hands raise bat beside rear LEFT shoulder, barrel angled upper-RIGHT only slightly lower than ready. This is the final gentle reset before ready, not high follow-through.\nDo not mirror light or switch camera. Preserve correct anatomy and one whole bat, no extra limbs or leg kick. Entire helmet, full bat and both shoes within frame. True transparent alpha, no studio blur/cloud, background, floor, halo, number, brand, swoosh, text, sponsor, watermark, sheet or collage.",
+      "references": [
+        "right-reset-v5.png",
+        "../../poses/20261123/batter-ready-left-angle-v4.png"
+      ]
+    }
+  ]
+}

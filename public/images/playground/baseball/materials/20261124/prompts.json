@@ -1,0 +1,15 @@
+{
+  "tool": "built-in image_gen",
+  "mode": "generate",
+  "date": "2026-11-24",
+  "asset": "compression-knit-gray-v1.png",
+  "usage": "Separate compression-cloth UV overlay. Preserve all 16 source poses and alpha. No source skin recoloring.",
+  "prompt": "Use case: photorealistic-natural. Asset type: square PBR-style photographic albedo fabric swatch for a realistic baseball game compression undersleeve renderer. Create ONE seamless tile, perfectly flat close-up of neutral middle gray (#9a9a9a) matte sports compression jersey cloth, tiny woven knit filaments, very fine continuous vertical rib direction, subtle realistic soft micro wrinkles but no strong folds or broad lighting gradient. Even diffuse illumination, neutral white balance, no deep shadows, no highlights, no pattern, no logo, no skin, no person, no sleeve silhouette, no seams, no typography, no borders. Edge-to-edge fabric texture, visually consistent scale over whole square, able to repeat both directions. High-end realistic athletic performance fabric, understated fine texture; renderer will add body shading and tint to black, red or navy. 1024 square.",
+  "delivery": {
+    "asset": "compression-knit-gray-256-lossless-v1.webp",
+    "width": 256,
+    "height": 256,
+    "bytes": 49200,
+    "method": "Pre-baked runtime texture size; lossless WebP encoding. Original generated PNG retained."
+  }
+}

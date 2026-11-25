@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-23",
+  "mode": "built-in image_gen edit",
+  "useCase": "identity-preserve",
+  "status": "selected for local foot-placement review and gameplay; not committed or deployed",
+  "source": "/images/playground/baseball/motion/20261123-v5/right-plant-v5.png",
+  "output": "right-plant-v6.png",
+  "requestedSize": {
+    "width": 1024,
+    "height": 1536
+  },
+  "transparentBackground": true,
+  "prompt": "Use case: identity-preserve. Asset type: one whole-body photorealistic baseball game sprite, a conservative local candidate edit of an approved existing pose. The single input is the EDIT TARGET. Output exactly1024x1536 portrait with a genuine transparent alpha background, the complete athlete and entire wooden bat visible.\nKeep this exact man's face, skin texture, head direction, dark-blue glossy helmet and highlights, blue jersey and every torso fold, torso twist, both shoulders/elbows/hands/gloves/grip, and entire wooden bat at their current source-pixel positions. Keep everything from the waist upward unchanged. Same camera, crop, athlete height, shoe size, lighting and photographic realism. Change only the white pants with blue piping and lower legs/feet to narrow the stride through anatomically coherent leg positioning. Keep hips fixed. No whole-body shrinking, horizontal squeezing, detached limbs, rigs or segmented compositing. Retain natural joint alignment and the trailing foot's raised heel/toe-pivot; do not flatten it to the ground. No text, labels, jersey number, sponsors, logo, watermark, floor/stadium, second bat, cartoon, plastic3D, extra/fused limbs, broken knees/ankles, fake checkerboard.\nPrimary request: preserve this exact RIGHT-HANDED PLANT/STRIDE phase, lowering the bat diagonally to image upper-left just as in the target. Narrow only the leg stance about18–22percent. Current lead sole is at image right, heel x729/toe x947 around y1435; move this shoe inward to heel approximately655/toe855 at the same ground height. Current trailing toe is image left atx205/y1485; move its toe inward to x275–300, samey1485, keep heel lifted and bent knee anatomical. The front leg stays the firm lead support and the rear foot stays toe-pivoting. Preserve all upper-body and bat silhouette pixels as closely as possible.",
+  "selection": {
+    "date": "2026-11-23",
+    "scope": "Lower-leg stance only; original16 files preserved; whole-pose support registration",
+    "review": "Viewed original and generated whole PNGs and compared on the same local ballpark. No segmented rig or body stretching. Photographic identity, slanted upper-body pose and wooden bat retained visually; not pixel-identical.",
+    "runtime": "lib/playground-baseball-animation.mjs POSE_EDITS",
+    "rollback": "Each active frame retains originalSrc."
+  }
+}

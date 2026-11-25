@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="color-scheme" content="light dark">
+  <title>야구 준비폼 · 후면 시점 검토</title>
+  <style>
+    :root { color-scheme:light; --paper:#f6f4ec; --card:#fffdf7; --ink:#193d32; --muted:#65756a; --line:#d8dfd3; --soft:#e7ecdf; --accent:#a76a42; }
+    :root[data-theme="dark"] { color-scheme:dark; --paper:#14231d; --card:#1a3027; --ink:#e9ecdc; --muted:#b2beae; --line:#3c5145; --soft:#253c30; --accent:#deb389; }
+    @media(prefers-color-scheme:dark) { :root:not([data-theme="light"]) { color-scheme:dark; --paper:#14231d; --card:#1a3027; --ink:#e9ecdc; --muted:#b2beae; --line:#3c5145; --soft:#253c30; --accent:#deb389; } }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:Arial,"Malgun Gothic",sans-serif; line-height:1.65; }
+    button,a { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
+    button { font:inherit; cursor:pointer; }
+    a { color:inherit; text-underline-offset:4px; }
+    :is(a,button):focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
+    main { width:min(1400px,100%); margin:auto; padding:32px 28px 64px; }
+    .topline { display:flex; align-items:center; justify-content:space-between; gap:18px; flex-wrap:wrap; }
+    .eyebrow { margin:0; color:var(--accent); font-size:10px; font-weight:700; letter-spacing:.15em; }
+    .topline nav { display:flex; flex-wrap:wrap; align-items:center; gap:16px; font-size:12px; }
+    .topline nav a { display:inline-flex; align-items:center; min-height:44px; }
+    #theme { min-height:40px; padding:7px 13px; border:1px solid var(--line); border-radius:7px; background:var(--card); color:var(--ink); }
+    h1 { font-size:clamp(28px,4vw,48px); letter-spacing:-.045em; line-height:1.25; margin:18px 0 16px; }
+    .intro { max-width:760px; font-size:14px; color:var(--muted); margin:0; }
+    .criteria { display:flex; flex-wrap:wrap; gap:8px; list-style:none; padding:0; margin:22px 0 0; }
+    .criteria li { border:1px solid var(--line); border-radius:99px; padding:5px 11px; font-size:11px; }
+    section { margin-top:34px; padding-top:26px; border-top:1px solid var(--line); }
+    .section-heading { display:flex; align-items:end; justify-content:space-between; flex-wrap:wrap; gap:15px 24px; margin-bottom:18px; }
+    h2 { margin:0; font-size:clamp(21px,2.5vw,29px); letter-spacing:-.035em; line-height:1.3; }
+    .note { margin:8px 0 0; color:var(--muted); font-size:12px; }
+    .switch { display:flex; padding:4px; gap:4px; background:var(--soft); border:1px solid var(--line); border-radius:9px; }
+    .switch button { min-height:42px; min-width:100px; padding:8px 17px; border:1px solid transparent; border-radius:6px; background:transparent; color:var(--ink); }
+    .switch button[aria-pressed="true"] { color:#fffdf2; background:#244f40; border-color:#244f40; }
+    .preview-controls { display:flex; align-items:center; gap:14px 28px; flex-wrap:wrap; margin:0 0 16px; padding:12px 16px; border:1px solid var(--line); border-radius:9px; background:var(--card); }
+    .preview-controls label { display:flex; flex-wrap:wrap; gap:6px 12px; align-items:center; font-size:11px; }
+    .preview-controls input { width:130px; max-width:100%; accent-color:#244f40; }
+    .preview-controls output { min-width:32px; font-size:10px; color:var(--muted); }
+    .field { --player-height:88%; --player-center:20%; position:relative; overflow:hidden; isolation:isolate; width:100%; aspect-ratio:16/9; background:#416447 url("../../concepts/20261123/stadium-batting-view-v1.png") center/cover; border:1px solid var(--line); border-radius:12px; }
+    .field::after { content:""; position:absolute; z-index:-1; inset:0; background:linear-gradient(#16251d00 40%,#10281b26); pointer-events:none; }
+    .field-label { position:absolute; top:16px; left:16px; margin:0; padding:7px 12px; border:1px solid #ffffff55; border-radius:6px; color:#f8f3df; background:#163b2ddb; font-size:12px; }
+    .pitcher-guide { position:absolute; top:42%; left:50%; transform:translate(-50%,-100%); color:#fcf6dc; background:#16372bbd; border:1px solid #ffffff66; border-radius:4px; padding:3px 8px; font-size:10px; white-space:nowrap; }
+    .zone { position:absolute; left:43.5%; top:45%; width:13%; height:28%; border:1px solid #fff7ceba; pointer-events:none; background:#193a2610; }
+    .player { position:absolute; bottom:0; left:calc(var(--player-center) - 20%); width:40%; height:var(--player-height); object-fit:contain; object-position:50% 100%; pointer-events:none; }
+    .field[data-hand="left"] .player { left:auto; right:calc(var(--player-center) - 20%); }
+    .field figcaption { position:absolute; right:16px; bottom:14px; color:#fff9dd; background:#193c2cdd; padding:5px 10px; border-radius:4px; font-size:10px; }
+    figure { min-width:0; margin:0; }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px; }
+    .card { overflow:hidden; border:1px solid var(--line); border-radius:12px; background:var(--card); }
+    .original { display:block; background-color:#d9dfd5; background-image:linear-gradient(45deg,#fff5 25%,transparent 25%),linear-gradient(-45deg,#fff5 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#fff5 75%),linear-gradient(-45deg,transparent 75%,#fff5 75%); background-size:24px 24px; background-position:0 0,0 12px,12px -12px,-12px 0; }
+    .original img { display:block; width:100%; height:clamp(360px,49vw,650px); object-fit:contain; }
+    .card figcaption { padding:18px 20px; }
+    h3 { font-size:18px; margin:0 0 6px; letter-spacing:-.025em; }
+    .card p { margin:0 0 10px; font-size:12px; color:var(--muted); }
+    .card a:not(.original) { display:inline-flex; min-height:40px; align-items:center; font-size:12px; font-weight:700; }
+    .resolution { margin-left:12px; font-size:10px; color:var(--muted); }
+    .boundary { margin:22px 0 0; padding:15px 18px; border:1px solid var(--line); border-radius:9px; color:var(--muted); background:var(--soft); font-size:12px; }
+    .error { color:#b13e30; }
+    footer { border-top:1px solid var(--line); margin-top:36px; padding-top:20px; font-size:10px; color:var(--muted); }
+    @media(max-width:650px) { main { padding:20px 15px 40px; } .topline { gap:6px; } .topline nav { gap:12px; } .grid { gap:16px; } .card figcaption { padding:14px; } .original img { height:360px; } .field-label { top:9px; left:9px; font-size:10px; padding:4px 7px; } .field figcaption { right:8px; bottom:8px; font-size:9px; padding:3px 6px; } .pitcher-guide { font-size:8px; padding:2px 5px; } .resolution { display:block; margin:0; } }
+    @media(max-width:480px) { .grid { grid-template-columns:minmax(0,1fr); } .original img { height:470px; } .field { aspect-ratio:4/3; } .field figcaption { max-width:60%; } .preview-controls { gap:10px; } .preview-controls label { width:100%; justify-content:space-between; } }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="topline"><p class="eyebrow">BASEBALL · READY STANCE 03</p><nav aria-label="시안 이동"><a href="/playground/baseball">타격장으로</a><a href="../../concepts/20261123/index.html">기존 시안</a><button id="theme" type="button">테마 전환</button></nav></div>
+    <h1>투수를 바라보는, 타격 준비.</h1>
+    <p class="intro">포수 뒤에서 보는 하나의 카메라 기준으로 좌우 타석을 다시 맞춥니다. 얼굴이 아닌 헬멧 뒤와 등판이 보이는지, 배트·팔·발의 준비 자세가 자연스러운지 비교해 주세요.</p>
+    <ul class="criteria" aria-label="검토 기준"><li>같은 후면 시점</li><li>얼굴 노출 없음</li><li>한 장에 한 자세</li><li>번호 없는 등판 확인</li></ul>
+    <section aria-labelledby="field-heading">
+      <div class="section-heading"><div><h2 id="field-heading">경기장에 놓고 비교하기</h2><p class="note">이미지의 좌우반전 없이 각 타석의 새 준비 자세를 사용합니다.</p></div><div class="switch" role="group" aria-label="타석 선택"><button type="button" data-hand="right" aria-pressed="true">우타</button><button type="button" data-hand="left" aria-pressed="false">좌타</button></div></div>
+      <div class="preview-controls" role="group" aria-label="합성 배치 비교"><label for="player-size">선수 크기<input id="player-size" type="range" min="65" max="100" value="88"><output for="player-size" id="size-value">88%</output></label><label for="player-position">타석 위치<input id="player-position" type="range" min="14" max="30" value="20"><output for="player-position" id="position-value">20%</output></label></div>
+      <figure class="field" data-hand="right" aria-label="후면 준비 자세와 경기장 합성"><p class="field-label" id="field-label">우타 · 뒤에서 본 준비 자세</p><span class="pitcher-guide" aria-hidden="true">↑ 투수 방향</span><div class="zone" aria-hidden="true"></div><img class="player" id="field-player" src="batter-ready-right-rear-v3.png" alt="투수 방향을 바라보는 우타자의 후면 준비 자세"><figcaption>준비폼 검토 · 정지 시안</figcaption></figure>
+    </section>
+    <section aria-labelledby="original-heading">
+      <div class="section-heading"><div><h2 id="original-heading">좌우타 원본 자세</h2><p class="note">원본을 열어 헬멧·그립·등판·무릎·발끝을 확대해서 볼 수 있습니다.</p></div></div>
+      <div class="grid">
+        <figure class="card"><a class="original" href="batter-ready-right-rear-v3.png" aria-label="우타 후면 준비 자세 원본 열기"><img id="right-original" src="batter-ready-right-rear-v3.png" alt="얼굴을 드러내지 않고 투수를 바라보는 우타자, 등판이 보이는 준비 자세"></a><figcaption><h3>우타 · RIGHT-HANDED</h3><p>오른손 타격 준비 자세의 후면과 몸의 균형을 확인합니다.</p><a href="batter-ready-right-rear-v3.png">원본 확대 보기 ↗</a><span class="resolution" data-resolution="right" aria-live="polite">원본 준비 중</span></figcaption></figure>
+        <figure class="card"><a class="original" href="batter-ready-left-rear-v3.png" aria-label="좌타 후면 준비 자세 원본 열기"><img id="left-original" src="batter-ready-left-rear-v3.png" alt="얼굴을 드러내지 않고 투수를 바라보는 좌타자, 등판이 보이는 준비 자세"></a><figcaption><h3>좌타 · LEFT-HANDED</h3><p>같은 카메라·신체 크기에서 왼손 타격 자세를 비교합니다.</p><a href="batter-ready-left-rear-v3.png">원본 확대 보기 ↗</a><span class="resolution" data-resolution="left" aria-live="polite">원본 준비 중</span></figcaption></figure>
+      </div>
+      <p class="boundary">이번 화면은 시작 준비폼 검토용입니다. 등번호는 빈 등판을 확인한 뒤 별도로 배치하며, 새 자세에서 이어지는 스윙 프레임은 다음 단계에서 맞춥니다. 현재 타격장의 스윙과 기록 규칙은 그대로입니다.</p>
+    </section>
+    <footer>2026.11.23 · 준비 자세 우선 검토 · 기존 게임·이미지 원본 보존</footer>
+  </main>
+  <script>
+    const field = document.querySelector('.field')
+    const player = document.getElementById('field-player')
+    const fieldLabel = document.getElementById('field-label')
+    const sides = { right:'우타', left:'좌타' }
+    document.getElementById('player-size').addEventListener('input', event => {
+      field.style.setProperty('--player-height', `${event.target.value}%`)
+      document.getElementById('size-value').textContent = `${event.target.value}%`
+    })
+    document.getElementById('player-position').addEventListener('input', event => {
+      field.style.setProperty('--player-center', `${event.target.value}%`)
+      document.getElementById('position-value').textContent = `${event.target.value}%`
+    })
+    document.querySelectorAll('.switch button').forEach(button => button.addEventListener('click', () => {
+      const hand = button.dataset.hand
+      field.dataset.hand = hand
+      player.src = `batter-ready-${hand}-rear-v3.png`
+      player.alt = `투수 방향을 바라보는 ${sides[hand]}자의 후면 준비 자세`
+      fieldLabel.textContent = `${sides[hand]} · 뒤에서 본 준비 자세`
+      document.querySelectorAll('.switch button').forEach(item => item.setAttribute('aria-pressed', String(item === button)))
+    }))
+    document.getElementById('theme').addEventListener('click', () => {
+      const current = document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      document.documentElement.dataset.theme = current === 'dark' ? 'light' : 'dark'
+    })
+    Object.keys(sides).forEach(hand => {
+      const image = document.getElementById(`${hand}-original`)
+      const label = document.querySelector(`[data-resolution="${hand}"]`)
+      const loaded = () => { label.textContent = `${image.naturalWidth} × ${image.naturalHeight} px`; label.classList.remove('error') }
+      image.addEventListener('load', loaded)
+      image.addEventListener('error', () => { label.textContent = '이미지 준비 중 · 잠시 뒤 새로고침'; label.classList.add('error') })
+      if (image.complete && image.naturalWidth) loaded()
+    })
+  </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-23",
+  "mode": "built-in image_gen edit",
+  "useCase": "identity-preserve",
+  "status": "selected for local foot-placement review and gameplay; not committed or deployed",
+  "source": "/images/playground/baseball/motion/20261123-v5/right-precontact-v5.png",
+  "output": "right-precontact-v6.png",
+  "requestedSize": {
+    "width": 1024,
+    "height": 1536
+  },
+  "transparentBackground": true,
+  "prompt": "Use case: identity-preserve.\nAsset type: one whole-body photorealistic baseball game sprite, a local candidate edit of an approved existing pose.\nInput image 1 is the EDIT TARGET, not a loose style reference.\nPrimary request: narrow ONLY the lower-body stride in this exact right-handed pre-contact batting pose by about 20–25 percent, keeping the same athlete and the same instant in the swing.\nOutput canvas: exactly 1024 x 1536 portrait, full body and entire wooden bat visible, with a genuine transparent alpha background.\n\nPreserve invariants aggressively: keep this exact man's face, head direction, helmet shape and highlights, blue jersey texture, torso twist, shoulder and elbow placement, both hands and grip, and the complete wooden bat silhouette at the same source-pixel positions. In particular, the bat barrel is still at the left, diagonally extending to the hands at the right. Keep all upper-body detail and placement from the waist upward unchanged. Do not rotate or resize the whole athlete or change the camera.\n\nModify only the white pants, knees, lower legs and shoes as necessary for a slightly narrower and anatomically coherent athletic stance. Keep the hips at their original location. On the image's right, the lead leg remains the planted, straighter support leg with its whole sole flat; bring this shoe inward so its heel is approximately x=655 and toe approximately x=850, around y=1450. On the image's left, the trailing leg remains naturally bent with the heel raised and weight on the toe; bring that toe inward to approximately x=250–270, around y=1490. Retain the trailing heel-up/toe-pivot motion and natural knee alignment. Do not flatten the raised heel onto the ground. Maintain the current shoe size and the original body height; narrow the stride through coherent leg repositioning rather than squeezing or shrinking either leg.\n\nStyle: the same high-quality photographic sports realism, natural human anatomy, skin and cloth texture, blue jersey, glossy dark blue helmet, white pants with blue piping, white/navy cleats, white gloves, warm light.\nAvoid: new athlete or face, change to upper body, changed bat/hands, whole-body scale changes, cartoon or illustration, plastic 3D look, extra or fused limbs, broken knees/ankles, detached body parts, skeleton/rig overlays, segmentation, a second bat, labels, text, jersey numbers, logos, sponsors, watermark, checkerboard drawn into the image, floor, stadium or background.",
+  "selection": {
+    "date": "2026-11-23",
+    "scope": "Lower-leg stance only; original16 files preserved; whole-pose support registration",
+    "review": "Viewed original and generated whole PNGs and compared on the same local ballpark. No segmented rig or body stretching. Photographic identity, slanted upper-body pose and wooden bat retained visually; not pixel-identical.",
+    "runtime": "lib/playground-baseball-animation.mjs POSE_EDITS",
+    "rollback": "Each active frame retains originalSrc."
+  }
+}

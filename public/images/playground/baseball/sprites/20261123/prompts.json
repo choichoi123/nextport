@@ -1,0 +1,72 @@
+{
+  "createdAt": "2026-11-23",
+  "method": "built-in image_gen",
+  "activeVersion": "v2",
+  "purpose": "실사풍 야구 타격 시제품의 독립 타자·투수 애니메이션",
+  "layout": {
+    "columns": 4,
+    "rows": 2,
+    "frames": 8,
+    "width": 1774,
+    "height": 887,
+    "transparentBackground": true
+  },
+  "runtime": {
+    "files": [
+      "batter-right-v2.png",
+      "batter-left-v2.png",
+      "pitcher-v2.png"
+    ],
+    "jerseyNumber": "0~99 문자열을 현재 포즈의 등판에 Canvas로 별도 합성; 00·07 보존",
+    "clubColors": "10개 확정 팀의 저지·헬멧·선택 문양을 원본 파란 소재에 별도 합성",
+    "limitations": "8프레임 시제품이며 실제 선수 동작·구종 전체의 정밀 복제는 아님"
+  },
+  "versions": [
+    {
+      "version": "v1",
+      "status": "superseded",
+      "references": [
+        "../../concepts/20261123/batter-master-v1.png",
+        "../../concepts/20261123/batting-handedness-v1.png"
+      ],
+      "assets": [
+        {
+          "file": "batter-right-v1.png",
+          "prompt": "Use case: identity-preserve. Asset type: production game animation sprite atlas with REAL transparent alpha. Input image1 is the identity/realism reference, input image2 supplies the approved rear-three-quarter batting stance direction. Preserve the exact same original adult Korean batter face, body proportions, gloves, ivory baseball pants, cleats, bat material and warm upper-left light. Change jersey to saturated clean ROYAL BLUE (#2455d6 family), helmet also ROYAL BLUE, with plain white piping. These blue material regions will be recolored in game; no blue in skin, gloves, pants or bat. NO logos, writing, sponsor, numbers. EXACTLY 4 COLUMNS and 2 ROWS, EIGHT equal SQUARE cells, landscape 2:1 atlas, generous transparent gaps between cells. One complete body in each cell; fixed scale, fixed pelvis anchor, soles grounded at 90 percent of cell height, entire helmet AND bat included within each cell with spare margin. Athlete height about65 percent of cell, allowing the whole extended bat inside the cell. All eight poses have the SAME camera, face, scale, full-body framing, and lighting. NO background, no floor/dirt, no baked shadow, NO checkerboard, no grid lines, no text. Strict animation continuity: row1 cells0-3 left to right, row2 cells4-7 left to right: (0) ready stance; (1) load weight onto rear leg with hands back; (2) small front-foot stride planting and beginning hip rotation; (3) accelerating bat rotation before contact, hands pulling through; (4) clear contact phase, bat extended forward through an imaginary ball at waist height; (5) follow-through across front shoulder with hips rotated; (6) complete balanced follow-through; (7) controlled return to ready. Anatomically correct shoulder/elbow/wrist joints, correct two-handed bat grip maintained throughout, two arms/two legs/no extra fingers; no floating or disconnected bat, no ball. This is realistic photographed/photogrammetric sports-player cutout quality, not illustration, not plastic toy. RIGHT-HANDED hitter, viewed from the catcher's position at a three-quarter rear angle, player occupies viewer LEFT side of home plate and watches the pitcher ahead to viewer right. Left shoulder/front leg point toward pitcher, hands at RIGHT rear shoulder, RIGHT hand above LEFT on handle. Bat extends toward viewer RIGHT at contact. Do not reverse handedness. Every pose faces same pitcher direction. Preserve actual right-handed mechanics."
+        },
+        {
+          "file": "batter-left-v1.png",
+          "prompt": "Use case: identity-preserve. Asset type: production game animation sprite atlas with REAL transparent alpha. Input image1 is the identity/realism reference, input image2 supplies the approved rear-three-quarter batting stance direction. Preserve the exact same original adult Korean batter face, body proportions, gloves, ivory baseball pants, cleats, bat material and warm upper-left light. Change jersey to saturated clean ROYAL BLUE (#2455d6 family), helmet also ROYAL BLUE, with plain white piping. These blue material regions will be recolored in game; no blue in skin, gloves, pants or bat. NO logos, writing, sponsor, numbers. EXACTLY 4 COLUMNS and 2 ROWS, EIGHT equal SQUARE cells, landscape 2:1 atlas, generous transparent gaps between cells. One complete body in each cell; fixed scale, fixed pelvis anchor, soles grounded at 90 percent of cell height, entire helmet AND bat included within each cell with spare margin. Athlete height about65 percent of cell, allowing the whole extended bat inside the cell. All eight poses have the SAME camera, face, scale, full-body framing, and lighting. NO background, no floor/dirt, no baked shadow, NO checkerboard, no grid lines, no text. Strict animation continuity: row1 cells0-3 left to right, row2 cells4-7 left to right: (0) ready stance; (1) load weight onto rear leg with hands back; (2) small front-foot stride planting and beginning hip rotation; (3) accelerating bat rotation before contact, hands pulling through; (4) clear contact phase, bat extended forward through an imaginary ball at waist height; (5) follow-through across front shoulder with hips rotated; (6) complete balanced follow-through; (7) controlled return to ready. Anatomically correct shoulder/elbow/wrist joints, correct two-handed bat grip maintained throughout, two arms/two legs/no extra fingers; no floating or disconnected bat, no ball. This is realistic photographed/photogrammetric sports-player cutout quality, not illustration, not plastic toy. LEFT-HANDED hitter, viewed from the catcher's position at a three-quarter rear angle, player occupies viewer RIGHT side of home plate and watches the pitcher ahead to viewer left. Right shoulder/front leg point toward pitcher, hands at LEFT rear shoulder, LEFT hand above RIGHT on handle. Bat extends toward viewer LEFT at contact. Do not reverse handedness. Every pose faces same pitcher direction. Preserve actual left-handed mechanics; no mirrored text or light."
+        },
+        {
+          "file": "pitcher-v1.png",
+          "prompt": "Use case: photorealistic-natural. Asset type: game sprite atlas with real transparent alpha. ONE original adult Korean right-handed baseball pitcher, natural athletic anatomy, short dark hair, plain dark navy cap, navy jersey with ivory pants, black glove on LEFT hand and ivory/navy cleats. Match our baseball concept's premium sports-photographic skin/fabric quality and warm late-afternoon upper-left sunlight with cool sky fill. The camera is stationary at HOME PLATE looking straight at the pitcher, nearly frontal with slight three-quarter perspective. EXACTLY FOUR COLUMNS and TWO ROWS, eight equal SQUARE cells in landscape 2:1. One full pitcher per cell, identical identity/uniform/scale, body height65percent, plenty transparent clearance for full raised knee, glove, throwing arm and both feet, no clipping. Fixed imaginary mound ground baseline at90percent cellheight. Eight DISTINCT chronological frames read left-to-right then next row: 0 standing set position hands together at chest; 1 left knee raised in leg lift balancing on right rear leg; 2 striding left leg toward camera with hands separating; 3 left foot landing, right arm cocked behind head and left glove tucked; 4 right arm extending forward toward home plate at the precise release pose, baseball already left the fingers; 5 torso over front leg, right arm following through across left leg and rear right leg kicked behind; 6 recovery balanced over legs; 7 reset upright ready. Keep correct right-handed pitching mechanics, actual shoulders/elbows/wrists, no extra limbs, no floating glove, no contorted backwards knees. No baseball in flight anywhere on sheet: the ball is drawn separately by code. No logos, sponsors, words, numbers, scenery, mound, floor, shadow, checkerboard, separators, UI or watermark. Isolated transparent athletic cutouts, not a composite stadium shot or flat cartoon."
+        }
+      ]
+    },
+    {
+      "version": "v2",
+      "status": "active",
+      "reason": "후면 3/4 준비 자세·등판 노출과 투명 배경 경계 보완",
+      "references": [
+        "batter-right-v1.png",
+        "batter-left-v1.png",
+        "pitcher-v1.png"
+      ],
+      "assets": [
+        {
+          "file": "batter-right-v2.png",
+          "prompt": "Use case: precise-object-edit / identity-preserve. Edit input1 (the existing 8-pose batter atlas). Input2 is the approved rear-view stance reference. Keep the same player, royal-blue jersey and helmet, white pants, wooden bat, 4-column x2-row layout, eight chronological right-handed swing poses and actual transparent PNG alpha. CRITICAL CORRECTION: the camera must be THREE-QUARTER REAR throughout; in ready poses0-3 we see the player's BACK of jersey, not his button-front chest. Put his back toward the camera, face only a small side profile looking toward imaginary pitcher to viewer RIGHT. He is a RIGHT-HANDED batter: right hand above left on the handle; bat starts above his RIGHT rear shoulder and travels to the RIGHT at contact. This should be the proper right-handed counterpart of the LEFT PANEL of input2. Let the broad blank back of his jersey be visible in ready poses so a jersey number can be composited there later. Do not put any number or writing in image. Eight stages ready/load/stride/precontact/contact/followthrough/finish/return. Every full body and ENTIRE bat stays inside its own equal square cell at fixed scale/ground baseline with transparent gaps. SECOND CORRECTION: REMOVE ALL stray colored/white/gray haze, glow, matte residue, halos and ground/shadow pixels outside each athlete silhouette, particularly around shoes and bat. Deliver razor-clean isolated human silhouettes with transparent alpha outside; no ground plane, no translucent smoke or colored spill, no checkerboard. Keep realistic fabric/skin, same adult proportions, smooth correct swing mechanics. No front-chest ready stance, no extra fingers, no ball, no text, no cell numbers."
+        },
+        {
+          "file": "batter-left-v2.png",
+          "prompt": "Use case: precise-object-edit. Edit the supplied LEFT-HANDED batter eight-frame 4x2 animation atlas. Preserve every pose, face, royal-blue jersey/helmet, white pants, bat, camera, square cell layout, character scale, position and image dimensions. Change ONLY the alpha/background edges: remove all white/gray/red/yellow haze, dots, smoke, ground texture, old shadow remnants and colored matte halos outside the actual player and bat silhouettes, especially between legs, below shoes, around the bat. The background must be actual transparent alpha with perfectly clean cutout boundaries and no baked cast shadows. Do not paint over skin/clothing or redesign the athlete. Keep fine bat and fingers intact. No checkerboard, no backdrop, no new objects, no numbers/text. Deliver the same eight chronological isolated left-handed batting poses with corrected clean transparency."
+        },
+        {
+          "file": "pitcher-v2.png",
+          "prompt": "Use case: precise-object-edit. Edit the supplied eight-frame 4x2 right-handed pitcher atlas. Preserve ALL eight pitching poses, exact face, body, navy uniform/white pants, glove, frame layout, scale, positions and dimensions. Change ONLY alpha/background cleanup: completely remove the pale gray/white/red/yellow smoky outline, matte haze, stray colored pixels, ground and shadow remnants surrounding every athlete, especially around legs and shoes. Outside the exact silhouette must be real transparent alpha. Edges must be clean isolated cutouts, no halo or fog or painted floor between frames, keep glove/arms/fingers/cleats intact. The figure must not be faded or erased. No checkerboard, no new props, no ball, no text, no grid. Keep sports-photographic realism and original light. Preserve chronological eight-pose right-handed delivery."
+        }
+      ]
+    }
+  ]
+}

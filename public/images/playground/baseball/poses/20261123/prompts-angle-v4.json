@@ -1,0 +1,64 @@
+{
+  "createdAt": "2026-11-23",
+  "method": "built-in image_gen",
+  "status": "angle-ready-and-follow-through-study",
+  "gameApplied": false,
+  "scope": "사용자가 제공한 자세 참고에 따라 정면 후면 v3 대신 사선 준비폼과 회전 후 등판 노출을 비교. 스윙 연속 애니메이션은 아직 제작·교체하지 않음.",
+  "numberLayer": "0~99 문자열을 별도 SVG text로 스윙 후 자세에만 표시. PNG 원본에 숫자를 굽지 않고 파란색 검출 마스크를 사용하지 않음.",
+  "assets": [
+    {
+      "file": "batter-ready-right-angle-v4.png",
+      "role": "ready-right",
+      "references": [
+        "user-provided pose/camera reference; source image not copied into public assets",
+        "../../concepts/20261123/batter-master-v1.png"
+      ],
+      "prompts": [
+        "Use case: photorealistic-natural.\nAsset type: ONE isolated high-resolution full-body RIGHT-HANDED baseball batter INITIAL READY STANCE for a behind-home-plate batting game.\nInput image roles:\n1) The illustrated baseball poster is a POSE AND CAMERA GEOMETRY reference ONLY. Study only the foreground batter at lower left: side-on bent-knee stance, lead shoulder pointed diagonally toward the pitcher, hands at rear shoulder, bat rising toward upper-left. Do NOT reproduce its words, cartoon drawing style, pitcher, ball, stadium, strike-zone UI, or composition as a poster.\n2) The realistic adult Korean batter is an IDENTITY / MATERIAL / PHOTOGRAPHIC QUALITY reference ONLY, not its studio pose.\nPrimary request: translate the foreground cartoon batter's INITIAL READY BODY POSITION into a believable premium realistic sports photo cutout of our original adult athlete.\nCAMERA: behind home plate, looking forward toward the pitcher. The batter will stand in the LEFT batter's box on screen; pitcher lies diagonally away toward UPPER RIGHT of this cutout. View the athlete obliquely from the rear-side, not directly from his back and not head-on. His torso is SIDE-ON in a baseball stance; lead LEFT shoulder points toward the pitcher. Rear RIGHT shoulder is nearer camera. Show the side of helmet and side/rear of torso, with the head naturally turned to watch the distant pitcher toward upper right. He does not look at the viewer. His jersey back is foreshortened at ready and will become exposed when he rotates during the later swing. NO square-on broad back view. NO frontal presentation.\nPOSE: reproduce the reference's relaxed but loaded athletic crouch: both knees bent, slight forward hip hinge, feet shoulder-width along the diagonal direction to pitcher, lead LEFT foot farther/up-right, rear RIGHT foot closer/down-left, rear heel grounded at ready. Hands together beside the rear RIGHT shoulder around upper chest/shoulder height; bat rises behind the head toward UPPER LEFT, not held vertically in front of the face. Proper right-handed grip RIGHT hand above LEFT hand, naturally bent elbows, two hands around one handle. Calm compact pre-pitch stance, no swing yet. Anatomically correct, no exaggerated squat or wide symmetrical straddle.\nStyle/clothing: same original adult Korean male athlete, realistic athletic proportions, plain royal-blue short-sleeved baseball jersey, ivory baseball pants with thin blue piping, navy-blue helmet, dark belt, white/navy cleats and batting gloves. Warm late-afternoon stadium key light from upper left, crisp cloth weave, real skin and leather detail. No numbers or lettering baked into jersey; no actual team logos or sponsors.\nFraming: ONE athlete, entire helmet to both cleats and full wooden bat, highest available portrait resolution ideally at least 1400 pixels tall, generous transparent margins. No sheet, no contact pose, no inset. Keep both shoes on a believable batter's-box ground plane.\nBackground: TRUE TRANSPARENT alpha; no opaque white/black matte, no ground texture, no scene. Do not draw box markings into the cutout.\nAvoid: the previous square rear-view pose, shoulders parallel to the camera, athlete looking straight away with both legs spread symmetrically, head-on studio pose, face toward us, cartoon, model/mannequin look, text, logo, poster, watermark, cropped bat or cleats, soft blur.",
+        "Use case: background-extraction and precise-object-edit.\nEdit target: the supplied single realistic blue-uniform batter ready pose.\nKeep the exact athlete, silhouette, balanced bent-knee stance, hand grip, bat angle, side-on body camera, head looking toward upper right, all anatomy, clothing detail, resolution and full framing UNCHANGED.\nChange ONLY:\n1. Fully remove ALL of the blurred brown/white/blue studio backdrop and its glow/halo. Output a genuinely transparent RGBA cutout. Transparent pixels surround the entire athlete and occur between the limbs and bat. No colored wash, translucent cloud, floor, detached shadow or black/white matte.\n2. Remove EVERY brand/manufacturer mark from both shoes and gloves. In particular remove the dark swoosh-shaped logos from the outside of the shoes, replacing them with plain original stitched ivory/navy panels. No brand shapes, writing, logos, numbers or sponsors anywhere.\nThis is a clean game sprite cutout, not a new photograph or a new pose. No additions. Preserve warm lighting ON the athlete; transparency outside the body must remain perfectly clear."
+      ],
+      "width": 1024,
+      "height": 1536,
+      "transparentBackground": true
+    },
+    {
+      "file": "batter-ready-left-angle-v4.png",
+      "role": "ready-left",
+      "references": [
+        "batter-ready-right-angle-v4.png"
+      ],
+      "prompts": [
+        "Use case: precise-object-edit. Make ONE full-body LEFT-HANDED baseball batting READY stance matching the supplied realistic right-handed stance. Keep the same original adult Korean athlete, royal-blue jersey, ivory/navy plain unbranded cleats and gloves, helmet, photographic quality, high resolution 1024x1536 portrait framing, camera height and warm light FROM UPPER LEFT. This is a counterpart for the RIGHT side of the home plate, NOT the square-on rear pose.\nChange handedness naturally: the pitcher is diagonally away toward UPPER LEFT of this image. Athlete's lead RIGHT shoulder and head turn toward upper left. Rear LEFT shoulder is closer to camera. Torso is oblique side-on and slightly hinged with soft bent knees, exactly the athletic ready geometry of the supplied pose in the opposite batter's box. Hands together at rear LEFT shoulder; LEFT hand above RIGHT hand on bat. Bat rises toward UPPER RIGHT behind the shoulder. Lead right foot farther/up-left, rear left foot closer/down-right. Both feet grounded on the same perspective plane; no leg kick.\nNo swing yet, no broad square back presented to camera. Do not turn face to the viewer. Preserve anatomy, not a pixel-mirror of the lighting. Entire helmet, complete wooden bat and both cleats fit within generous margins.\nOutput a truly transparent RGBA game cutout, no studio blur, no floor or background, no glow/matte. Blank original uniform: absolutely no words, numbers, actual club logo, sponsor, swoosh or other manufacturer marks. One pose, one athlete, no sheet."
+      ],
+      "width": 1024,
+      "height": 1536,
+      "transparentBackground": true
+    },
+    {
+      "file": "batter-follow-right-angle-v4.png",
+      "role": "follow-through-right",
+      "references": [
+        "batter-ready-right-angle-v4.png"
+      ],
+      "prompts": [
+        "Use case: photorealistic-natural. ONE full-body realistic RIGHT-HANDED baseball batter at the END OF A CONTROLLED SWING, to follow the supplied ready pose. Same original adult Korean athlete, blue jersey, ivory pants, navy helmet, plain unbranded ivory/navy cleats and gloves, bat, camera scale/height, warm upper-left stadium lighting and high-resolution portrait framing.\nInput image is the right-handed READY pose for identity and camera continuity. Transform only the pose into a believable swing FOLLOW-THROUGH from that same fixed behind-home-plate camera. The athlete stands on the LEFT side of the plate; pitcher lies diagonally away toward UPPER RIGHT. After driving through the ball toward the field, hips and torso have rotated so the jersey BACK IS NOW CLEARLY VISIBLE to camera in a broad rear-three-quarter view. No front chest. Keep a clean blank middle-back area for a separately rendered jersey number. Do not print a number.\nThe lead LEFT leg is firm with a slightly bent knee, rear RIGHT foot pivots onto its toe with heel raised, hips rotate and weight transfers to front leg. Two gloved hands remain together on the bat, arms finish around/over the LEFT shoulder, bat wraps high behind that shoulder. Neck and head naturally follow the ball toward the field, not toward viewer. Correct human baseball mechanics, not a golf swing, not a victory pose, no extra fingers/limbs. Feet remain in the same batter's box ground plane, full body and entire bat in frame. No jump or celebration.\nPhotorealistic crisp cloth and natural anatomy; ONE isolated athlete, highest available portrait resolution ideally 1024x1536 or larger, same head/feet margins as reference. TRUE TRANSPARENT alpha around subject and between limbs. No studio cloud, colored blur, opaque backdrop, floor, glow, detached shadow, logo, shoe-brand swoosh, lettering, number, watermark, sprite grid or collage."
+      ],
+      "width": 1024,
+      "height": 1536,
+      "transparentBackground": true
+    },
+    {
+      "file": "batter-follow-left-angle-v4.png",
+      "role": "follow-through-left",
+      "references": [
+        "batter-follow-right-angle-v4.png"
+      ],
+      "prompts": [
+        "Use case: precise-object-edit. Create ONE corresponding LEFT-HANDED batter SWING FOLLOW-THROUGH to pair with the supplied RIGHT-HANDED follow-through.\nThe supplied image is the exact identity, camera, framing, material and pose-stage reference. Preserve the same original adult Korean male athlete, plain blue jersey, ivory pants, navy helmet, unbranded ivory/navy shoes/gloves and crisp realistic sports photography. Same 1024x1536 portrait scale and full wooden bat/feet margins.\nReverse the mechanics naturally for a LEFT-HANDED hitter in the RIGHT batter's box: pitcher and head/gaze diagonally away toward UPPER LEFT; lead RIGHT leg planted and firm, rear LEFT foot pivots on toe with heel lifted; two hands still together as the bat finishes above/around the RIGHT shoulder. The rotating torso presents a BROAD REAR-THREE-QUARTER JERSEY BACK to camera, now clearly visible for a later dynamic number. Keep central back blank, no printed number. This follows the left-handed ready stance rather than facing the camera.\nPreserve warm light FROM UPPER LEFT; don't mirror the lighting. Correct balanced baseball follow-through, not a victory/golf pose. No extra limbs, no jumping, no front-facing chest.\nOnly ONE isolated full-body athlete, no collage or animation grid. TRUE TRANSPARENT RGBA outside the athlete and between limbs, no studio blur, floor, glow or opaque matte. No words, numbers, logos, swooshes, sponsors or watermark. Do not change the style or invent scenery."
+      ],
+      "width": 1024,
+      "height": 1536,
+      "transparentBackground": true
+    }
+  ]
+}

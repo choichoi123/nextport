@@ -1,0 +1,10 @@
+.overlay { position:absolute; inset:0; z-index:5; overflow:hidden; pointer-events:none; isolation:isolate; contain:paint; }
+.rim,.lines { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; box-sizing:border-box; }
+.rim { border:1px solid #edcf8b70; background:radial-gradient(ellipse at center,transparent 0 62%,#f4d78d09 79%,#f4d78d26 100%); opacity:0; animation:contact-rim var(--contact-boost-duration,320ms) ease-out both; }
+.lines { transform-origin:50% 50%; opacity:0; animation:contact-speed var(--contact-boost-duration,320ms) cubic-bezier(.16,.68,.2,1) both; }
+.streak:nth-child(3n) { stroke-width:2; }
+.rim,.lines { animation-delay:var(--contact-boost-delay,0ms); }
+@keyframes contact-rim { 0% { opacity:0; } 20% { opacity:.75; } 70% { opacity:.3; } 100% { opacity:0; } }
+@keyframes contact-speed { 0% { opacity:0; transform:scale(.9); } 18% { opacity:.85; transform:scale(1); } 65% { opacity:.5; transform:scale(1.24); } 100% { opacity:0; transform:scale(1.45); } }
+@media(max-width:600px) { .streak:nth-child(n+5) { display:none; } }
+@media(prefers-reduced-motion:reduce) { .overlay { display:none; } }

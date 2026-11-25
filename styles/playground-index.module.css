@@ -84,6 +84,29 @@
 .sprintDiagram > span > span { margin-top: 12px; padding-left: 8px; font-size: 10px; letter-spacing: .45em; }
 .sprintDiagram b { position: absolute; bottom: 25px; left: 25px; color: #d6e3c3; font-size: 9px; font-weight: 500; letter-spacing: .13em; }
 
+.baseballDiagram { position:relative; display:grid; min-width:0; min-height:350px; place-items:center; overflow:hidden; border-right:1px solid var(--line); background:#173b30; color:#f4f0d5; }
+.baseballBackdrop { object-fit:cover; object-position:center 62%; opacity:.46; }
+.baseballDiagram::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,#132e2566,#132e25bb); }
+.baseballDiagramLabel,.baseballDiagram b { position:absolute; left:25px; z-index:1; font-size:9px; font-weight:500; letter-spacing:.13em; }
+.baseballDiagramLabel { top:25px; }
+.baseballDiagram b { bottom:25px; }
+.baseballDiamond { position:absolute; z-index:1; width:168px; height:168px; border:1px solid #ddd39c88; border-radius:5px; transform:rotate(45deg); box-shadow:inset 0 0 0 25px #d9d3ab08; }
+.baseballDiamond::before,.baseballDiamond::after { content:''; position:absolute; width:9px; height:9px; background:#e5ddac; border-radius:1px; }
+.baseballDiamond::before { left:-5px; top:-5px; box-shadow:168px 0 #e5ddac; }
+.baseballDiamond::after { right:-5px; bottom:-5px; box-shadow:-168px 0 #e5ddac; }
+.baseballBall { position:relative; z-index:1; width:88px; height:88px; border:1px solid #efe8d1; border-radius:50%; background:radial-gradient(circle at 32% 26%,#fffef7,#e3dbc3); box-shadow:0 12px 35px #061b1755; overflow:hidden; }
+.baseballBall::before,.baseballBall::after { content:''; position:absolute; top:-5px; width:52px; height:96px; border-radius:50%; border:3px dashed #9a4c3d; }
+.baseballBall::before { left:-31px; }
+.baseballBall::after { right:-31px; }
+.baseballAvailability { display:inline-flex; align-self:flex-start; margin-top:12px!important; padding:4px 8px; border:1px solid var(--line); border-radius:4px; color:var(--accent)!important; background:var(--soft); font-size:10px; line-height:1.5; }
+.baseballNotice { margin-top:13px!important; font-size:11px; line-height:1.8; color:var(--muted)!important; }
+.careerNotice { width:calc(100% - 48px); max-width:780px; margin:auto; padding:48px 0; overflow-wrap:anywhere; }
+.careerNotice h1 { margin:18px 0!important; color:var(--ink); font-size:clamp(30px,6vw,44px); font-weight:600; line-height:1.35; }
+.careerNotice>p { margin:15px 0; color:var(--muted); line-height:1.9; }
+.careerNoticeActions { display:flex; flex-wrap:wrap; gap:12px; margin-top:28px; }
+.careerNoticeActions a { display:inline-flex; align-items:center; min-height:44px; padding:10px 15px; border:1px solid var(--line); border-radius:6px; color:var(--ink); font-size:12px; }
+.careerNoticeActions a:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+
 .playgroundCard:hover {
   border-color: var(--accent);
   transform: translateY(-3px);
@@ -270,6 +293,7 @@
   .practiceCard .playgroundCardBody { padding: 24px; }
   .playgroundDiagram { min-height: 278px; border-right: 0; border-bottom: 1px solid var(--line); }
   .sprintDiagram { min-height: 278px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .baseballDiagram { min-height:278px; border-right:0; border-bottom:1px solid var(--line); }
   .playgroundCardBody { padding: 27px 24px 24px; }
   .playgroundCardTitle { font-size: 23px; }
   .playgroundCardDescription { font-size: 12px; }

@@ -1,0 +1,29 @@
+{
+  "createdAt": "2026-11-23",
+  "method": "built-in image_gen",
+  "status": "ready-stance-review-only",
+  "goal": "포수 뒤 고정 시점에서 양타석 모두 얼굴이 보이지 않고 등판과 헬멧 뒤가 보이는 준비 자세",
+  "gameApplied": false,
+  "scope": "새로운 준비폼 2장 비교; 기존 스윙 프레임·번호 합성·팀별 재색상은 다음 단계에서 연결",
+  "assets": [
+    {
+      "file": "batter-ready-right-rear-v3.png",
+      "width": 1086,
+      "height": 1448,
+      "transparentBackground": true,
+      "role": "right-handed ready stance",
+      "reference": "../../sprites/20261123/batter-right-v2.png",
+      "prompt": "Use case: photorealistic-natural.\nAsset type: ONE high-resolution transparent cutout of a right-handed baseball batter's INITIAL READY STANCE for a catcher-camera browser game. This is a new pose study, NOT an animation sheet.\nInput image role: reference image ONLY for the original adult Korean athlete's build, photorealistic cloth, blue uniform, ivory pants, navy helmet, gloves and warm afternoon lighting. Do not reuse its camera angle or poses.\nPrimary request: redraw ONE athlete, head-to-cleats and entire bat, in a STRICT REAR VIEW. The virtual pitcher is directly ahead at the TOP of the image, away from the camera. The camera is directly behind the athlete at about waist-to-chest height. We see the broad BACK OF HIS JERSEY and BACK OF HIS HELMET, almost square-on. His face is fully hidden: ZERO visible eye, nose, mouth, cheek, jaw profile, or jersey chest. He must not look over either shoulder at us. He watches the pitcher straight ahead, away from us.\nPose: believable balanced RIGHT-HANDED baseball batting ready stance, not a standing portrait, not running, not a golfer. Knees softly bent, feet comfortably wider than shoulders, hips slightly hinged, weight balanced with a small load on the rear right leg, lead LEFT foot slightly farther toward the pitcher. Both gloved hands together beside/above the REAR RIGHT shoulder, naturally bent elbows; RIGHT hand above LEFT hand on the wooden bat handle. In this direct rear view the right shoulder is on the viewer's RIGHT. Bat rises from the hands toward upper right, slightly behind the right shoulder, about 55–70 degrees above horizontal. Correct anatomy, two hands, two arms, two legs, complete bat. The stance must have athletic tension while exposing a clean broad middle-back jersey panel for a future dynamic number. Do not print any number.\nClothing: rich plain royal-blue jersey, ivory pants with thin blue side piping, dark belt, matching blue helmet with ear protection, ivory cleats and batting gloves. Preserve premium realistic sports photography rather than illustration/3D mannequin.\nFraming: a SINGLE full body upright portrait, ideally 1536x2048 or highest available portrait resolution, generous 8% clear margins on every side. Camera level, no fisheye, no top view, no second athlete, no duplicate, no montage. Entire head, both shoes, both hands and bat fit inside the image. Both cleats on one consistent ground baseline.\nLighting: warm late-afternoon key from upper left and soft daylight fill, crisp woven material, realistic subtle shadow detail, no motion blur, no artificial edge glow.\nBackground: actual transparent alpha, no stadium, no ground plane, no opaque background, no white/black matte, no detached drop shadow.\nAvoid: face, eye contact, looking back, front/side portrait, side-camera batting pose, split sheet, text, baked number, team logo, sponsor, watermark, cropped bat, blurry upscale."
+    },
+    {
+      "file": "batter-ready-left-rear-v3.png",
+      "width": 1086,
+      "height": 1448,
+      "transparentBackground": true,
+      "role": "left-handed ready stance",
+      "reference": "batter-ready-right-rear-v3.png",
+      "prompt": "Use case: precise-object-edit.\nAsset type: ONE high-resolution transparent full-body LEFT-HANDED batter ready pose to pair with the supplied RIGHT-HANDED pose.\nThe supplied image is the sole pose/camera/identity reference. Keep the SAME original adult athlete, exact direct REAR camera, head scale, body height, blue jersey, ivory pants, blue helmet, clean broad back, warm upper-left lighting, crisp sports photograph material quality and full body margins.\nChange ONLY batting handedness and its anatomy: put both gloved hands beside the rear LEFT shoulder, with LEFT hand above RIGHT hand on the wooden bat handle. The bat rises toward upper LEFT in the image. Shift the small rear-leg load onto the LEFT leg, lead RIGHT foot slightly farther toward the pitcher. A balanced natural ready stance, knees soft, slight hip hinge; two hands on one complete bat, not a swing, no extra limbs.\nCritical invariant: virtual pitcher is straight ahead at TOP of image. Show only BACK OF HEAD/HELMET and broad BACK OF JERSEY. NO face, cheek, jaw, nose, eye, mouth, chest or looking at camera. No looking back over shoulder. Match the camera and torso orientation of the supplied rear view exactly.\nOne isolated athlete only, no collage, no sprite grid. Full helmet, entire bat, both gloves, both cleats and generous transparent margins. Use highest available portrait resolution, maintain original aspect ratio/framing if possible; player should occupy nearly the same height as reference. The image must have TRUE TRANSPARENT alpha, no black/white matte or opaque floor. No text, number, lettering, team logo, sponsor, watermark, motion blur, or glow. Do not mirror the lighting. Leave the broad central jersey back blank for a later dynamic number."
+    }
+  ],
+  "numberPlan": "준비폼 확정 후 프레임별 의상영역/등판 위치를 분리해 숫자 0·00·07·99의 잘림을 검증. 기존 blue색 범위 마스크와 상단 경계를 그대로 재사용하지 않음."
+}

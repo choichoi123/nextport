@@ -1,0 +1,33 @@
+.review { margin-top:1rem; padding:1rem; min-width:0; border:1px dashed #718c7c; border-radius:.6rem; background:#eef2e9; color:#244238; font-size:.75rem; line-height:1.6; overflow-wrap:anywhere; }
+.heading { display:flex; justify-content:space-between; flex-wrap:wrap; gap:.4rem 1rem; }
+.heading strong { font-size:.8rem; }
+.heading span { opacity:.78; }
+.review p { margin:.45rem 0; }
+.status { color:#516755; }
+.persistence { padding:.75rem; margin:.75rem 0; background:#f9fbf6; border:1px solid #c8d2c4; border-radius:.4rem; }
+.review .retry { padding:.45rem .7rem; margin:.25rem 0; border:1px solid #718c7c; border-radius:.3rem; background:#244f3d; color:#fff; font:inherit; cursor:pointer; }
+.retry:disabled { opacity:.6; cursor:wait; }
+.retry:focus-visible { outline:2px solid currentColor; outline-offset:3px; }
+.metrics { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:.5rem; margin:.75rem 0; }
+.metrics div { min-width:0; }
+.metrics dt { font-size:.67rem; }
+.metrics dd { margin:0; font-size:1.15rem; font-variant-numeric:tabular-nums; }
+.versions { display:flex; flex-wrap:wrap; gap:.35rem 1rem; margin:.75rem 0; font-size:.67rem; }
+.versions div { min-width:0; }
+.versions dt { opacity:.75; }
+.versions dd { margin:0; }
+.versions code { font-size:.67rem; }
+.tableWrap { max-width:100%; overflow-x:auto; }
+.review table { border-collapse:collapse; width:100%; font-size:.67rem; text-align:left; }
+.review caption { text-align:left; padding:.4rem 0; }
+.review th, .review td { padding:.35rem .4rem; border-bottom:1px solid #c8d2c4; vertical-align:top; }
+.reason { display:block; opacity:.75; font-size:.65rem; }
+.review summary { cursor:pointer; padding:.6rem 0 .2rem; }
+.review summary:focus-visible { outline:2px solid currentColor; outline-offset:3px; }
+.review pre { max-height:20rem; max-width:100%; padding:.6rem; background:#f9fbf6; border:1px solid #c8d2c4; border-radius:.35rem; font-size:.65rem; white-space:pre-wrap; overflow:auto; overflow-wrap:anywhere; }
+:global(.dark) .review { background:#173b30; color:#e4e6d9; border-color:#6d8c78; }
+:global(.dark) .status { color:#d2d1ae; }
+:global(.dark) .review th, :global(.dark) .review td { border-color:#466653; }
+:global(.dark) .review pre { background:#102b23; border-color:#466653; }
+:global(.dark) .persistence { background:#102b23; border-color:#466653; }
+@media(max-width:480px) { .review { padding:.75rem; } .metrics { grid-template-columns:repeat(3,minmax(0,1fr)); } .review th,.review td { padding:.3rem .2rem; } }

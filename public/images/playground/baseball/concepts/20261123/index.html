@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="color-scheme" content="light dark">
+  <title>야구 타자 · 실사풍 아트 시안</title>
+  <style>
+    :root { color-scheme:light dark; --paper:#f5f3eb; --card:#fffcf6; --ink:#173d31; --muted:#627267; --line:#d9ded4; --accent:#b16b3c; --soft:#e5eadf; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:Arial,"Malgun Gothic",sans-serif; line-height:1.65; }
+    a { color:inherit; text-underline-offset:4px; }
+    a:focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
+    img { display:block; max-width:100%; }
+    main { width:min(1440px,100%); margin:0 auto; padding:40px 28px 64px; }
+    .eyebrow { margin:0 0 12px; color:var(--accent); font-size:11px; font-weight:700; letter-spacing:.16em; }
+    h1 { margin:0; font-size:clamp(28px,4.8vw,56px); line-height:1.2; letter-spacing:-.045em; }
+    .intro { max-width:780px; margin:20px 0 0; color:var(--muted); font-size:15px; }
+    .tags,.navigation { display:flex; flex-wrap:wrap; gap:8px; padding:0; list-style:none; }
+    .tags { margin:22px 0 0; }
+    .tags li { border:1px solid var(--line); border-radius:99px; padding:5px 11px; font-size:12px; }
+    .navigation { margin:24px 0 0; gap:6px 20px; }
+    .navigation a { display:inline-flex; align-items:center; min-height:44px; font-size:14px; font-weight:700; }
+    section { margin-top:44px; padding-top:28px; border-top:1px solid var(--line); scroll-margin-top:20px; }
+    .section-heading { display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:12px 24px; margin-bottom:20px; }
+    h2 { margin:0; font-size:clamp(23px,3vw,32px); line-height:1.3; letter-spacing:-.035em; }
+    .section-note { margin:8px 0 0; color:var(--muted); font-size:14px; }
+    figure { min-width:0; margin:0; }
+    .art-card { overflow:hidden; border:1px solid var(--line); border-radius:14px; background:var(--card); }
+    .art-card figcaption { padding:17px 20px; }
+    .art-card h3 { margin:0 0 4px; font-size:18px; letter-spacing:-.025em; }
+    .art-card p { margin:0; color:var(--muted); font-size:13px; }
+    .art-link { display:block; background:#d1c2b4; }
+    .art-link img { width:100%; height:auto; }
+    .hero-grid { display:grid; grid-template-columns:minmax(0,.78fr) minmax(0,1.4fr); gap:20px; align-items:start; }
+    .master .art-link img { max-height:610px; object-fit:contain; }
+    .enlarge { display:inline-flex; align-items:center; min-height:44px; margin-top:7px; font-size:13px; font-weight:700; }
+    .stance img { width:100%; max-height:780px; object-fit:contain; background:#d1c2b4; }
+    .stance-labels { display:grid; grid-template-columns:1fr 1fr; gap:20px; padding:14px 20px; border-bottom:1px solid var(--line); }
+    .stance-labels strong { display:block; font-size:15px; }
+    .stance-labels span { color:var(--muted); font-size:13px; }
+    .team-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:16px; }
+    .team-card { min-width:0; overflow:hidden; background:var(--card); border:1px solid var(--line); border-radius:12px; }
+    .crop { overflow:hidden; width:100%; aspect-ratio:2 / 5; background:#d1c2b4; }
+    .crop img { width:500%; max-width:none; height:100%; transform:translateX(calc(var(--slot) * -20%)); }
+    .team-caption { padding:14px 13px 12px; }
+    .team-meta { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:5px; margin-bottom:6px; font-size:10px; letter-spacing:.04em; color:var(--muted); }
+    .confirmed { padding:2px 6px; border-radius:99px; background:var(--soft); color:var(--ink); font-weight:700; }
+    .team-name { margin:0 0 4px; font-size:clamp(14px,1.4vw,18px); line-height:1.4; letter-spacing:-.03em; word-break:keep-all; overflow-wrap:anywhere; }
+    .team-reason { margin:0; color:var(--muted); font-size:11px; }
+    .team-reason { margin-top:6px; }
+    .swatches { display:flex; gap:5px; margin-top:11px; }
+    .swatches i { display:block; width:16px; height:16px; border:1px solid #8885; border-radius:50%; }
+    .board-links { display:flex; flex-wrap:wrap; gap:5px 24px; margin-top:16px; }
+    .board-links a { display:inline-flex; min-height:44px; align-items:center; font-size:13px; font-weight:700; }
+    .notice { margin-top:18px; padding:17px 20px; border-left:3px solid var(--accent); background:var(--soft); font-size:13px; color:var(--muted); }
+    footer { margin-top:44px; color:var(--muted); font-size:12px; }
+    @media (max-width:1000px) { .team-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } .team-name { font-size:17px; } }
+    @media (max-width:600px) { main { padding:28px 16px 44px; } .hero-grid { grid-template-columns:1fr; } .master .art-link img { max-height:540px; } .team-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; } .team-caption { padding:12px 10px; } .team-name { font-size:16px; } .section-heading { align-items:flex-start; } .stance-labels { gap:10px; padding:12px; } .art-card figcaption { padding:15px; } }
+    @media (prefers-color-scheme:dark) { :root { --paper:#10271f; --card:#19372d; --ink:#f1ead8; --muted:#b5c6b9; --line:#3b5548; --accent:#dca778; --soft:#234136; } }
+    @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">BASEBALL · ART DIRECTION 01</p>
+      <h1>한 타석의 시작,<br>우리만의 야구.</h1>
+      <p class="intro">달리기의 사진 같은 질감과 따뜻한 경기장 조명을 이어받은 첫 야구 시안입니다. 같은 선수를 기준으로 타격 자세와 10개 팀 의상·헬멧을 비교합니다.</p>
+      <ul class="tags" aria-label="검토 범위"><li>실사풍 정지 시안</li><li>좌타 · 우타</li><li>10팀 대표 의상</li><li>게임 기능 적용 전</li></ul>
+      <nav aria-label="시안 바로가기"><ul class="navigation"><li><a href="#character">타자와 야구장</a></li><li><a href="#stance">좌우타 자세</a></li><li><a href="#teams">10팀 의상 비교</a></li></ul></nav>
+    </header>
+
+    <section id="character" aria-labelledby="character-heading">
+      <div class="section-heading"><div><h2 id="character-heading">타자와 야구장</h2><p class="section-note">얼굴·체형·광원과 홈플레이트 뒤 시점을 먼저 확인합니다.</p></div></div>
+      <div class="hero-grid">
+        <figure class="art-card master"><a class="art-link" href="batter-master-v1.png" aria-label="기준 타자 원본 이미지 열기"><img src="batter-master-v1.png" width="1122" height="1402" alt="아이보리 유니폼과 네이비 헬멧을 착용하고 나무 배트를 든 실사풍 성인 타자"></a><figcaption><h3>기준 타자</h3><p>같은 얼굴과 체형을 유지하는 의상 비교의 기준입니다.</p><a class="enlarge" href="batter-master-v1.png">원본 확대 보기 ↗</a></figcaption></figure>
+        <figure class="art-card"><a class="art-link" href="stadium-batting-view-v1.png" aria-label="야구장 원본 이미지 열기"><img src="stadium-batting-view-v1.png" width="1672" height="941" alt="홈플레이트 뒤에서 마운드와 외야를 바라본 따뜻한 오후의 야구장"></a><figcaption><h3>홈플레이트에서 바라본 경기장</h3><p>타자·투수·공·스트라이크존을 따로 얹을 수 있도록 비워 둔 배경입니다.</p><a class="enlarge" href="stadium-batting-view-v1.png">원본 확대 보기 ↗</a></figcaption></figure>
+      </div>
+    </section>
+
+    <section id="stance" aria-labelledby="stance-heading">
+      <div class="section-heading"><div><h2 id="stance-heading">좌우타 준비 자세</h2><p class="section-note">동작 프레임을 만들기 전의 준비 자세 비교입니다.</p></div><a class="enlarge" href="batting-handedness-v1.png">자세 원본 확대 ↗</a></div>
+      <figure class="art-card stance"><a class="art-link" href="batting-handedness-v1.png" aria-label="우타와 좌타 자세 비교 원본 열기"><img src="batting-handedness-v1.png" width="1536" height="1024" loading="lazy" alt="왼쪽 RHB는 우타 준비 자세, 오른쪽 LHB는 좌타 준비 자세인 동일 선수의 비교 시안"></a><figcaption class="stance-labels"><div><strong>왼쪽 · 우타 RHB</strong><span>오른손 타격 준비 자세</span></div><div><strong>오른쪽 · 좌타 LHB</strong><span>왼손 타격 준비 자세</span></div></figcaption></figure>
+    </section>
+
+    <section id="teams" aria-labelledby="teams-heading">
+      <div class="section-heading"><div><h2 id="teams-heading">10개 팀, 같은 타자</h2><p class="section-note">화면에 표시된 10개 구단명으로 확정했습니다. 같은 선수의 팀별 의상과 헬멧을 비교합니다.</p></div><span class="confirmed">10구단 이름 확정</span></div>
+      <div class="team-grid">
+        <article class="team-card"><div class="crop" style="--slot:0"><img src="team-uniforms-01-05-v1.png" width="1774" height="887" loading="lazy" alt="01번 버건디 유니폼과 버건디 헬멧"></div><div class="team-caption"><div class="team-meta"><span>01 · BURGUNDY</span><span class="confirmed">이름 확정</span></div><h3 class="team-name">피움 히어로즈</h3><p class="team-reason">재능을 피우는 성장의 의미</p><div class="swatches" aria-hidden="true"><i style="background:#742637"></i><i style="background:#f3eee4"></i></div></div></article>
+        <article class="team-card"><div class="crop" style="--slot:1"><img src="team-uniforms-01-05-v1.png" width="1774" height="887" loading="lazy" alt="02번 블루 유니폼과 블루 헬멧"></div><div class="team-caption"><div class="team-meta"><span>02 · BLUE</span><span class="confirmed">이름 확정</span></div><h3 class="team-name">함성 라이온즈</h3><p class="team-reason">관중의 함성이 들리는 이름</p><div class="swatches" aria-hidden="true"><i style="background:#2453a5"></i><i style="background:#f4f4ef"></i></div></div></article>
+        <article class="team-card"><div class="crop" style="--slot:2"><img src="team-uniforms-01-05-v1.png" width="1774" height="887" loading="lazy" alt="03번 레드 유니폼과 레드 헬멧"></div><div class="team-caption"><div class="team-meta"><span>03 · RED</span><span class="confirmed">이름 확정</span></div><h3 class="team-name">MSG 랜더스</h3><p class="team-reason">감칠맛 나는 타격과 경기</p><div class="swatches" aria-hidden="true"><i style="background:#d32630"></i><i style="background:#f4f4ef"></i></div></div></article>
+        <article class="team-card"><div class="crop" style="--slot:3"><img src="team-uniforms-01-05-v1.png" width="1774" height="887" loading="lazy" alt="04번 레드 포인트가 있는 블랙 유니폼과 블랙 헬멧"></div><div class="team-caption"><div class="team-meta"><span>04 · BLACK / RED</span><span class="confirmed">이름 확정</span></div><h3 class="team-name">PT 위즈</h3><p class="team-reason">훈련하며 강해지는 선수</p><div class="swatches" aria-hidden="true"><i style="background:#222225"></i><i style="background:#cf2639"></i></div></div></article>
+        <article class="team-card"><div class="crop" style="--slot:4"><img src="team-uniforms-01-05-v1.png" width="1774" height="887" loading="lazy" alt="05번 화이트와 레드 유니폼, 레드 헬멧"></div><div class="team-caption"><div class="team-meta"><span>05 · WHITE / RED</span><span class="confirmed">이름 확정</span></div><h3 class="team-name">기세 타이거즈</h3><p class="team-reason">타석을 압도하는 기세</p><div class="swatches" aria-hidden="true"><i style="background:#f4f4ef"></i><i style="background:#c92b38"></i></div></div></article>
+        <article class="team-card"><div class="crop" style="--slot:0"><img src="team-uniforms-06-10-v1.png" width="1774" height="887" loading="lazy" alt="06번 세로 줄무늬 유니폼과 블랙 헬멧"></div><div class="team-caption"><div class="team-meta"><span>06 · PINSTRIPE</span><span class="confirmed">이름 확정</span></div><h3 class="team-name">GG 트윈스</h3><p class="team-reason">Good Game, 즐거운 승부</p><div class="swatches" aria-hidden="true"><i style="background:#f4f4ef"></i><i style="background:#222225"></i><i style="background:#bd303c"></i></div></div></article>
+        <article class="team-card"><div class="crop" style="--slot:1"><img src="team-uniforms-06-10-v1.png" width="1774" height="887" loading="lazy" alt="07번 아이보리와 네이비 유니폼, 네이비 헬멧"></div><div class="team-caption"><div class="team-meta"><span>07 · IVORY / NAVY</span><span class="confirmed">이름 확정</span></div><h3 class="team-name">두근 베어스</h3><p class="team-reason">공이 날아올 때의 두근거림</p><div class="swatches" aria-hidden="true"><i style="background:#ede7d9"></i><i style="background:#202d48"></i></div></div></article>
+        <article class="team-card"><div class="crop" style="--slot:2"><img src="team-uniforms-06-10-v1.png" width="1774" height="887" loading="lazy" alt="08번 네이비 어깨와 골드·민트 포인트 유니폼, 네이비 헬멧"></div><div class="team-caption"><div class="team-meta"><span>08 · NAVY / GOLD</span><span class="confirmed">이름 확정</span></div><h3 class="team-name">XP 다이노스</h3><p class="team-reason">경험치를 쌓는 성장의 상징</p><div class="swatches" aria-hidden="true"><i style="background:#20334c"></i><i style="background:#b69d63"></i><i style="background:#8ccbc1"></i></div></div></article>
+        <article class="team-card"><div class="crop" style="--slot:3"><img src="team-uniforms-06-10-v1.png" width="1774" height="887" loading="lazy" alt="09번 오렌지와 네이비 유니폼, 짙은 네이비 헬멧"></div><div class="team-caption"><div class="team-meta"><span>09 · ORANGE / NAVY</span><span class="confirmed">이름 확정</span></div><h3 class="team-name">한방 이글스</h3><p class="team-reason">승부를 바꾸는 한 방</p><div class="swatches" aria-hidden="true"><i style="background:#dc681e"></i><i style="background:#202d44"></i></div></div></article>
+        <article class="team-card"><div class="crop" style="--slot:4"><img src="team-uniforms-06-10-v1.png" width="1774" height="887" loading="lazy" alt="10번 레드 테두리가 있는 네이비 유니폼과 네이비 헬멧"></div><div class="team-caption"><div class="team-meta"><span>10 · NAVY / RED</span><span class="confirmed">이름 확정</span></div><h3 class="team-name">로켓 자이언츠</h3><p class="team-reason">로켓처럼 뻗는 강한 타구</p><div class="swatches" aria-hidden="true"><i style="background:#1e2f48"></i><i style="background:#cf3d45"></i></div></div></article>
+      </div>
+      <div class="board-links"><a href="team-uniforms-01-05-v1.png">01–05 전체 비교 원본 ↗</a><a href="team-uniforms-06-10-v1.png">06–10 전체 비교 원본 ↗</a></div>
+      <p class="notice">10개 구단명은 확정했습니다. 유니폼·헬멧은 팀별 대표색을 비교하는 디자인 초안이며, 이름 확정은 의상 디자인 전체의 확정을 뜻하지 않습니다. 이름·로고·스폰서는 이미지에 넣지 않았습니다.</p>
+    </section>
+    <footer>2026.11.23 · 야구 타자 성장 게임 시안 검토 · 정지 이미지 비교 화면입니다.</footer>
+  </main>
+</body>
+</html>

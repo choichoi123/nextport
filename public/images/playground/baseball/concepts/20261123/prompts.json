@@ -1,0 +1,68 @@
+{
+  "created": "2026-11-23",
+  "purpose": "독립 야구 타자 성장 게임의 실사풍 미술 시안과 팀 의상 비교",
+  "mode": "built-in image_gen",
+  "status": "approved-concepts-with-prototype-background",
+  "appliedToGame": true,
+  "gameUsage": {
+    "background": "stadium-batting-view-v1.png",
+    "characterBoards": "캐릭터·좌우타·의상 보드는 시안/참조로 보존; 게임은 별도 sprites/20261123의 v2 사용"
+  },
+  "existingSprintAndConnectionsChanged": false,
+  "teamNameStatus": {
+    "confirmed": [
+      "피움 히어로즈",
+      "함성 라이온즈",
+      "MSG 랜더스",
+      "PT 위즈",
+      "기세 타이거즈",
+      "GG 트윈스",
+      "두근 베어스",
+      "XP 다이노스",
+      "한방 이글스",
+      "로켓 자이언츠"
+    ],
+    "confirmedAt": "2026-11-23",
+    "basis": "3030 비교 화면의 추천 표시 이름 10개를 사용자가 그대로 확정"
+  },
+  "assets": [
+    {
+      "key": "batter",
+      "file": "batter-master-v1.png",
+      "reference": null,
+      "prompt": "Use case: photorealistic-natural. Asset type: master character design photograph for an independent browser baseball batting game; a first visual concept, not a gameplay screenshot or sprite sheet. Create ONE original adult Korean male baseball batter, late twenties, athletic professional baseball build, natural proportions, realistic face and skin, short dark hair. Preserve the same premium photographic realism, believable joints, realistic fabric, warm late-afternoon sunlight and soft cool skylight used in our existing athletics game. Full body from helmet to both cleats AND the complete wooden bat visible with generous margins. Three-quarter front character view at natural eye level, calm focused expression. He stands in a relaxed baseball ready pose, knees softly bent, naturally gripping a plain maple bat with both gloved hands beside his right shoulder, correct right-handed grip with right hand above left. Ivory button-front baseball jersey and pants, fine navy piping, navy belt, navy batting helmet with ear protection, ivory and navy cleats. Intentionally blank jersey chest and blank helmet: no lettering, no team symbols, no manufacturer logo, no sponsor. Simple warm pale-gray photographic studio sweep with a very soft grounded foot shadow; stadium-like warm key light from upper left, realistic polished helmet reflections, stitched cloth and leather detail. 4:5 or portrait composition. No collage, no extra people, no comic/CG mannequin appearance, no exaggerated muscles, no extra arms/fingers, no cropped helmet or bat, no typography, no grid, no UI, no watermark."
+    },
+    {
+      "key": "stadium",
+      "file": "stadium-batting-view-v1.png",
+      "reference": null,
+      "prompt": "Use case: photorealistic-natural. Asset type: baseball stadium environment concept for a browser batting game, matching the warm premium sports editorial photography of our existing athletics stadium. WIDE LANDSCAPE 16:9. Camera centered on home plate looking toward the pitching mound and center field from a little behind the catcher, slightly elevated at approximately an adult standing eye height; a restrained 28-35mm lens, level horizon, readable realistic baseball diamond perspective. Foreground has the entire home plate and chalk batter boxes on BOTH sides clearly visible in terracotta dirt, enough empty space at lower left and lower right for later separate batter characters. A pitching mound is centered at its believable distance, green striped outfield stretches behind it, foul lines extend toward left and right edges, elegant modern Korean-style baseball grandstands surround the field, indistinct distant spectators, softly curved pale cream roof canopies, distant trees, soft pale-blue sky. Warm late-afternoon sunlight from upper left with cool sky fill, realistic grass/dirt/white chalk, subtle cast shadows. NO foreground batter, NO catcher, NO umpire, NO pitcher or people on the playing surface: environment plate only so characters and ball can be added separately in code. No baseball in flight, no strike-zone box or HUD, no text, no legible advertising, no real club logos, no existing-stadium identity, no scoreboard lettering, no running track, no Olympic rings, no watermark. The center flight corridor must remain uncluttered. Photographically believable, not vector art, not a video-game UI screenshot."
+    },
+    {
+      "key": "handed",
+      "file": "batting-handedness-v1.png",
+      "reference": "batter-master-v1.png",
+      "prompt": "Use case: identity-preserve. Input image 1 is the edit/reference target for the SAME original baseball athlete. Create a photorealistic TWO-PANEL SIDE-BY-SIDE batting-stance comparison sheet using that exact same face, adult Korean identity, body build, ivory baseball uniform, plain navy helmet, ivory/navy shoes, wooden bat, warm late-afternoon upper-left light and pale neutral studio background. Landscape image with TWO equal panels and a generous narrow empty gutter, all helmet, both feet and full bat in each panel visible. Each panel is a camera study from BEHIND HOME PLATE looking toward an imaginary pitcher beyond the top-center; the athlete is seen at a three-quarter REAR angle, not a front-on side portrait. LEFT PANEL: a RIGHT-HANDED batter in the batter's box on viewer LEFT of home plate, front left shoulder facing pitcher, both hands correctly gripping the bat near the right rear shoulder, right hand above left on the handle, knees slightly flexed, feet shoulder-width, head turned to watch the pitcher. RIGHT PANEL: the SAME athlete as a LEFT-HANDED batter in the opposite box on viewer RIGHT, front right shoulder toward pitcher, hands near left rear shoulder with left hand above right on handle. Correct opposite handed grip and anatomically plausible elbow/wrist relationships. The helmet ear protection should be physically appropriate for each stance. Both ready stances at same scale and ground height, matching body proportions, not swinging or crossing the plate. Plain blank jersey and helmet with no words/logos/sponsors. Tiny simple labels only 'RHB' over the left panel and 'LHB' over the right panel, no other text. Do not merely mirror printed marks; preserve light coming from the same world direction. No contact ball, UI, strike zone, collage of extra poses, body cropping, duplicate fingers or limbs, no plastic render. This is a stance concept comparison, not animation frames."
+    },
+    {
+      "key": "teamsA",
+      "file": "team-uniforms-01-05-v1.png",
+      "reference": "batter-master-v1.png",
+      "prompt": "Use case: identity-preserve / product-mockup. Input image 1 fixes the SAME original Korean male baseball player identity, physique, realism and clothing material quality. Make a HIGH DETAIL PHOTOREALISTIC FIVE-COLUMN uniform-and-batting-helmet comparison sheet. Exactly five equal vertical panels LEFT TO RIGHT, pale warm-gray background, thin empty gutters, no extra athletes or inset portraits. One identical full-body player per panel in the SAME relaxed three-quarter front right-handed ready stance as the reference, holding the SAME plain maple bat, full helmet and bat tip to both cleats completely visible. Same face, scale, lens, framing, adult anatomy, warm light from upper left, accurate gloves and hands, realistic cloth folds and helmet reflections. CHANGE ONLY UNIFORM/HELMET COLOR DESIGN by panel. Panel 01: rich BURGUNDY button-front jersey, white piping, ivory pants, BURGUNDY helmet. Panel 02: saturated ROYAL BLUE jersey with white trim, white pants, ROYAL BLUE helmet. Panel 03: saturated SCARLET RED jersey with white trim, white pants, SCARLET RED helmet. Panel 04: BLACK jersey with distinct red collar/sleeve piping and red undersleeves, white pants, BLACK helmet with a restrained thin red accent. Panel 05: WHITE jersey with red sleeve/collar piping and red belt/undersleeves, white pants with a red side stripe, SCARLET RED helmet. Keep each design distinguishable, grounded in Korean professional baseball uniform color traditions, but NO actual team logos, NO sponsors, NO manufacturer marks, NO crests, NO team names, no jersey numbers. Leave chest/helmet mark areas blank so original fictional team branding can be applied separately later. Small clear black panel index at top only: '01', '02', '03', '04', '05'. No other typography. Wide landscape board, premium sportswear catalog/editorial photography, no mannequin/CG cartoon, no duplicated or malformed bats, no cropped player. Comparison-only visual concept, not production sprite frames."
+    },
+    {
+      "key": "teamsB",
+      "file": "team-uniforms-06-10-v1.png",
+      "reference": "batter-master-v1.png",
+      "prompt": "Use case: identity-preserve / product-mockup. Input image 1 fixes the SAME original Korean male baseball player identity, physique, realism and clothing material quality. Make a HIGH DETAIL PHOTOREALISTIC FIVE-COLUMN uniform-and-batting-helmet comparison sheet. Exactly five equal vertical panels LEFT TO RIGHT, pale warm-gray background, thin empty gutters, no extra athletes or inset portraits. One identical full-body player per panel in the SAME relaxed three-quarter front right-handed ready stance as the reference, holding the SAME plain maple bat, full helmet and bat tip to both cleats completely visible. Same face, scale, lens, framing, adult anatomy, warm light from upper left, accurate gloves and hands, realistic cloth folds and helmet reflections. CHANGE ONLY UNIFORM/HELMET COLOR DESIGN by panel. Panel 06: WHITE jersey AND white pants with fine dark vertical PINSTRIPES, black undersleeves, a small red piping accent, BLACK batting helmet. Panel 07: IVORY WHITE jersey and white pants, NAVY collar/sleeve piping, navy undersleeves, a restrained small red piping accent, DARK NAVY helmet. Panel 08: WHITE jersey with distinct NAVY shoulder/sleeve panels, subtle GOLD piping and a small restrained MINT accent, white pants with navy side piping, NAVY helmet. Panel 09: rich ORANGE jersey with DEEP NAVY shoulder/sleeve panels and ivory piping, white pants, very DARK NAVY helmet. Panel 10: NAVY jersey with RED collar/sleeve piping and WHITE side accents, white pants, NAVY helmet with a thin red detail. Keep each design distinguishable, grounded in Korean professional baseball uniform color traditions, but NO actual team logos, NO sponsors, NO manufacturer marks, NO crests, NO team names, no jersey numbers. Leave chest/helmet mark areas blank so original fictional team branding can be applied separately later. Small clear black panel index at top only: '06', '07', '08', '09', '10'. No other typography. Wide landscape board, premium sportswear catalog/editorial photography, no mannequin/CG cartoon, no duplicated or malformed bats, no cropped player. Comparison-only visual concept, not production sprite frames."
+    }
+  ],
+  "notes": [
+    "새로운 오리지널 성인 야구 타자를 동일 기준 이미지로 사용",
+    "원본 생성 PNG를 편집·재인코딩하지 않고 복사 보존",
+    "구단명·로고·스폰서 없는 색상/패턴 시안, 실제 특정 시즌 의상의 완전한 복제품 아님",
+    "비교 보드의 01~10은 HTML에서 이름 후보와 연결",
+    "좌우타는 정지 준비 자세 시안이며 스윙·물리·최종 게임 카메라 검증은 아직 진행하지 않음",
+    "경기장 원근은 미술 시안이며 실제 거리·ABS·릴리스 좌표와 별도로 검증해야 함"
+  ]
+}

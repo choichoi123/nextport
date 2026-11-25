@@ -1,0 +1,187 @@
+{
+  "date": "2026-11-23",
+  "type": "identity-preserve / precise-object-edit",
+  "mode": "built-in image_gen",
+  "status": "selected for local foot-placement review and gameplay; not committed or deployed",
+  "editTarget": "../../poses/20261123/batter-follow-left-angle-v4.png",
+  "output": "left-follow-v6.png",
+  "transparentBackground": true,
+  "prompt": "Use case: identity-preserve, precise-object-edit.\nAsset type: one complete photorealistic baseball batter animation sprite, 1024 x 1536 portrait PNG with genuine transparent alpha.\nThe input image is the ONLY edit target, not a loose style reference. Preserve the exact same athlete, realistic face/body identity, warm photographic lighting, blue jersey, white pants with thin blue piping, navy helmet, white gloves, navy-white cleats, camera viewpoint and high-resolution fabric/skin detail.\nChange ONLY the lower legs and shoes below the knees, narrowing the stance about 18–22% by bringing both feet inward. The lead shoe is on the image LEFT and remains planted flat, its toe pointing left. The trail shoe on the RIGHT remains on a natural toe/ball pivot with the heel raised. Maintain believable connected knees, calves, ankles and trouser folds. Do not shorten, lengthen, stretch, squash, segment or rig the limbs.\nKeep everything above the knees as unchanged as possible: exact head/face, helmet, shoulders, blue jersey torso/hips, hands/grip, arms, wooden bat orientation and absolute screen position. No whole-person translation, recentering, zoom, rotation, crop, resizing or camera change. Preserve full-body frame, original head height and shoe ground height.\nTransparent cutout only. No ground plane, scenery, shadow, colored backdrop, black backdrop, glow, vignette, labels, lettering, jersey number, sponsor, logo or watermark. One complete continuous person only, not a collage or sheet. No illustration, cartoon, mannequin, puppet, reversed joints, extra limbs, duplicated bat or implausible anatomy.\nPose: LEFT-HANDED FOLLOW-THROUGH finish. Keep the input's exact rotated back and blank jersey-number panel, shoulders and torso, face direction, lifted arms, hands/grip and upward-right wooden bat unchanged.\nSource-pixel guide on this same canvas: original lead sole toe-to-heel spans x77–307 around ground y1470, with trailing toe near x863 y1513. Bring the lead toe to approximately x165 and its heel to approximately x375, preserving its sole-ground y. Bring the trailing toe inward to x760–785 at the SAME y1513, retaining original raised heel/toe-pivot orientation. These are inward foot moves of roughly 85–95px each. Preserve relative shoe sizes and physically coherent calves/ankles.",
+  "invariants": [
+    "Approved original remains unchanged",
+    "Whole photoreal actor; no segmented rig",
+    "Upper-body and wooden bat pose held; lower-leg stance narrowed",
+    "No runtime source references changed"
+  ],
+  "review": {
+    "visual": "Full photoreal person and slanted upper-body pose remain recognizable. Front foot is flat; rear heel is raised on a toe pivot. Candidate-only: inspect on photographed batting-box background before adoption.",
+    "limitation": "Generated output is not a lossless pixel patch. Source foot/registration coordinates must be remeasured for this image.",
+    "candidateFootLandmarks": {
+      "name": "follow",
+      "source": "public/images/playground/baseball/motion/20261123-v6-foot-candidates/left-follow-v6.png",
+      "original": "public/images/playground/baseball/poses/20261123/batter-follow-left-angle-v4.png",
+      "width": 1024,
+      "height": 1536,
+      "hasAlpha": true,
+      "sha256": "d99f98dd072d20b3535ba67d034b5ef0e301ca5c2373a722254d24a82cd902b9",
+      "feet": {
+        "lead": {
+          "outline": [
+            [
+              278,
+              1386
+            ],
+            [
+              378,
+              1397
+            ],
+            [
+              392,
+              1435
+            ],
+            [
+              391,
+              1458
+            ],
+            [
+              359,
+              1473
+            ],
+            [
+              205,
+              1487
+            ],
+            [
+              153,
+              1472
+            ],
+            [
+              150,
+              1447
+            ]
+          ],
+          "contact": [
+            [
+              160,
+              1467
+            ],
+            [
+              185,
+              1475
+            ],
+            [
+              381,
+              1460
+            ],
+            [
+              381,
+              1455
+            ]
+          ],
+          "groundReference": {
+            "x": 270.5,
+            "y": 1467.5
+          },
+          "kind": "flat-sole",
+          "liftPx": 0
+        },
+        "trail": {
+          "outline": [
+            [
+              755,
+              1320
+            ],
+            [
+              808,
+              1328
+            ],
+            [
+              830,
+              1351
+            ],
+            [
+              814,
+              1414
+            ],
+            [
+              800,
+              1474
+            ],
+            [
+              779,
+              1500
+            ],
+            [
+              741,
+              1514
+            ],
+            [
+              729,
+              1496
+            ]
+          ],
+          "contact": [
+            [
+              736,
+              1501
+            ],
+            [
+              760,
+              1501
+            ],
+            [
+              760,
+              1509
+            ],
+            [
+              736,
+              1509
+            ]
+          ],
+          "groundReference": {
+            "x": 748,
+            "y": 1505
+          },
+          "kind": "toe-pivot",
+          "liftPx": 0
+        }
+      },
+      "registrationAnchor": {
+        "x": 460,
+        "y": 1482
+      },
+      "batLandmarks": {
+        "knob": null,
+        "grip": [
+          754,
+          217
+        ],
+        "barrelStart": [
+          883,
+          111
+        ],
+        "barrelEnd": [
+          979,
+          44
+        ]
+      },
+      "landmarkAccuracyPx": 15,
+      "confidence": {
+        "outline": "visual estimates cross-checked against alpha>=200 row runs; +/-15 source px",
+        "contact": "medium; inferred from shoe sole/toe pose, not measured ground photograph",
+        "bat": "retained upper-body landmarks approximately +/-12px; candidate is not pixel-identical"
+      },
+      "upperBodyRgbaMeanAbsoluteDifference": 7.605935062705038,
+      "notes": [
+        "Whole photoreal pose preserved visually; recheck adjacent frame connection and toe support."
+      ]
+    }
+  },
+  "selection": {
+    "date": "2026-11-23",
+    "scope": "Lower-leg stance only; original16 files preserved; whole-pose support registration",
+    "review": "Viewed original and generated whole PNGs and compared on the same local ballpark. No segmented rig or body stretching. Photographic identity, slanted upper-body pose and wooden bat retained visually; not pixel-identical.",
+    "runtime": "lib/playground-baseball-animation.mjs POSE_EDITS",
+    "rollback": "Each active frame retains originalSrc."
+  }
+}
