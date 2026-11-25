@@ -1,14 +1,16 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/router'
 import PlaygroundShell from '@/components/playground/playground-shell'
+import { BASEBALL_CAREER_BRAND } from '@/lib/playground-baseball-brand.mjs'
 import styles from '@/styles/playground-index.module.css'
 
 const copy = {
   ko: {
     title: '놀이터 | 최지훈 포트폴리오',
-    description: '100m 달리기와 조작 연습을 골라 즐기는 작은 놀이터입니다.',
+    description: '100m 달리기, 오늘부터 타자와 조작 연습을 골라 즐기는 작은 놀이터입니다.',
     heading: ['게임을 고르고,', '나만의 리듬으로.'],
-    introduction: '100m 질주부터 작은 조작 연습까지. 해보고 싶은 것을 골라 시작해 보세요.',
+    introduction: '100m 질주부터 나만의 타자를 키우는 야구까지. 해보고 싶은 것을 골라보세요.',
     collection: '게임 선택',
     practice: '가볍게 시작하는 조작 연습',
     cardTitle: '방향키·Space 조작 연습',
@@ -21,12 +23,19 @@ const copy = {
     sprintFeatures: ['혼자 달리기·가상 경쟁', '실사풍·도트풍', '완주 리플레이'],
     sprintInput: '← 왼발 · → 오른발 · Space 응원',
     sprintStart: '100m 달리기 시작하기',
+    baseballFeatures: ['선수 육성·직접 타격', '10개 구단·좌우타', '3경기·총 6타석'],
+    baseballInput: 'PC 클릭·키보드 · 모바일 터치',
+    baseballLocal: '로컬 체험 가능',
+    baseballPreparing: '배포판 준비 중',
+    baseballStart: '오늘부터 타자 시작하기',
+    baseballStatus: '오늘부터 타자 준비 상태 보기',
+    baseballNotice: '육성과 선수 저장·복구는 준비 중입니다. 게임 소개에서 현재 제공 범위를 확인해 주세요.',
   },
   en: {
     title: 'Playground | Jihoon Choi Portfolio',
-    description: 'Choose a 100m sprint or warm up with a little controls practice.',
+    description: 'Choose the 100m sprint, Batter Journey or a little controls practice.',
     heading: ['Choose a game.', 'Find your rhythm.'],
-    introduction: 'From a 100m dash to a little controls practice. Pick something and give it a try.',
+    introduction: 'From a 100m dash to growing your own batter. Choose your next game.',
     collection: 'Choose your game',
     practice: 'Warm up with the controls',
     cardTitle: 'Arrow keys & Space practice',
@@ -39,6 +48,13 @@ const copy = {
     sprintFeatures: ['Solo or virtual competition', 'Realistic or pixel style', 'Finish replay'],
     sprintInput: '← Left foot · → Right foot · Space to cheer',
     sprintStart: 'Start the 100m sprint',
+    baseballFeatures: ['Training & manual batting', '10 clubs · left or right', '3 games · 6 appearances'],
+    baseballInput: 'Mouse & keyboard · touch on mobile',
+    baseballLocal: 'Local trial available',
+    baseballPreparing: 'Release in preparation',
+    baseballStart: 'Start Batter Journey',
+    baseballStatus: 'View Batter Journey status',
+    baseballNotice: 'Career play, player saves and recovery are in preparation. Open the game introduction to see what is available.',
   },
 }
 
@@ -55,7 +71,7 @@ function KeyboardDiagram() {
         </div>
         <kbd className={`${styles.playgroundKey} ${styles.playgroundSpaceKey}`}>Space</kbd>
       </div>
-      <span className={styles.playgroundDiagramNumber}>02</span>
+      <span className={styles.playgroundDiagramNumber}>03</span>
     </div>
   )
 }
@@ -63,6 +79,9 @@ function KeyboardDiagram() {
 export default function Playground() {
   const english = useRouter().locale === 'en'
   const text = copy[english ? 'en' : 'ko']
+  const brand = BASEBALL_CAREER_BRAND[english ? 'en' : 'ko']
+  const development = process.env.NODE_ENV === 'development'
+  const baseballAction = development ? text.baseballStart : text.baseballStatus
 
   return (
     <PlaygroundShell title={text.title} description={text.description}>
@@ -90,6 +109,25 @@ export default function Playground() {
               <span className={styles.playgroundStart}>{text.sprintStart}<span aria-hidden="true">↗</span></span>
             </div>
           </Link>
+          <Link href="/playground/baseball/career" prefetch={false} className={styles.playgroundCard} aria-label={baseballAction} aria-describedby="playground-baseball-description" data-playground-baseball-entry data-availability={development ? 'local-trial' : 'preparing'}>
+            <div className={styles.baseballDiagram} aria-hidden="true">
+              <Image src="/images/playground/baseball/delivery/20261124/stadium-batting-view-lossless.webp" alt="" fill sizes="(max-width: 760px) 100vw, 560px" loading="eager" className={styles.baseballBackdrop} />
+              <span className={styles.baseballDiagramLabel}>BATTING · GROW YOUR GAME</span>
+              <span className={styles.baseballDiamond} />
+              <span className={styles.baseballBall} />
+              <b>02 / ONE AT-BAT AT A TIME</b>
+            </div>
+            <div className={styles.playgroundCardBody}>
+              <p className={styles.playgroundCardEyebrow}>02 / BASEBALL CAREER</p>
+              <span className={styles.baseballAvailability}>{development ? text.baseballLocal : text.baseballPreparing}</span>
+              <h3 className={styles.playgroundCardTitle}>{brand.name}</h3>
+              <p id="playground-baseball-description" className={styles.playgroundCardDescription}>{brand.description}</p>
+              <ul className={styles.sprintFeatures}>{text.baseballFeatures.map(feature => <li key={feature}>{feature}</li>)}</ul>
+              {!development && <p className={styles.baseballNotice}>{text.baseballNotice}</p>}
+              <span className={styles.playgroundInput}>{text.baseballInput}</span>
+              <span className={styles.playgroundStart}>{baseballAction}<span aria-hidden="true">↗</span></span>
+            </div>
+          </Link>
         </section>
 
         <section className={styles.practiceCollection} aria-labelledby="playground-practice-title">
@@ -102,7 +140,7 @@ export default function Playground() {
           >
             <KeyboardDiagram />
             <div className={styles.playgroundCardBody}>
-              <p className={styles.playgroundCardEyebrow}>02 / CONTROLS</p>
+              <p className={styles.playgroundCardEyebrow}>03 / CONTROLS</p>
               <h3 className={styles.playgroundCardTitle}>{text.cardTitle}</h3>
               <p id="playground-controls-description" className={styles.playgroundCardDescription}>{text.cardDescription}</p>
               <span className={styles.playgroundInput}>{text.input}</span>
