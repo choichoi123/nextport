@@ -106,16 +106,39 @@ test('reviewed collar, shoulder and flank cloth is covered on all five new frame
   }
 })
 
-test('the four long-sleeve teams use an explicit separate cloth mask and retain source geometry',async()=>{
-  const frame=getBaseballPostplayFrames().run1,source=await rgba(frame),regions=getBaseballPostplayUndersleeveRegions(frame)
+test('all five postplay poses composite both full sleeves or the single elbow sleeve while retaining source geometry',async()=>{
+  const repairedWizArmPoints={
+    'post-lower-right':[[331,570],[626,652],[350,721]],
+    'post-lower-left':[[352,530],[381,638],[681,650]],
+    'post-run1':[[199,538],[700,588]],
+    'post-run2':[[232,545],[750,614]],
+    'post-run3':[[223,490],[778,550]],
+  }
   const texture={width:4,height:4,data:new Uint8ClampedArray(Array.from({length:16},(_,i)=>[130+i%3*15,130+i%3*15,130+i%3*15,255]).flat())}
-  for(const team of BASEBALL_TEAMS.filter(team=>team.undersleeve)){
-    const image={...source,data:new Uint8ClampedArray(source.data)},mask=compileBaseballUndersleeveMask(regions,{feet:frame.feet})
-    const result=paintBaseballUndersleeves(image,team,regions,{feet:frame.feet,texture});assert.ok(result.changed>1000)
-    for(let pixel=0;pixel<mask.length;pixel++){
-      const index=pixel*4;assert.equal(image.data[index+3],source.data[index+3])
-      if(!mask[pixel])for(let channel=0;channel<3;channel++)assert.equal(image.data[index+channel],source.data[index+channel])
+  for(const frame of uniqueFrames) for(const team of BASEBALL_TEAMS.filter(team=>team.undersleeve)){
+    const source=await rgba(frame),regions=getBaseballPostplayUndersleeveRegions(frame,team)
+    assert.equal(regions.panels.length,team.undersleeveFit?2:4)
+    if(team.undersleeveFit) {
+      const all=getBaseballPostplayUndersleeveRegions(frame)
+      assert.equal(regions.panels[0],all.panels[frame.backNumber?2:0])
+      assert.equal(regions.panels[1].visibleUntilV,.70)
     }
+    const image={...source,data:new Uint8ClampedArray(source.data)},mask=compileBaseballUndersleeveMask(regions,{feet:frame.feet})
+    const result=paintBaseballUndersleeves(image,team,regions,{feet:frame.feet,texture})
+    assert.ok(result.changed>1000,`${frame.name}/${team.id}: sleeve coverage`)
+    if(team.id==='wiz'){
+      for(const [x,y] of repairedWizArmPoints[frame.name]){
+        const index=(y*source.width+x)*4
+        assert.ok(source.data[index+1]-image.data[index+1]>40,`${frame.name}: uncovered PT sleeve at ${x},${y}`)
+      }
+    }
+    let outside=0,alpha=0
+    for(let pixel=0;pixel<mask.length;pixel++){
+      const index=pixel*4
+      alpha+=Number(image.data[index+3]!==source.data[index+3])
+      if(!mask[pixel]&&[0,1,2].some(channel=>image.data[index+channel]!==source.data[index+channel]))outside++
+    }
+    assert.deepEqual({alpha,outside},{alpha:0,outside:0},`${frame.name}/${team.id}: protected pixels`)
   }
 })
 

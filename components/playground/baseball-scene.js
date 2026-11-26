@@ -82,7 +82,7 @@ function makeUniform(image, team, descriptor, handedness, texture) {
   const regions = descriptor.postplay?getBaseballPostplayUniformRegions(descriptor,team):getBaseballUniformRegions({ handedness, name:descriptor.name, src:descriptor.src, uniformProfile:team?.uniformProfile })
   const { bounds } = paintBaseballUniform(pixels, team, regions, { feet:descriptor.feet })
   if (team?.undersleeve) {
-    const sleeves = descriptor.postplay?getBaseballPostplayUndersleeveRegions(descriptor):getBaseballUndersleeveRegions({ handedness, name:descriptor.name, src:descriptor.src })
+    const sleeves = descriptor.postplay?getBaseballPostplayUndersleeveRegions(descriptor,team):getBaseballUndersleeveRegions({ handedness, name:descriptor.name, src:descriptor.src, team })
     paintBaseballUndersleeves(pixels, team, sleeves, { texture, feet:descriptor.feet })
   }
   ctx.putImageData(pixels, 0, 0)

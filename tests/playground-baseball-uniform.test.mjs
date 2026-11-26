@@ -537,8 +537,9 @@ test('보호된 밝은 장갑·어두운 배트가 팔 원단의 저주파 광�
   for (let i = 0; i < mask.length; i++) if (mask[i]) assert.deepEqual(a.data.slice(i * 4, i * 4 + 4), b.data.slice(i * 4, i * 4 + 4))
 })
 
-test('10팀의16활성자세를 모두 읽고 CLUB 전용 배색·이너4팀을 구분한다', () => {
-  assert.deepEqual(BASEBALL_TEAMS.filter(team => team.undersleeve).map(team => team.id), ['wiz', 'tigers', 'twins', 'bears'])
+test('10팀의 16개 활성 자세에서 양팔 이너와 한쪽 팔꿈치 이너를 구분한다', () => {
+  assert.deepEqual(BASEBALL_TEAMS.filter(team => team.undersleeve && !team.undersleeveFit).map(team => team.id), ['wiz', 'tigers', 'twins', 'bears'])
+  assert.deepEqual(BASEBALL_TEAMS.filter(team => team.undersleeveFit).map(team => team.id), ['dinos', 'giants'])
   const keys = BASEBALL_TEAMS.map(getBaseballUniformMaterialKey)
   assert.equal(new Set(keys).size, 10)
   for (const handedness of ['right', 'left']) for (const name of BASEBALL_BATTER_FRAME_NAMES) {
@@ -553,6 +554,15 @@ test('10팀의16활성자세를 모두 읽고 CLUB 전용 배색·이너4팀을 
       const mask = compileBaseballUniformMask(geometry, { feet: frame.feet })
       assert.equal(mask.length, frame.width * frame.height)
       for (const field of ['colorPanels', 'trim', 'helmetTrim']) for (const item of geometry[field] || []) assert.ok(!item.profiles || item.profiles.includes(team.uniformProfile))
+      if (team.undersleeveFit) {
+        const single = getBaseballUndersleeveRegions({ ...input, team })
+        const arm = handedness === 'right' && ['precontact', 'contact'].includes(name) ? 1 : 0
+        assert.equal(single.panels.length, 2)
+        assert.equal(single.panels[0], sleeves.panels[arm * 2])
+        assert.equal(single.panels[1].visibleUntilV, 0.70)
+        assert.ok(compileBaseballUndersleeveMask(single, { feet: frame.feet }).includes(1), `${team.id}/${handedness}/${name}: single sleeve`)
+        assert.notEqual(getBaseballUniformMaterialKey(team), getBaseballUniformMaterialKey({ ...team, undersleeveFit: undefined }))
+      }
       if (team.id === 'eagles') assert.ok(geometry.colorPanels.some(panel => panel.material === 'sleeve'))
       if (team.id === 'giants') assert.ok(geometry.colorPanels.some(panel => panel.material === 'secondary'))
     }
