@@ -178,6 +178,28 @@ test('client posts raw code only in a no-store request body and discards respons
   for(const {url,options}of calls){assert.ok(!url.includes(code));assert.equal(options.method,'POST');assert.equal(options.credentials,'same-origin');assert.equal(options.cache,'no-store')}
   client.close();await assert.rejects(client.issue(id,1),{code:'recovery_unavailable'})
 })
+test('a fresh browser establishes one anonymous identity before retrying redemption',async()=>{
+  for(const retryStatus of [200,401,429]){
+    const calls=[]
+    const client=createBaseballCareerRecoveryClient({fetchImpl:async(path,options)=>{
+      calls.push({path,options})
+      if(calls.length===2)return{ok:true}
+      const status=calls.length===1?401:retryStatus
+      return{ok:status===200,status,json:async()=>status===200?{status:'ok',careerId:id,version:2}
+        :{status:'error',code:status===429?'rate_limited':'owner_required'}}
+    }})
+    if(retryStatus===200)assert.deepEqual(await client.redeem(code),{status:'ok',careerId:id,version:2})
+    else await assert.rejects(client.redeem(code),{code:retryStatus===429?'rate_limited':'owner_required'})
+    assert.deepEqual(calls.map(({path,options})=>[path,options.method]),[
+      ['/api/playground/baseball/careers/recovery/redeem','POST'],
+      ['/api/playground/baseball/careers-v2','GET'],
+      ['/api/playground/baseball/careers/recovery/redeem','POST'],
+    ])
+    assert.equal(calls[1].options.body,undefined)
+    assert.deepEqual(calls.filter(({options})=>options.method==='POST').map(({options})=>JSON.parse(options.body)),[{code},{code}])
+    client.close()
+  }
+})
 test('client rejects stale completions and invalid player/code responses without persistence',async()=>{
   let complete
   const client=createBaseballCareerRecoveryClient({fetchImpl:()=>new Promise(resolve=>{complete=resolve})})

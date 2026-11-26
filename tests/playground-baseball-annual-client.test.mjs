@@ -16,6 +16,7 @@ const failure = code => Object.assign(new Error(code), {code})
 function memoryRepository() {
   const rows = new Map()
   const winterDrafts = new Map()
+  const archiveMarkers = new Map()
   const restoreWinterDraft = (id,plan) => {
     if (plan && !winterDrafts.has(id)) winterDrafts.set(id,structuredClone(plan))
   }
@@ -27,6 +28,14 @@ function memoryRepository() {
     readWinterDraft:async id => structuredClone(winterDrafts.get(id)),
     saveWinterDraft:async (id,plan) => { winterDrafts.set(id,structuredClone(plan)) },
     restoreWinterDraft:async (id,plan) => restoreWinterDraft(id,plan),
+    listArchiveMarkers:async () => structuredClone([...archiveMarkers.values()]),
+    readArchiveMarker:async id => structuredClone(archiveMarkers.get(id)),
+    rememberArchiveMarker:async marker => {
+      const saved = archiveMarkers.get(marker.careerId)
+      if (saved?.seasonIds.length > marker.seasonIds.length) return structuredClone(saved)
+      archiveMarkers.set(marker.careerId,structuredClone(marker))
+      return structuredClone(marker)
+    },
     insert:async (value,winterDraft) => {
       if (rows.has(value.setup.id)) throw failure('local_conflict')
       const next=value.setup.continuation
@@ -550,4 +559,50 @@ test('an imported continuation stays editable only when it extends the confirmed
   assert.equal((await opened.read(local.id)).career.currentGameIndex,2)
   assert.deepEqual(requests,['history','history'])
   opened.close()
+})
+
+test('a restart retains the supersession boundary and rechecks the server without caching the archive', async () => {
+  const repository = memoryRepository()
+  const {setup,actions} = automaticGames(1)
+  const id = setup.id
+  const stats = {G:144,PA:288,AB:274,H:99,'2B':27,'3B':3,HR:14,BB:14,SO:140}
+  const growth = {mit:47,power:54,discipline:66,stamina:61,trust:100,xp:1600,condition:78}
+  const history = Array.from({length:10},(_,index)=>({seasonId:index ? uuid(800+index) : id,seasonNumber:index+1,stats}))
+  const response = {status:'ok',careerId:id,history,
+    latest:{seasonId:history.at(-1).seasonId,seasonNumber:10,growth,profile,settings,source:'manual'},finish:'retired'}
+  let serviceError, reads=0
+  const transport = {
+    history:async root=>{reads++;assert.equal(root,id);if(serviceError)throw failure(serviceError);return response},
+    settle:()=>assert.fail('The obsolete browser save must never submit'),
+  }
+  const before = await client(repository,6200,transport)
+  await before.importSave(JSON.stringify({format:'nextport-baseball-season-v1',setup,actions}))
+  const backup = await before.exportSave(id)
+  await before.loadHistory(id)
+  assert.deepEqual(await repository.readArchiveMarker(id),{careerId:id,seasonIds:history.map(row=>row.seasonId)})
+  before.close()
+
+  serviceError='network_unavailable'
+  const reopened = await client(repository,6300,transport)
+  assert.equal(reads,1, 'Opening the storage never fetches')
+  assert.deepEqual(reopened.snapshot().confirmedHistories,{})
+  assert.equal(reopened.snapshot().entries[0].archiveCheckRequired,true)
+  assert.equal((await reopened.read(id)).career.currentGameIndex,1)
+  assert.equal(reads,2)
+  assert.deepEqual(reopened.snapshot().confirmedHistories,{})
+  await assert.rejects(reopened.command(id,{type:'prepare',choice:'rest'}),{code:'season_conflict'})
+  await assert.rejects(reopened.settle(id),{code:'season_conflict'})
+  assert.equal(await reopened.exportSave(id),backup)
+
+  serviceError=undefined
+  await reopened.read(id)
+  assert.equal(reads,3)
+  assert.equal(reopened.snapshot().confirmedHistories[id].finish,'retired')
+  assert.equal(reopened.snapshot().entries[0].archiveCheckRequired,false)
+  serviceError='not_found'
+  await reopened.loadHistory(id)
+  assert.deepEqual(reopened.snapshot().confirmedHistories,{})
+  assert.equal(reopened.snapshot().entries[0].archiveCheckRequired,true)
+  assert.equal(await reopened.exportSave(id),backup)
+  reopened.close()
 })

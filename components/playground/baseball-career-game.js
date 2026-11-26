@@ -316,7 +316,8 @@ export default function BaseballCareerGame({locale='ko',dataVersions=null,storag
   const archive=selectBaseballAnnualArchive(selectedEntry,career?.id,store.confirmedHistories)
   const localDraft=selectedEntry?.annual===true
   const archiveCollision=Boolean(archive&&localDraft)
-  const annualCareer=localDraft&&!archive, annualReceipt=annualCareer?selectedEntry.receipt:null
+  const awaitingArchive=Boolean(selectedEntry?.archiveCheckRequired&&!archive)
+  const annualCareer=localDraft&&!archive&&!awaitingArchive, annualReceipt=annualCareer?selectedEntry.receipt:null
   const visibleProfile=archive?.latest.profile||career?.profile
   const visibleSettings=archive?.latest.settings||career?.settings
   const year=selectedEntry?.seasonNumber||1
@@ -404,8 +405,9 @@ export default function BaseballCareerGame({locale='ko',dataVersions=null,storag
   const selectedVersions=modern?(legacyV2?legacyV2CareerVersions:priorRegular?priorAnnualVersions:v2CareerVersions):careerVersions
   const selectedStorageVersions=modern?(legacyV2?legacyV2StorageVersions:v2StorageVersions):storageVersions
   const versionMismatch=Boolean(!archive&&career&&selectedVersions&&Object.keys(selectedVersions).some(key=>career.versions[key]!==selectedVersions[key]))
-  const blocked=busy||Boolean(archive||pending)||versionMismatch
-  const current=archive?null:career?.games[career.currentGameIndex],resumeId=archive?null:getBaseballCareerResumeId(career)
+  const blocked=busy||Boolean(archive||pending)||awaitingArchive||versionMismatch
+  const current=archive||awaitingArchive?null:career?.games[career.currentGameIndex]
+  const resumeId=archive||awaitingArchive?null:getBaseballCareerResumeId(career)
   const highlight=annualCareer&&current?getBaseballCareerHighlight(career.games,career.currentGameIndex):null
   const quickAdvance=Boolean(annualCareer&&current&&!highlight&&!resumeId)
   const currentAdvanceNote=advanceNote?.id===career?.id&&advanceNote?.index===career?.currentGameIndex?advanceNote:null
@@ -648,7 +650,7 @@ export default function BaseballCareerGame({locale='ko',dataVersions=null,storag
     if(event.key==='Enter'&&event.nativeEvent.isComposing)event.preventDefault()
   }}>
     <header className={styles.focusHeader}><div><p className={styles.kicker}>BATTING LAB · {previewMode?'PREVIEW':'CAREER'} · v{career?.schemaVersion||2}</p><h1>{view.view==='prepare'?f.prepareTitle:visibleProfile?.name||f.title}</h1></div>
-      <span className={styles.hint} role='status' aria-label={f.connection}>{settleState==='saving'?annual.settling:busy?f.saving:finishStatus||(annualReceipt||archive?annual.settled:annualCareer?annual.local:store.code?f.connection:f.ready)}</span>
+      <span className={styles.hint} role='status' aria-label={f.connection}>{settleState==='saving'?annual.settling:busy?f.saving:awaitingArchive?(locale==='en'?'Server confirmation needed':'서버 기록 확인 필요'):finishStatus||(annualReceipt||archive?annual.settled:annualCareer?annual.local:store.code?f.connection:f.ready)}</span>
         {!career&&<Link href='/playground/baseball/at-bat' prefetch={false}>← {text.back}</Link>}
     </header>
     {career&&view.view==='manage'&&<nav className={styles.focusNav} aria-label={f.title}>{['home','schedule','records','player'].map(tab=><button type='button' key={tab} aria-current={view.tab===tab?'page':undefined} data-active={view.tab===tab} onClick={()=>goManage(tab)}>{f[tab]}</button>)}</nav>}
@@ -662,7 +664,12 @@ export default function BaseballCareerGame({locale='ko',dataVersions=null,storag
       {versionMismatch&&<p className={styles.error} role='alert'>{locale==='en'?'This save uses different rules. Existing records remain unchanged.':'다른 규칙 버전의 선수입니다. 기존 기록은 그대로 보존합니다.'}</p>}
       {pending&&<div className={styles.notice}><p>{busy?f.saving:text.error}</p><div className={styles.actions}><button type='button' disabled={busy} onClick={()=>void readCareer(career.id,true)}>{text.retry}</button><button type='button' disabled={busy} onClick={()=>void readCareer(career.id)}>{text.inspect}</button></div></div>}
       {review&&<div className={styles.notice}><p>{text.conflict}</p><p>{text.adoptHint}</p><button type='button' disabled={busy||review.career.revision<=(store.entries.find(entry=>entry.id===review.id)?.pending?.body.expectedRevision||0)} onClick={()=>void adopt()}>{text.adopt}</button></div>}
-      {!career?setupView:view.view==='prepare'?<>
+      {!career?setupView:awaitingArchive&&view.tab!=='player'?<section className={styles.panel} data-baseball-career-archive-unavailable>
+        <h2>{locale==='en'?'Confirm the latest server record':'최신 서버 기록 확인'}</h2>
+        <p>{locale==='en'?'This browser save is older than a confirmed server season. Connect to verify the newer record, or export this save in Player.':'이 브라우저 세이브 뒤에 서버에서 확정한 시즌이 있습니다. 연결을 확인한 뒤 다시 시도하거나 선수 화면에서 세이브를 내보낼 수 있습니다.'}</p>
+        <button type='button' disabled={busy} onClick={()=>void readCareer(career.id)}>{locale==='en'?'Check the server again':'서버 기록 다시 확인'}</button>
+        <button type='button' onClick={()=>goManage('player')}>{annual.export}</button>
+      </section>:view.view==='prepare'?<>
         <section className={styles.hero}><div className={styles.heroCopy}><p className={styles.kicker}>{resumeId?'RESUME APPEARANCE':'READY TO BAT'}</p><h2 className={styles.heroTitle}>{career.profile.name}</h2><p>{resumeId?f.restore:f.viewOnly}</p><div className={styles.heroMeta}><span>{team.name}</span><span>{career.profile.handedness==='left'?text.left:text.right}</span><span>{text.game} {current.ordinal} · {current.appearances.length+1}/2 PA</span></div></div><div className={styles.heroBadge} style={{'--team-color':team.helmet}}>#{career.profile.jerseyNumber}</div></section>
         <section className={styles.taskCard}><h2>{resumeId?f.resume:f.enter}</h2><p>{career.settings.baseSpeedKmh} km/h · {career.settings.pitchMode==='mixed'?text.mixed:text.pitches[career.settings.pitchMode]}</p><p>{f.trainingNote}</p><p>{text.manualHint}</p></section>
       </>:winterOpen?<BaseballCareerWinter
