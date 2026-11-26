@@ -1,0 +1,54 @@
+.review {
+  min-width: 0;
+  padding: clamp(16px, 3vw, 30px);
+  margin-bottom: 20px;
+  border: 1px solid var(--line, #d8dfd4);
+  border-radius: 12px;
+  background: var(--surface, #fffdf5);
+  color: var(--ink, #193d32);
+}
+.review > h2 { font-size: clamp(22px, 3vw, 30px); margin: 0 0 18px; }
+.review h3 { font-size: 15px; margin: 0 0 9px; }
+.totals, .milestones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 75px), 1fr));
+  gap: 10px;
+  margin: 0 0 22px;
+}
+.milestones { grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr)); }
+.totals > div, .milestones > div {
+  min-width: 0;
+  padding: 10px 11px;
+  border: 1px solid var(--line, #d8dfd4);
+  border-radius: 7px;
+}
+.review dt { color: var(--muted, #687b70); font-size: 12px; }
+.review dd { margin: 4px 0 0; font-variant-numeric: tabular-nums; font-weight: 700; }
+.totals dd { font-size: 19px; }
+.milestones dd { font-size: 13px; overflow-wrap: anywhere; }
+.breakdown { margin-bottom: 20px; }
+.breakdown summary { min-height: 40px; padding: 9px 0; cursor: pointer; }
+.tableWrap { max-width: 100%; overflow-x: auto; }
+.tableWrap table { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+.tableWrap :is(th, td) { padding: 7px; border-bottom: 1px solid var(--line, #d8dfd4); text-align: start; white-space: nowrap; }
+.decision { padding-top: 16px; border-top: 1px solid var(--line, #d8dfd4); }
+.decision > p { line-height: 1.65; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.review .actions > .primary { background: #244f40; border-color: #244f40; color: #f5f1df; }
+.review .actions > button { white-space: normal; }
+.status { font-weight: 700; }
+.saving { display: block; width: min(100%, 220px); margin-top: 14px; accent-color: #a88248; }
+.farewell {
+  margin-bottom: 22px;
+  padding: 18px;
+  border-radius: 8px;
+  background: #193f35;
+  color: #f9efd1;
+}
+.farewell h3 { color: inherit; }
+.farewell p { margin: 0 0 10px; }
+.farewell .player { font-size: clamp(15px, 2.5vw, 22px); font-weight: 700; overflow-wrap: anywhere; }
+.farewellContent { animation: farewell .5s ease-out both; }
+@keyframes farewell { from { opacity: .18; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .farewellContent { animation: none; } }
+@media (max-width: 560px) { .actions > button { flex: 1 1 100%; } }

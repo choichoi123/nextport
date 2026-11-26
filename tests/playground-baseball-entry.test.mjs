@@ -63,6 +63,8 @@ function renderPage(path, { locale = 'ko', environment = 'production', props = {
       if (name === '@/lib/server/baseball-career-v2-api.mjs') return {
         createBaseballAtBatV2Versions: async () => ({ fixture: 'atBatV2StorageVersions' }),
         createBaseballCareerV2Versions: async () => ({ fixture: 'baseballCareerV2Versions' }),
+        BASEBALL_CAREER_V2_TRIAL_HASHES: {careerHash:'original-career-hash',growthHash:'original-growth-hash'},
+        BASEBALL_CAREER_V2_PRIOR_REGULAR_HASHES: {careerHash:'prior-regular-career-hash'},
       }
       if (name.endsWith('/baseball-career-game')) {
         seen.careerLoads++
@@ -92,14 +94,14 @@ const expected = {
     sprintDescription: '선수를 소개하고 두 발을 번갈아 눌러 100m를 달려보세요.',
     controlsDescription: '방향키와 스페이스바의 반응이 궁금하다면, 작은 연습 화면에서 먼저 손을 풀어보세요.',
     local: '로컬 체험 가능', preparing: '배포판 준비 중', start: '오늘부터 타자 시작하기', status: '오늘부터 타자 준비 상태 보기',
-    schedule: '3경기·총 6타석', unavailable: '이 화면에서는 아직 육성 플레이와 선수 저장·복구를 제공하지 않습니다.',
+    schedule: '144경기 시즌', unavailable: '이 화면에서는 아직 육성 플레이와 선수 저장·복구를 제공하지 않습니다.',
   },
   en: {
     name: 'Batter Journey', sprint: '100 metres. Find your rhythm.', controls: 'Arrow keys & Space practice',
     sprintDescription: 'Meet your runner and alternate your feet through 100 metres.',
     controlsDescription: 'Curious how the controls feel? Warm up with the arrow keys and Space in a small practice space.',
     local: 'Local trial available', preparing: 'Release in preparation', start: 'Start Batter Journey', status: 'View Batter Journey status',
-    schedule: '3 games · 6 appearances', unavailable: 'Career play, player saves and recovery are not available here yet.',
+    schedule: '144-game season', unavailable: 'Career play, player saves and recovery are not available here yet.',
   },
 }
 
@@ -133,7 +135,7 @@ for (const locale of ['ko', 'en']) {
       const development = environment === 'development'
       assert.ok(link.text.includes(text.name))
       assert.ok(link.text.includes(BASEBALL_CAREER_BRAND[locale].description))
-      assert.ok(link.text.includes(text.schedule), '3경기의 총 6타석을 한 경기 6타석으로 바꾸지 않는다')
+      assert.ok(link.text.includes(text.schedule), '새 선수의 시즌 분량을 표시한다')
       assert.ok(link.attributes.includes(`data-availability="${development ? 'local-trial' : 'preparing'}"`))
       assert.ok(link.attributes.includes('aria-describedby="playground-baseball-description"'))
       assert.ok(link.html.includes('id="playground-baseball-description"'))
@@ -170,7 +172,7 @@ test('개발 육성 페이지는 새 브랜드 메타와 기존 버전 props를 
   }
 })
 
-test('운영 육성 페이지는 클라이언트를 불러오지 않고 브랜드·준비 안내와 기존 대체 경로만 보여 준다', () => {
+test('운영 허용 전 육성 페이지는 브랜드·준비 안내와 기존 대체 경로를 보여 준다', () => {
   for (const locale of ['ko', 'en']) {
     const { html, seen } = renderPage('pages/playground/baseball/career.js', { locale })
     assert.equal(seen.careerLoads, 0)
@@ -202,13 +204,34 @@ test('지정 Preview 표시는 한영 카드와 직접 육성 진입에서만 �
     assert.equal(page.seen.careerLoads, 1)
     assert.equal(page.seen.career[0].enabled, true)
     assert.equal(page.seen.career[0].preview, true)
+    assert.equal(page.seen.career[0].production, false)
     assert.equal(page.seen.career[0].locale, locale)
     assert.equal(page.html.includes('data-baseball-career-availability="preparing"'), false)
   }
 })
 
-test('없는 값·잘못된 값·개발 enum은 production 빌드에서 Preview를 열지 않는다', () => {
-  for (const value of [undefined, null, true, 'true', 'development', 'production', 'PREVIEW']) {
+test('운영이 허용된 한영 카드와 직접 진입은 공개 플레이 상태로 연결한다', () => {
+  for (const locale of ['ko', 'en']) {
+    const props = { baseballCareerAvailability: 'production' }
+    const landing = renderPage('pages/playground/index.js', { locale, props })
+    const card = anchor(landing.html, '/playground/baseball/career')
+    assert.ok(card.attributes.includes('data-availability="available"'))
+    assert.ok(card.attributes.includes(`aria-label="${expected[locale].start}"`))
+    assert.ok(card.text.includes(locale === 'ko' ? '플레이 가능' : 'Ready to play'))
+    assert.ok(!card.text.includes(expected[locale].preparing) && !card.text.includes('Preview'))
+    assert.equal(landing.seen.careerLoads, 0)
+    const page = renderPage('pages/playground/baseball/career.js', { locale, props })
+    assert.equal(page.seen.careerLoads, 1)
+    assert.equal(page.seen.career[0].enabled, true)
+    assert.equal(page.seen.career[0].preview, false)
+    assert.equal(page.seen.career[0].production, true)
+    assert.equal(page.seen.career[0].locale, locale)
+    assert.ok(!page.html.includes('data-baseball-career-availability="preparing"'))
+  }
+})
+
+test('없는 값·잘못된 값·개발 enum은 호스팅 빌드에서 게임을 열지 않는다', () => {
+  for (const value of [undefined, null, true, 'true', 'development', 'PRODUCTION', 'PREVIEW']) {
     const props = { baseballCareerAvailability: value }
     const page = renderPage('pages/playground/baseball/career.js', { props })
     assert.equal(page.seen.careerLoads, 0)
@@ -219,13 +242,13 @@ test('없는 값·잘못된 값·개발 enum은 production 빌드에서 Preview�
 })
 
 test('서버 availability는 환경·연결 설정 없이 enum과 기존 버전 props만 직렬화한다', async () => {
-  for (const availability of ['development', 'preview', 'preparing']) {
+  for (const availability of ['development', 'preview', 'production', 'preparing']) {
     for (const path of ['pages/playground/index.js', 'pages/playground/baseball/career.js']) {
       const { pageExports } = renderPage(path, { serverAvailability: availability })
       const value = await pageExports.getStaticProps()
       assert.equal(value.props.baseballCareerAvailability, availability)
       const expectedKeys = path.endsWith('/career.js')
-        ? ['baseballCareerAvailability', 'baseballVersions', 'atBatStorageVersions', 'baseballCareerVersions', 'atBatV2StorageVersions', 'baseballCareerV2Versions']
+        ? ['baseballCareerAvailability', 'baseballVersions', 'atBatStorageVersions', 'baseballCareerVersions', 'atBatV2StorageVersions', 'baseballCareerV2Versions', 'legacyV2StorageVersions', 'legacyV2CareerVersions', 'priorAnnualVersions']
         : ['baseballCareerAvailability']
       assert.deepEqual(Object.keys(value.props).sort(), expectedKeys.sort())
       assert.equal(/databaseUrl|signingSecret|BASEBALL_|postgres(?:ql)?:/i.test(JSON.stringify(value.props)), false)

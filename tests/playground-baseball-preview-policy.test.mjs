@@ -6,6 +6,7 @@ import { createBaseballApiHandler } from '../lib/server/baseball-api.mjs'
 import { createBaseballAtBatApiHandler } from '../lib/server/baseball-at-bat-api.mjs'
 import { createBaseballCareerApiHandler } from '../lib/server/baseball-career-api.mjs'
 import { createBaseballCareerV2ApiHandler } from '../lib/server/baseball-career-v2-api.mjs'
+import { createBaseballCareerAnnualApiHandler } from '../lib/server/baseball-career-annual-api.mjs'
 import { createBaseballCareerRecoveryHandler } from '../lib/server/baseball-career-recovery-api.mjs'
 
 const development = {
@@ -19,6 +20,12 @@ const preview = {
   BASEBALL_PREVIEW_DATABASE_URL:'postgresql://baseball_prod_runtime:example-only@preview-database.invalid/baseball_prod?sslmode=require',
   BASEBALL_PREVIEW_DATABASE_HOST:'preview-database.invalid',
   BASEBALL_PREVIEW_SIGNING_SECRET:'preview-example-only-not-a-real-signing-secret',
+}
+const production = {
+  NODE_ENV:'production', VERCEL:'1', VERCEL_ENV:'production', BASEBALL_DATA_ENABLED:'true',
+  BASEBALL_DATABASE_URL:'postgresql://baseball_prod_runtime:example-only@production-database.invalid/baseball_prod?sslmode=require',
+  BASEBALL_PRODUCTION_DATABASE_HOST:'production-database.invalid',
+  BASEBALL_SIGNING_SECRET:'production-example-only-not-a-real-signing-secret',
 }
 const now = Date.UTC(2026,10,26)
 const id = '10000000-0000-4000-8000-000000000001'
@@ -85,6 +92,46 @@ test('독립 host pin·제한 역할·DB·TLS·비밀값의 경계가 틀리면 
   assert.ok(readBaseballCareerConfiguration({...preview,BASEBALL_PREVIEW_DATABASE_URL:url.replace('.invalid/', '.invalid:5432/')}))
 })
 
+test('운영 육성은 Vercel과 명시 opt-in, 독립 DB 설정을 모두 확인한다', () => {
+  const config=readBaseballCareerConfiguration({...preview,...production})
+  assert.deepEqual(config,{databaseUrl:production.BASEBALL_DATABASE_URL,secret:production.BASEBALL_SIGNING_SECRET,environment:'production'})
+  assert.equal(readBaseballCareerAvailability(production),'production')
+  const url=production.BASEBALL_DATABASE_URL
+  for(const change of [
+    {VERCEL:undefined}, {VERCEL_ENV:'custom'}, {BASEBALL_DATA_ENABLED:undefined}, {BASEBALL_DATA_ENABLED:'false'},
+    {BASEBALL_DATABASE_URL:undefined}, {BASEBALL_PRODUCTION_DATABASE_HOST:undefined}, {BASEBALL_SIGNING_SECRET:'short'},
+    {BASEBALL_DATABASE_URL:preview.BASEBALL_PREVIEW_DATABASE_URL},
+    {BASEBALL_PRODUCTION_DATABASE_HOST:preview.BASEBALL_PREVIEW_DATABASE_HOST},
+    {BASEBALL_DATABASE_URL:url.replace('baseball_prod_runtime','baseball_prod_owner')},
+    {BASEBALL_DATABASE_URL:url.replace('/baseball_prod?','/baseball_dev?')},
+    {BASEBALL_DATABASE_URL:url.replace('sslmode=require','sslmode=disable')},
+  ]){
+    const env={...preview,...production,...change}
+    assert.equal(readBaseballCareerConfiguration(env),null)
+    assert.equal(readBaseballCareerAvailability(env),'preparing')
+  }
+})
+
+test('운영 144경기 결산 서버는 Host·HTTPS·쓰기 쿠키를 검사하고 콜드 GET에도 Secure 쿠키를 발급한다', async () => {
+  let initialized=0
+  const handler=createBaseballCareerAnnualApiHandler({env:production,now:()=>now,getStore:()=>{initialized++;throw Error('must not initialize')}})
+  for(const headers of [
+    {origin:'http://preview-site.invalid'},
+    {origin:'https://different-site.invalid'},
+    {origin:'https://preview-site.invalid','x-forwarded-proto':'http'},
+    {'x-forwarded-proto':'http'},
+    {origin:'https://preview-site.invalid','sec-fetch-site':'cross-site'},
+  ])assert.equal((await run(handler,request({headers}))).statusCode,403)
+  assert.equal((await run(handler,request({method:'POST'}))).statusCode,403)
+  assert.equal((await run(handler,request({method:'POST',headers:{origin:'https://preview-site.invalid'}}))).statusCode,401)
+  const bootstrap=await run(handler,request({headers:{'x-forwarded-proto':'https'}}))
+  assert.equal(bootstrap.statusCode,200)
+  assert.deepEqual(bootstrap.body,{status:'ok'})
+  assert.match(bootstrap.headers['Set-Cookie'],/; HttpOnly; SameSite=Lax; Secure$/)
+  assert.ok(readBaseballParticipant({headers:{cookie:bootstrap.headers['Set-Cookie'].split(';')[0]}},production.BASEBALL_SIGNING_SECRET,now))
+  assert.equal(initialized,0)
+})
+
 test('육성 v1/v2의 콜드 GET만 익명 쿠키를 발급하며 Preview에서는 프록시 뒤에서도 항상 Secure다', async () => {
   for(const factory of factories){
     let stores=0
@@ -125,10 +172,10 @@ test('같은 Origin과 HTTPS를 모두 요구하고 쓰기·상세 조회는 기
   }
 })
 
-test('명시 Preview에서도 독립 10구와 한 타석 저장은 DB·버전 초기화 전에 계속 차단한다', async () => {
-  for(const factory of [createBaseballApiHandler,createBaseballAtBatApiHandler])for(const method of ['GET','POST']){
+test('Preview·운영의 육성 허용은 독립 10구와 한 타석 저장을 열지 않는다', async () => {
+  for(const env of [preview,production])for(const factory of [createBaseballApiHandler,createBaseballAtBatApiHandler])for(const method of ['GET','POST']){
     let initialized=0
-    const handler=factory({env:preview,getStore:()=>{initialized++},getVersions:()=>{initialized++}})
+    const handler=factory({env,getStore:()=>{initialized++},getVersions:()=>{initialized++}})
     const res=await run(handler,request({method,headers:{origin:'https://preview-site.invalid'}}))
     assert.equal(res.statusCode,503)
     assert.equal(res.body.code,'not_configured')
@@ -164,11 +211,16 @@ test('복구 API는 동일한 Preview 정책과 기존 소유자 쿠키를 사�
   }
 })
 
-test('Production과 opt-in 없는 Preview는 모든 육성·복구 경로를 저장소 접근 전에 차단한다', async () => {
-  for(const change of [{VERCEL_ENV:'production'},{BASEBALL_PREVIEW_ENABLED:'false'},{VERCEL_GIT_COMMIT_REF:'master'}]){
-    for(const factory of [...factories,dependencies=>createBaseballCareerRecoveryHandler({...dependencies,mode:'code'}),dependencies=>createBaseballCareerRecoveryHandler({...dependencies,mode:'redeem'})]){
+test('명시 허용이 없는 운영·Preview는 모든 육성·복구 경로를 저장소 접근 전에 차단한다', async () => {
+  for(const env of [
+    {...production,BASEBALL_DATA_ENABLED:'false'},
+    {...preview,VERCEL_ENV:'production'},
+    {...preview,BASEBALL_PREVIEW_ENABLED:'false'},
+    {...preview,VERCEL_GIT_COMMIT_REF:'master'},
+  ]){
+    for(const factory of [...factories,createBaseballCareerAnnualApiHandler,dependencies=>createBaseballCareerRecoveryHandler({...dependencies,mode:'code'}),dependencies=>createBaseballCareerRecoveryHandler({...dependencies,mode:'redeem'})]){
       let initialized=0
-      const handler=factory({env:{...preview,...change},getStore:()=>{initialized++},getVersions:()=>{initialized++}})
+      const handler=factory({env,getStore:()=>{initialized++},getVersions:()=>{initialized++}})
       for(const query of [{},{id},{id,atBatId:id}]){
         const res=await run(handler,request({method:'POST',query,headers:{origin:'https://preview-site.invalid'}}))
         assert.equal(res.statusCode,503)

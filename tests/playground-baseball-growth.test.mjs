@@ -40,7 +40,7 @@ test('실제v2 성장 정책은 초기40·최대미트12%·파워5%와 소유 �
 test('스냅샷 누락·손상·다른소유·modifier변조·알수없는정책을 명시적으로 거절한다',()=>{
   for(const input of [undefined,null,{},[],{...snapshot(),extra:1}])assert.throws(()=>validateBaseballGrowthSnapshot(input))
   for(const change of [{schemaVersion:2},{policyId:'baseball-career-growth-v1'},{careerId:'unknown'},
-    {careerRevision:0},{careerRevision:1.5},{gameIndex:3},{slot:0},{slot:3},{mit:undefined},{mit:101},
+    {careerRevision:0},{careerRevision:1.5},{gameIndex:144},{slot:0},{slot:3},{mit:undefined},{mit:101},
     {power:'40'},{power:NaN},{contactMultiplier:1.12},{contactRadiusM:.08},{powerMultiplier:2},{outerQualityMaximum:1}]){
     assert.throws(()=>validateBaseballGrowthSnapshot({...snapshot(),...change}))
   }

@@ -23,10 +23,11 @@ const copy = {
     sprintFeatures: ['혼자 달리기·가상 경쟁', '실사풍·도트풍', '완주 리플레이'],
     sprintInput: '← 왼발 · → 오른발 · Space 응원',
     sprintStart: '100m 달리기 시작하기',
-    baseballFeatures: ['선수 육성·직접 타격', '10개 구단·좌우타', '3경기·총 6타석'],
+    baseballFeatures: ['선수 육성·직접 타격', '10개 구단·좌우타', '144경기 시즌'],
     baseballInput: 'PC 클릭·키보드 · 모바일 터치',
     baseballLocal: '로컬 체험 가능',
     baseballPreview: 'Preview 검수',
+    baseballPublic: '플레이 가능',
     baseballPreparing: '배포판 준비 중',
     baseballStart: '오늘부터 타자 시작하기',
     baseballStatus: '오늘부터 타자 준비 상태 보기',
@@ -50,10 +51,11 @@ const copy = {
     sprintFeatures: ['Solo or virtual competition', 'Realistic or pixel style', 'Finish replay'],
     sprintInput: '← Left foot · → Right foot · Space to cheer',
     sprintStart: 'Start the 100m sprint',
-    baseballFeatures: ['Training & manual batting', '10 clubs · left or right', '3 games · 6 appearances'],
+    baseballFeatures: ['Training & manual batting', '10 clubs · left or right', '144-game season'],
     baseballInput: 'Mouse & keyboard · touch on mobile',
     baseballLocal: 'Local trial available',
     baseballPreview: 'Preview test',
+    baseballPublic: 'Ready to play',
     baseballPreparing: 'Release in preparation',
     baseballStart: 'Start Batter Journey',
     baseballStatus: 'View Batter Journey status',
@@ -86,8 +88,11 @@ export default function Playground({ baseballCareerAvailability = 'preparing' })
   const brand = BASEBALL_CAREER_BRAND[english ? 'en' : 'ko']
   const development = process.env.NODE_ENV === 'development'
   const preview = !development && baseballCareerAvailability === 'preview'
-  const available = development || preview
+  const production = !development && baseballCareerAvailability === 'production'
+  const available = development || preview || production
   const baseballAction = available ? text.baseballStart : text.baseballStatus
+  const availability = development ? 'local-trial' : preview ? 'preview-trial' : production ? 'available' : 'preparing'
+  const availabilityLabel = development ? text.baseballLocal : preview ? text.baseballPreview : production ? text.baseballPublic : text.baseballPreparing
 
   return (
     <PlaygroundShell title={text.title} description={text.description}>
@@ -115,7 +120,7 @@ export default function Playground({ baseballCareerAvailability = 'preparing' })
               <span className={styles.playgroundStart}>{text.sprintStart}<span aria-hidden="true">↗</span></span>
             </div>
           </Link>
-          <Link href="/playground/baseball/career" prefetch={false} className={styles.playgroundCard} aria-label={baseballAction} aria-describedby="playground-baseball-description" data-playground-baseball-entry data-availability={development ? 'local-trial' : preview ? 'preview-trial' : 'preparing'}>
+          <Link href="/playground/baseball/career" prefetch={false} className={styles.playgroundCard} aria-label={baseballAction} aria-describedby="playground-baseball-description" data-playground-baseball-entry data-availability={availability}>
             <div className={styles.baseballDiagram} aria-hidden="true">
               <Image src="/images/playground/baseball/delivery/20261124/stadium-batting-view-lossless.webp" alt="" fill sizes="(max-width: 760px) 100vw, 560px" loading="eager" className={styles.baseballBackdrop} />
               <span className={styles.baseballDiagramLabel}>BATTING · GROW YOUR GAME</span>
@@ -125,11 +130,11 @@ export default function Playground({ baseballCareerAvailability = 'preparing' })
             </div>
             <div className={styles.playgroundCardBody}>
               <p className={styles.playgroundCardEyebrow}>02 / BASEBALL CAREER</p>
-              <span className={styles.baseballAvailability}>{development ? text.baseballLocal : preview ? text.baseballPreview : text.baseballPreparing}</span>
+              <span className={styles.baseballAvailability}>{availabilityLabel}</span>
               <h3 className={styles.playgroundCardTitle}>{brand.name}</h3>
               <p id="playground-baseball-description" className={styles.playgroundCardDescription}>{brand.description}</p>
               <ul className={styles.sprintFeatures}>{text.baseballFeatures.map(feature => <li key={feature}>{feature}</li>)}</ul>
-              {!development && <p className={styles.baseballNotice}>{preview ? text.baseballPreviewNotice : text.baseballNotice}</p>}
+              {(preview || !available) && <p className={styles.baseballNotice}>{preview ? text.baseballPreviewNotice : text.baseballNotice}</p>}
               <span className={styles.playgroundInput}>{text.baseballInput}</span>
               <span className={styles.playgroundStart}>{baseballAction}<span aria-hidden="true">↗</span></span>
             </div>

@@ -5,7 +5,7 @@ import PlaygroundShell from '@/components/playground/playground-shell'
 import { BASEBALL_CAREER_BRAND } from '@/lib/playground-baseball-brand.mjs'
 import styles from '@/styles/playground-index.module.css'
 
-// Only availability is serialized. Storage credentials stay server-side.
+// The page sends the availability and rule identities. Credentials stay server-side.
 // This chunk is fetched and the client is mounted only for an available page.
 const CareerGame = dynamic(() => import('@/components/playground/baseball-career-game'), { ssr: false, loading: CareerLoading })
 
@@ -16,17 +16,18 @@ function CareerLoading() {
   </section>
 }
 
-export default function BaseballCareerPage({ baseballCareerAvailability = 'preparing', baseballVersions, atBatStorageVersions, baseballCareerVersions, atBatV2StorageVersions, baseballCareerV2Versions }) {
+export default function BaseballCareerPage({ baseballCareerAvailability = 'preparing', baseballVersions, atBatStorageVersions, baseballCareerVersions, atBatV2StorageVersions, baseballCareerV2Versions, legacyV2CareerVersions, legacyV2StorageVersions, priorAnnualVersions }) {
   const locale = useRouter().locale === 'en' ? 'en' : 'ko'
   const brand = BASEBALL_CAREER_BRAND[locale]
   const development = process.env.NODE_ENV === 'development'
   const preview = !development && baseballCareerAvailability === 'preview'
-  const available = development || preview
+  const production = !development && baseballCareerAvailability === 'production'
+  const available = development || preview || production
   return <PlaygroundShell immersive
     title={`${brand.name} | ${locale === 'ko' ? '최지훈' : 'Jihoon'}`}
     description={brand.description}>
     {available
-      ? <CareerGame enabled preview={preview} locale={locale} dataVersions={baseballVersions} storageVersions={atBatStorageVersions} careerVersions={baseballCareerVersions} v2StorageVersions={atBatV2StorageVersions} v2CareerVersions={baseballCareerV2Versions} />
+      ? <CareerGame enabled preview={preview} production={production} locale={locale} dataVersions={baseballVersions} storageVersions={atBatStorageVersions} careerVersions={baseballCareerVersions} v2StorageVersions={atBatV2StorageVersions} v2CareerVersions={baseballCareerV2Versions} legacyV2CareerVersions={legacyV2CareerVersions} legacyV2StorageVersions={legacyV2StorageVersions} priorAnnualVersions={priorAnnualVersions} />
       : <section className={styles.careerNotice} data-baseball-career-availability="preparing">
         <p className={styles.playgroundEyebrow}>BATTING · GROW YOUR GAME</p>
         <h1>{brand.name}</h1>
@@ -47,9 +48,12 @@ export async function getStaticProps() {
   const { createBaseballDataVersions } = await import('@/lib/server/baseball-version.mjs')
   const { createBaseballAtBatVersions } = await import('@/lib/server/baseball-at-bat-api.mjs')
   const { createBaseballCareerVersions } = await import('@/lib/server/baseball-career-api.mjs')
-  const { createBaseballAtBatV2Versions, createBaseballCareerV2Versions } = await import('@/lib/server/baseball-career-v2-api.mjs')
+  const { createBaseballAtBatV2Versions, createBaseballCareerV2Versions, BASEBALL_CAREER_V2_TRIAL_HASHES, BASEBALL_CAREER_V2_PRIOR_REGULAR_HASHES } = await import('@/lib/server/baseball-career-v2-api.mjs')
   const [baseballVersions, atBatStorageVersions, baseballCareerVersions, atBatV2StorageVersions, baseballCareerV2Versions] = await Promise.all([
     createBaseballDataVersions(), createBaseballAtBatVersions(), createBaseballCareerVersions(), createBaseballAtBatV2Versions(), createBaseballCareerV2Versions(),
   ])
-  return { props:{ baseballCareerAvailability, baseballVersions, atBatStorageVersions, baseballCareerVersions, atBatV2StorageVersions, baseballCareerV2Versions } }
+  const legacyV2StorageVersions = {...atBatV2StorageVersions,growthHash:BASEBALL_CAREER_V2_TRIAL_HASHES.growthHash}
+  const legacyV2CareerVersions = {...baseballCareerV2Versions,...BASEBALL_CAREER_V2_TRIAL_HASHES}
+  const priorAnnualVersions = {...baseballCareerV2Versions,...BASEBALL_CAREER_V2_PRIOR_REGULAR_HASHES}
+  return { props:{ baseballCareerAvailability, baseballVersions, atBatStorageVersions, baseballCareerVersions, atBatV2StorageVersions, baseballCareerV2Versions, legacyV2StorageVersions, legacyV2CareerVersions, priorAnnualVersions } }
 }

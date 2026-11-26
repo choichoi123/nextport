@@ -393,6 +393,8 @@ Remove-Item Env:PGLITE_MODULE_PATH
 
 ## 야구 선수 세이브와 3경기 육성
 
+신규 선수의 현재 144경기 규칙은 [첫 정규시즌](#야구-첫-정규시즌)을 먼저 확인합니다. 아래는 기존 3경기 세이브와 초기 구현의 계약입니다.
+
 - **오늘부터 타자 / Batter Journey**의 경로는 `/playground/baseball/career`·`/en/playground/baseball/career`입니다. 개발 모드에서는 실제 육성, Production에서는 준비 안내로 연결합니다. 기존10구와 단독 한 타석 연습은 별도 경로·저장 계약을 유지합니다. 육성은 실제 리그 일정이 아닌 **3경기×경기당 선수2타석의 축소 검수 시즌**입니다. 예정일은 가상1·4·7일이며9이닝·팀 승패·득점/타점·144경기·다년/은퇴는 제공하지 않습니다.
 - 집중 화면은 **선수 선택 → 육성 → 오늘의 준비 확정 → 타격 준비 → 타석 입장/이어하기 → 타석 결산 → 육성으로** 흐름입니다. PC 메뉴와 모바일4탭은 육성·일정·기록·선수이며 선택한 본문만 스크롤합니다. 훈련 선택은 미리보기이고 ‘준비 완료’만 저장합니다. 이미 준비한 경기와 진행 중 타석은 다시 만들지 않습니다.
 - 직접 타격에서는 관리 탭을 접고 HUD·경기장·현재 행동을 보여 줍니다. ‘상태·기록’에서 결과/저장 문제/재시도와 완료한 타석의 실제 성장 원장을 확인합니다. ‘육성으로’는 중단 후 화면을 숨기며 이어하기와 창 닫기는 자동 투구하지 않습니다. 준비 화면의 뒤로/취소도 입장 의도를 무효화하며 늦은 응답이 타격면을 다시 열지 않습니다.
@@ -420,6 +422,27 @@ Remove-Item Env:PGLITE_MODULE_PATH
 - 개발 DB 설치는 `db/playground-baseball.sql` → `db/migrations/20261124-baseball-at-bat-sessions.sql` → `db/migrations/20261124-baseball-career.sql` → `db/migrations/20261125-baseball-career-v2.sql` → `db/migrations/20261125-baseball-career-recovery.sql` 순서입니다. v2와 복구 SQL은 별도 테이블/RPC를 추가하며 기존D/E 원본·기록을 변환하지 않습니다. 이번 적용 대상은 승인한 **개발용 DB뿐**입니다.
 - 기존 야구 개발 환경변수와 제한 역할을 재사용하며 새 환경변수·비밀·IP 수집은 추가하지 않습니다. Production API는 설정 유무와 관계없이 DB 초기화 전에503으로 막고 육성/복구 편집 UI와 저장 클라이언트는 배포 청크에서 제외합니다. 운영 DB·환경·배포와 Notion·100m 기록은 변경하지 않습니다.
 - 실제 구현/개발 DB 적용·자동/브라우저 검사와 미검증 항목은 [현재 상태](CURRENT_STATE.md)에 한 번만 기록합니다. 이번 v2 성장·복구 기능의 실제 휴대폰 검수는 아직 수행하지 않았으며 앞선 모바일 검수를 새 기능의 결과로 쓰지 않습니다. 헤더/게임 카드 공개·커밋·운영 DB·배포는 이번 범위가 아닙니다.
+
+### 야구 첫 정규시즌
+
+- 새 육성 선수는 `regular-144-v1`에 고정됩니다. 가상의 10개 구단이 상대별 홈 8경기·원정 8경기를 치르고, 경기마다 선수의 두 타석을 진행합니다. 일정의 날짜는 개막 후 경과일입니다. 편성 기준은 [KBO의 팀당 144경기](https://www.koreabaseball.com/MediaNews/Notice/View.aspx?bdSe=11794)이며 이 게임의 일정은 자체 편성입니다.
+- 매 경기 준비를 선택한 뒤 직접 타격, 한 타석 자동 진행, 경기의 남은 타석 자동 진행 중 선택합니다. 진행 중인 직접 타석은 이어하기에서 처리합니다. 새 선수의 경기·훈련·입력은 브라우저 IndexedDB로 저장합니다. 144경기 결산 화면의 **시즌 결산 저장**에서 서버가 원장을 재계산하고 Neon에 한 시즌을 확정합니다. 훈련 능력치는 같은 훈련의 두 번째마다 1씩, 자연 선구 성장은 8경기마다 1씩 오릅니다.
+- 개발에서는 이전 성장·복구 SQL 뒤 [정규시즌 마이그레이션](../db/migrations/20261126-baseball-career-regular-season.sql)을 적용합니다. B단계의 검수 및 운영용 DB에서는 승인된 배포 순서에 따라 005 복구 뒤 [006 정규시즌](../db/production/006-baseball-career-regular-season.sql)을 적용합니다. 같은 v2 테이블과 복구를 사용합니다. 기존 3경기 세이브는 원래 일정·성장을 따릅니다.
+- 결산 경로를 사용하려면 개발에 [연간 저장 SQL](../db/migrations/20261126-baseball-career-annual.sql), [다년차 SQL](../db/migrations/20261126-baseball-career-multiseason.sql), [겨울 준비 SQL](../db/migrations/20261126-baseball-career-winter.sql), [10년차 통산 결산 SQL](../db/migrations/20261126-baseball-career-finish.sql)을 순서대로 적용합니다. 승인된 운영·검수 DB에는 006 뒤 [007 연간 저장](../db/production/007-baseball-career-annual.sql), [008 다년차](../db/production/008-baseball-career-multiseason.sql), [009 겨울 준비](../db/production/009-baseball-career-winter.sql), [010 통산 결산](../db/production/010-baseball-career-finish.sql) 순서입니다. 서버에서 이미 저장 중이던 선수는 **기존 서버 선수 보기**로 열어 기존 규칙으로 이어갑니다.
+- 브라우저 저장 선수는 일반 경기에서 **이번 시리즈 자동 진행**, **이번 주 자동 진행**, **다음 주요 경기까지**를 선택할 수 있습니다. 주요 경기 24개 앞에서는 멈추며, 해당 경기의 직접 타격과 한 경기 자동 진행을 고를 수 있습니다. 이어갈 직접 타석은 먼저 완료합니다. [하이라이트 검증](CURRENT_STATE.md#야구-시리즈주간-자동-진행과-주요-경기--2026-11-26)을 확인합니다.
+- 1년차 결산 저장 완료 후 **다음 시즌 준비**에서 겨울 코치 면담을 엽니다. 준비 방향을 고르거나 균형 준비로 건너뛴 뒤 미리보기에서 **2년차 시작**을 선택합니다. 다음 연차에서도 두 타석씩 144경기를 진행합니다. **기록**에서 통산 성적과 각 시즌 성적을 볼 수 있습니다. 일정과 성장 원장은 12개씩 조회 범위를 바꿔 봅니다.
+- 10년차 144경기를 마치면 **현역으로 결산 저장**, **결정 보류 · 기록 먼저 보기**, **은퇴 선택**이 표시됩니다. 결정 보류 뒤 육성으로 돌아와 다시 선택할 수 있습니다. 은퇴 확정 뒤에도 **기록**에서 통산과 시즌별 성적을 확인할 수 있습니다.
+- 선수 화면에서 **세이브 파일 내보내기**와 **불러오기**로 겨울 준비와 현재 시즌 진행을 보관·복원할 수 있습니다. 서버 복구 코드는 마지막 확정 결산을 불러옵니다. 이전 파일을 새 브라우저로 가져와 결산 영수증이 없다면 결산 저장을 다시 선택해 서버의 확정을 확인합니다. [현재 검증과 다음 작업](CURRENT_STATE.md#야구-겨울-준비의-로컬-복원과-결산-저장--2026-11-26)을 확인합니다.
+
+### 야구 운영 저장 기반 준비
+
+운영 기반은 개발 저장과 별개다. 기존 개발SQL5개는 보존하고 [운영 bootstrap](../db/production/000-baseball-production-bootstrap.sql)부터001~005 순서의 별도 SQL을 사용한다. 대상은 새 야구 전용 프로젝트의 빈 `baseball_prod`이며 NOLOGIN 객체 owner와 제한 `baseball_prod_runtime`을 분리한다. 실제 ID·호스트·연결값·비밀은 공개 문서에 보관하지 않는다.
+
+Production의 `BASEBALL_DATABASE_URL`·`BASEBALL_SIGNING_SECRET`은 독립 서버 Secret이다. 공개 승인 후 적용하는 활성화 경로는 Vercel Production, `BASEBALL_DATA_ENABLED=true`, 별도로 확인한 `BASEBALL_PRODUCTION_DATABASE_HOST`, 전용 `baseball_prod` DB의 제한 역할과 TLS를 모두 요구한다. 현재 운영 공개값은 `false`이며 한영 육성은 준비 안내를 표시한다.
+
+검수 브랜치 `codex/baseball-career-preview`는 Vercel Authentication을 적용한 Preview다. 해당 브랜치의 Preview 범위에 `BASEBALL_PREVIEW_ENABLED=true`, `BASEBALL_PREVIEW_DATABASE_HOST`, `BASEBALL_PREVIEW_DATABASE_URL`, `BASEBALL_PREVIEW_SIGNING_SECRET`을 설정한다. 세 연결·인증 값은 서버에만 보관한다. URL은 별도로 확인한 검수 엔드포인트의 호스트와 일치해야 하며 `baseball_prod` DB, 제한 역할, `sslmode=require`를 사용한다. 이 조건에서 한영 육성과 복구만 열린다. 단독 10구·한 타석 저장은 개발 환경에서만 사용한다.
+
+관리 권한이 있는 Vercel 계정으로 인증한 뒤 Preview 육성 페이지에서 검수한다. 테스트 선수는 검수 DB에 저장되므로 합성 선수만 사용한다. 144경기와 다년차·은퇴 검수에는 위의 006~010 SQL이 선행한다. 오래된 브라우저 백업과 최신 서버 결산이 함께 있을 때는 복구 코드로 최신 서버 결산을 열고, 이전 파일은 필요한 경우 내보낸다. 실제 검증과 공개 전 후속은 [현재 상태](CURRENT_STATE.md)를 확인한다.
 
 ## 저장 없는 성장 후보 비교
 

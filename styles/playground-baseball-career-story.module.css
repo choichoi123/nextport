@@ -1,0 +1,128 @@
+.story {
+  display: grid;
+  min-width: 0;
+  gap: 14px;
+  margin-block: 0 16px;
+  padding: clamp(14px, 2vw, 21px);
+  border: 1px solid var(--line, #d8dfd4);
+  border-inline-start: 3px solid #aa8651;
+  border-radius: 10px;
+  background: var(--surface, #fffdf5);
+  color: var(--ink, #193d32);
+  overflow-wrap: anywhere;
+}
+
+.compact { margin-block: 12px 0; }
+
+.heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 12px;
+}
+
+.heading > span {
+  color: var(--muted, #687b70);
+  font-size: 12px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.story .heading > :is(h2, h3) {
+  margin: 0 !important;
+  color: inherit;
+  font-size: clamp(17px, 2.2vw, 22px);
+  line-height: 1.3;
+  letter-spacing: -.025em;
+}
+
+.compact .heading > h3 { font-size: 16px; }
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.story .options > button {
+  max-width: 100%;
+  text-align: start;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.story .options > button[aria-pressed="true"] {
+  border-color: #aa8651;
+  font-weight: 750;
+  box-shadow: inset 0 -2px #aa8651;
+}
+
+.scene {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 10px 20px;
+}
+
+.coach {
+  align-self: center;
+  min-width: 0;
+  margin: 0;
+}
+
+.coach figcaption {
+  margin-bottom: 5px;
+  color: var(--muted, #687b70);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.coach blockquote {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.goal {
+  display: grid;
+  align-content: center;
+  min-width: 0;
+  gap: 3px;
+  padding: 10px 13px;
+  border: 1px solid var(--line, #d8dfd4);
+  border-radius: 7px;
+  background: var(--paper, #f6f4ec);
+  font-variant-numeric: tabular-nums;
+}
+
+.goal > span,
+.goal > p {
+  color: var(--muted, #687b70);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.goal > p { margin: 0 !important; }
+.goal > strong { font-size: 14px; line-height: 1.4; }
+
+.records {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 164px), 1fr));
+  gap: 10px 15px;
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line, #d8dfd4);
+}
+
+.records dt { color: var(--muted, #687b70); font-size: 12px; }
+.records dd {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 740px) {
+  .scene { grid-template-columns: minmax(0, 1fr); }
+}

@@ -7,7 +7,7 @@ const nextConfig = {
   outputFileTracingRoot: __dirname,
   // 육성 기록 검증에 필요한 원본 파일을 서버리스 함수에 포함합니다.
   outputFileTracingIncludes: {
-    '/api/playground/baseball/{careers,careers-v2}{,/**}': [
+    '/api/playground/baseball/{careers,careers-v2,careers-annual}{,/**}': [
       './lib/playground-baseball*.mjs',
       './components/playground/*baseball*.js',
       './styles/playground-baseball*.module.css',

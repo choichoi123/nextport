@@ -161,7 +161,14 @@ function recordValue(state, version) {
 }
 
 export default function BaseballAtBatGame({ locale='ko', dataVersions=null, storageVersions=null, embeddedCareer=null }) {
-  const text = copy[locale] || copy.ko
+  const localCareer=embeddedCareer?.local===true
+  const localeText=copy[locale]||copy.ko
+  const text=localCareer?{...localeText,
+    storageSaving:locale==='en'?'Saving to this browser':'이 브라우저에 저장 중',
+    storageRead:locale==='en'?'Inspect browser save':'브라우저 저장 확인',
+    storageConflict:locale==='en'?'Another tab changed this season. Reopen the saved season to continue.':'다른 탭에서 시즌을 진행했습니다. 저장한 시즌을 다시 열어 이어가세요.',
+    storagePending:locale==='en'?'An input is still waiting to be saved in this browser.':'이 브라우저에 아직 저장을 확인하지 못한 입력이 있습니다.',
+  }:localeText
   const embeddedGrowth = useMemo(() => {
     try { return { snapshot:captureGrowthSnapshot(embeddedCareer?.session), invalid:false } }
     catch { return { snapshot:null, invalid:true } }
@@ -275,9 +282,9 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
           updateAtBat(session.state);setResult(row.result);setFieldResult(row.fieldResult);setLogicError(false)
           setGamePhase(session.state.status==='complete'?'complete':'result')
           const confirmedRow=session.state.history.find(value=>value.pitchId===round.pitchId)
-          if(confirmedRow&&careerActiveRef.current)confirmPostplay(round,{authority:'server',result:confirmedRow.result,fieldResult:confirmedRow.fieldResult,
+          if(confirmedRow&&careerActiveRef.current)confirmPostplay(round,{authority:localCareer?'memory':'server',result:confirmedRow.result,fieldResult:confirmedRow.fieldResult,
             terminalOutcome:confirmedRow.terminalOutcome})
-          if(confirmedRow&&careerActiveRef.current)finishFeedback(round,{authority:'server',result:confirmedRow.result,fieldResult:confirmedRow.fieldResult,
+          if(confirmedRow&&careerActiveRef.current)finishFeedback(round,{authority:localCareer?'memory':'server',result:confirmedRow.result,fieldResult:confirmedRow.fieldResult,
             terminalOutcome:confirmedRow.terminalOutcome,countAfter:confirmedRow.countAfter})
           embeddedCareer?.onSession?.(session)
         }catch{
@@ -306,7 +313,7 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
       cancelPostplay()
       setLogicError(true);round.paused=true;setPitchStartAt(null);setGamePhase('paused')
     }
-  },[setGamePhase,updateAtBat,embeddedCareer,finishFeedback,cancelFeedback,confirmPostplay,cancelPostplay])
+  },[setGamePhase,updateAtBat,embeddedCareer,finishFeedback,cancelFeedback,confirmPostplay,cancelPostplay,localCareer])
 
   useEffect(() => {
     if (!activePhase(phase)) return
@@ -700,7 +707,9 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
         <div className={styles.status} role="status"><span>{status}</span>{playing&&<button type="button" onClick={pause}>{text.pause}</button>}</div>
         <p className={styles.controls}>{text.controls}</p>
         {!careerFocused&&fieldResult&&settled&&<FieldMap value={fieldResult} text={text} locale={locale} />}
-        <p className={styles.local}>{embeddedCareer?(locale==='en'?'Career practice · pitch results are confirmed by the server. The season advances from its receipt.':'선수 육성 연습 · 투구 결과는 서버에서 확정하며 시즌 진행은 그 영수증을 기준으로 반영합니다.'):storageMode?text.storageNote:text.local}</p>
+        <p className={styles.local}>{localCareer
+          ?locale==='en'?'Pitch results are saved in this browser. The server save is available at the end of the season.':'투구 결과는 이 브라우저에 저장됩니다. 서버 저장은 시즌 결산에서 할 수 있습니다.'
+          :embeddedCareer?(locale==='en'?'Career practice · pitch results are confirmed by the server. The season advances from its receipt.':'선수 육성 연습 · 투구 결과는 서버에서 확정하며 시즌 진행은 그 영수증을 기준으로 반영합니다.'):storageMode?text.storageNote:text.local}</p>
         {process.env.NODE_ENV==='development'&&<details className={styles.data}><summary>{text.data}</summary><pre data-baseball-at-bat-records>{recordJson}</pre></details>}
       </div>
       <aside ref={careerDialogRef} className={`${styles.panel}${careerFocused?` ${styles.careerDialog}`:''}`} hidden={careerFocused&&!careerDetails} role={careerFocused?'dialog':undefined} aria-modal={careerFocused?true:undefined} aria-label={text.practice} onKeyDown={event=>{

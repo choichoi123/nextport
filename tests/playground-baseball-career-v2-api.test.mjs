@@ -1,7 +1,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
-import { createBaseballCareerApiHandler, createBaseballCareerVersions, BASEBALL_CAREER_MAX_BODY_BYTES } from '../lib/server/baseball-career-v2-api.mjs'
+import { createBaseballCareerApiHandler, createBaseballCareerVersions, BASEBALL_CAREER_MAX_BODY_BYTES, BASEBALL_CAREER_V2_TRIAL_HASHES } from '../lib/server/baseball-career-v2-api.mjs'
+import { createBaseballCareerSave, publicBaseballCareerSave } from '../lib/playground-baseball-career-v2.mjs'
 import { createBaseballCareerStore } from '../lib/server/baseball-career-v2-db.mjs'
 import { createBaseballParticipant, readBaseballParticipant } from '../lib/server/baseball-auth.mjs'
 import { withBaseballCareerAccess } from '../lib/server/baseball-career-recovery-db.mjs'
@@ -20,7 +21,7 @@ function request({method='POST',id,atBatId,body,headers={},...rest}={}){return{m
 function memoryStore(){
   const careers=new Map(),atBats=new Map(),commands=new Map(),calls=[]
   return{careers,atBats,commands,calls,
-    async list(owner){calls.push('list');return{status:'ok',careers:[...careers.values()].filter(v=>v.owner===owner).map(({snapshot:s})=>({id:s.id,revision:s.revision,profile:s.profile,status:s.status,completedGames:s.currentGameIndex,updatedAt:s.updatedAt.replace('Z','000+00:00'),ownerHash:'private'})).slice(-20)}},
+    async list(owner){calls.push('list');return{status:'ok',careers:[...careers.values()].filter(v=>v.owner===owner).map(({snapshot:s})=>({id:s.id,revision:s.revision,profile:s.profile,status:s.status,completedGames:s.currentGameIndex,totalGames:s.games.length,updatedAt:s.updatedAt.replace('Z','000+00:00'),ownerHash:'private'})).slice(-20)}},
     async read(owner,id,commandId){calls.push('read');const row=careers.get(id);if(!row||row.owner!==owner)return{status:'not_found'};const command=commands.get(commandId);return{status:'ok',snapshot:clone(row.snapshot),command:command?.id===id?{hash:command.hash,revision:command.revision,atBatReceipt:clone(command.atBatReceipt)}:null}} ,
     async readAtBat(owner,id,atBatId){calls.push('readAtBat');const save=careers.get(id),bat=atBats.get(atBatId);return!save||save.owner!==owner||!bat||bat.careerId!==id?{status:'not_found'}:{status:'ok',...clone(bat)}} ,
     async save(owner,id,expectedRevision,commandId,hash,snapshot,changes,atBatReceipt){
@@ -129,7 +130,10 @@ test('a completed manual appearance applies its statistics and growth exactly on
 })
 
 test('three games and six automatic appearances retain separate raw records and one-time growth',async()=>{
-  const api=setup();let career=(await api.create()).body.career,firstAuto
+  const api=setup(),owner=readBaseballParticipant(request(),env.BASEBALL_SIGNING_SECRET,time)
+  const trial=createBaseballCareerSave({id:uuid(),profile,settings,source:'development',versions:{...versions,...BASEBALL_CAREER_V2_TRIAL_HASHES},seed:42,now:new Date(time).toISOString()})
+  api.store.careers.set(trial.id,{owner:owner.hash,snapshot:trial})
+  let career=publicBaseballCareerSave(trial),firstAuto
   for(let game=0;game<3;game++){
     career=(await api.command(career,{type:'prepare',choice:game?'rest':'discipline'})).body.career
     for(let slot=0;slot<2;slot++){
@@ -143,6 +147,30 @@ test('three games and six automatic appearances retain separate raw records and 
   const autoRead=await api.run(request({method:'GET',id:career.id,atBatId:firstAuto}));assert.equal(autoRead.statusCode,409);assert.equal(autoRead.body.code,'automatic_at_bat')
   const complete=await api.command(career,{type:'prepare',choice:'power'});assert.equal(complete.statusCode,409);assert.equal(complete.body.code,'career_complete')
   noPrivate(career)
+})
+
+test('new players reach game five through atomic automatic games with idempotent retries',async()=>{
+  const api=setup()
+  let career=(await api.create()).body.career
+  assert.equal(career.scheduleId,'regular-144-v1')
+  assert.equal(career.games.length,144)
+  assert.equal((await api.command(career,{type:'simulate-game'})).body.code,'preparation_required')
+  for(let game=0;game<4;game++){
+    career=(await api.command(career,{type:'prepare',choice:'stamina'})).body.career
+    const body={commandId:uuid(),expectedRevision:career.revision,command:{type:'simulate-game'}}
+    const first=await api.run(request({id:career.id,body}))
+    assert.equal(first.statusCode,200)
+    const retry=await api.run(request({id:career.id,body}))
+    assert.equal(retry.body.duplicate,true)
+    assert.equal(retry.body.career.revision,career.revision+1)
+    career=retry.body.career
+  }
+  assert.equal(career.currentGameIndex,4)
+  assert.equal(career.stats.PA,8)
+  assert.equal(api.store.atBats.size,8)
+  const list=await api.run(request({method:'GET'}))
+  assert.equal(list.body.careers[0].completedGames,4)
+  assert.equal(list.body.careers[0].totalGames,144)
 })
 
 test('two tabs cannot claim one slot or overwrite accepted D input',async()=>{
@@ -175,7 +203,7 @@ test('list timestamps are canonical and only approved profile/summary fields lea
   const api=setup();await api.create()
   const list=await api.run(request({method:'GET'}));assert.equal(list.statusCode,200)
   const row=list.body.careers[0];assert.equal(row.updatedAt,new Date(row.updatedAt).toISOString())
-  assert.deepEqual(Object.keys(row).sort(),['id','revision','profile','status','completedGames','updatedAt'].sort());noPrivate(list.body)
+  assert.deepEqual(Object.keys(row).sort(),['id','revision','profile','status','completedGames','totalGames','updatedAt'].sort());noPrivate(list.body)
 })
 
 test('database loss, capacity and invalid stored receipts never report success or erase input',async()=>{
@@ -196,9 +224,9 @@ test('automatic simulation tuning and results cannot be supplied by a client',as
   assert.equal(api.store.atBats.size,0)
 })
 
-test('build-time career hashing uses only the approved module and no credentials',async()=>{
+test('build-time career hashing includes the engine and season schedule, without credentials',async()=>{
   const paths=[],value=await createBaseballCareerVersions({getAtBatVersions:async()=>Object.fromEntries(Object.entries(versions).filter(([key])=>key!=='careerHash')),readSource:async file=>{paths.push(file);return'example\r\n'}})
-  assert.deepEqual(paths,['lib/playground-baseball-career-v2.mjs']);assert.equal(Object.keys(value).length,7);assert.match(value.careerHash,/^[a-f0-9]{64}$/)
+  assert.deepEqual(paths,['lib/playground-baseball-career-v2.mjs','lib/playground-baseball-career-schedule.mjs']);assert.equal(Object.keys(value).length,7);assert.match(value.careerHash,/^[a-f0-9]{64}$/)
 })
 
 test('career database queries use parameters and never invoke existing training tables',async()=>{
@@ -225,7 +253,8 @@ test('v2 starts at the server growth profile and pins each manual child to that 
   const pinnedRevision=career.revision
   career=(await api.command(career,{type:'start-manual'})).body.career
   const session=(await api.run(request({method:'GET',id:career.id,atBatId:career.activeAtBat.id}))).body.session
-  assert.equal(session.schemaVersion,2);assert.equal(session.growthSnapshot.mit,42)
+  assert.equal(session.schemaVersion,2);assert.equal(session.growthSnapshot.mit,career.growth.mit)
+  assert.equal(session.growthSnapshot.mit,40)
   assert.equal(session.growthSnapshot.careerRevision,pinnedRevision)
   assert.deepEqual(session.growthSnapshot,career.activeAtBat.growthSnapshot)
   assert.deepEqual(session.growthSnapshot,session.state.growthSnapshot)
@@ -260,7 +289,8 @@ test('a recovered v2 player uses its canonical owner without changing other save
   }
   const proxy=withBaseballCareerAccess(base,recovery,{version:2}),shared=setup({store:proxy})
   const moved=await shared.run(request({id,headers:{cookie:otherCookie},body:{commandId:uuid(),expectedRevision:1,command:{type:'prepare',choice:'mit'}}}))
-  assert.equal(moved.statusCode,200);assert.equal(moved.body.career.growth.mit,42)
+  assert.equal(moved.statusCode,200);assert.equal(moved.body.career.games[0].preparation.choice,'mit')
+  assert.equal(moved.body.career.growth.mit,40)
   assert.equal(base.careers.get(id).owner,sourceOwner);noPrivate(moved.body)
   const own=await shared.run(request({headers:{cookie:otherCookie},body:{commandId:uuid(),profile,settings,source:'development'}}))
   assert.equal(own.statusCode,200);assert.equal(base.careers.get(own.body.career.id).owner,actor)

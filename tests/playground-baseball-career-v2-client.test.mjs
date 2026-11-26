@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { createBaseballCareerSave,publicBaseballCareerSave,applyBaseballCareerCommand,createBaseballCareerManualAtBat,simulateBaseballCareerAtBat,advanceBaseballCareerAtBat } from '../lib/playground-baseball-career-v2.mjs'
 import { applyBaseballAtBatSessionCommand,publicBaseballAtBatSession } from '../lib/playground-baseball-at-bat-session-v2.mjs'
 import { planBaseballAtBatJournalWrite,planBaseballAtBatJournalAdoption } from '../lib/playground-baseball-at-bat-v2-client.mjs'
-import { openBaseballCareerClient,validBaseballCareerCheckpoint,validBaseballCareerJournal,planBaseballCareerJournalWrite,planBaseballCareerAdoption,createBaseballCareerTransport } from '../lib/playground-baseball-career-v2-client.mjs'
+import { openBaseballCareerClient,validBaseballCareerCheckpoint,validBaseballCareerJournal,planBaseballCareerJournalWrite,planBaseballCareerAdoption,createBaseballCareerTransport,planBaseballCareerAtBatJournalWrite } from '../lib/playground-baseball-career-v2-client.mjs'
 
 const clone=value=>JSON.parse(JSON.stringify(value))
 let number=0
@@ -72,6 +72,25 @@ test('career checkpoint keeps finite public profiles, schedule, stats and source
   for(const change of [v=>{v.seed=1},v=>{v.profile.name=''},v=>{v.versions.careerHash='bad'},v=>{v.games.pop()},v=>{v.stats.H=-1},v=>{v.activeAtBat={id:'bad',gameIndex:0}},v=>{v.ownerHash='secret'},v=>{v.ledger=[null]},v=>{v.growth.condition=1000},v=>{v.rates.AVG=.5},v=>{v.statsBySource.manual=null},v=>{v.feedback=['made-up']},v=>{v.statsBySource.manual.PA=3}]){
     const value=clone(view);change(value);assert.equal(validBaseballCareerCheckpoint(value),false)
   }
+})
+
+test('long-career journal evicts only server-confirmed terminal appearances when full',()=>{
+  const saved=createBaseballCareerSave({id:id(),profile,settings,versions,seed:42,now:at})
+  const prepared=applyBaseballCareerCommand(saved,{commandId:id(),expectedRevision:1,type:'prepare',choice:'rest'},{now:at})
+  const create=()=>createBaseballCareerManualAtBat(prepared,{id:id(),seed:1,now:at})
+  const journal=(session,updatedAt,pending=null)=>({schemaVersion:2,id:session.id,player:profile,checkpoint:publicBaseballAtBatSession(session),pending,updatedAt})
+  let completed=create()
+  for(let pitch=0;pitch<3;pitch++){
+    completed=applyBaseballAtBatSessionCommand(completed,{commandId:id(),expectedRevision:completed.revision,type:'issue'},{now:at,attemptId:id()})
+    const {pitchId,attemptId}=completed.pending
+    completed=applyBaseballAtBatSessionCommand(completed,{commandId:id(),expectedRevision:completed.revision,type:'accept-input',pitchId,attemptId,input:{kind:'swing',swingAtMs:-500,aim:{x:0,y:.7}}},{now:at})
+    completed=applyBaseballAtBatSessionCommand(completed,{commandId:id(),expectedRevision:completed.revision,type:'resolve',pitchId,attemptId},{now:at})
+  }
+  const waiting=create(),active=journal(waiting,1),pending=journal(waiting,1,{operation:'command',body:{commandId:id(),expectedRevision:1,command:{type:'issue'}}})
+  const entry=journal(create(),3)
+  const limits={sessions:2,bytes:10*1024*1024}
+  assert.deepEqual(planBaseballCareerAtBatJournalWrite([pending,journal(completed,2)],entry,undefined,limits),{entry,evictedIds:[completed.id]})
+  assert.throws(()=>planBaseballCareerAtBatJournalWrite([active],entry,undefined,{...limits,sessions:1}),{code:'local_capacity'})
 })
 
 test('public validation accepts PostgreSQL key ordering without persisting a private seed',async()=>{
