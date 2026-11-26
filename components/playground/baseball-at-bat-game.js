@@ -700,7 +700,7 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
         <div className={styles.status} role="status"><span>{status}</span>{playing&&<button type="button" onClick={pause}>{text.pause}</button>}</div>
         <p className={styles.controls}>{text.controls}</p>
         {!careerFocused&&fieldResult&&settled&&<FieldMap value={fieldResult} text={text} locale={locale} />}
-        <p className={styles.local}>{embeddedCareer?(locale==='en'?'Career practice · pitch results are confirmed by the development server. The season advances from its receipt.':'선수 육성 연습 · 투구 결과는 개발 서버에서 확정하며 시즌 진행은 그 영수증을 기준으로 반영합니다.'):storageMode?text.storageNote:text.local}</p>
+        <p className={styles.local}>{embeddedCareer?(locale==='en'?'Career practice · pitch results are confirmed by the server. The season advances from its receipt.':'선수 육성 연습 · 투구 결과는 서버에서 확정하며 시즌 진행은 그 영수증을 기준으로 반영합니다.'):storageMode?text.storageNote:text.local}</p>
         {process.env.NODE_ENV==='development'&&<details className={styles.data}><summary>{text.data}</summary><pre data-baseball-at-bat-records>{recordJson}</pre></details>}
       </div>
       <aside ref={careerDialogRef} className={`${styles.panel}${careerFocused?` ${styles.careerDialog}`:''}`} hidden={careerFocused&&!careerDetails} role={careerFocused?'dialog':undefined} aria-modal={careerFocused?true:undefined} aria-label={text.practice} onKeyDown={event=>{

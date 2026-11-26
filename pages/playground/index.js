@@ -26,10 +26,12 @@ const copy = {
     baseballFeatures: ['선수 육성·직접 타격', '10개 구단·좌우타', '3경기·총 6타석'],
     baseballInput: 'PC 클릭·키보드 · 모바일 터치',
     baseballLocal: '로컬 체험 가능',
+    baseballPreview: 'Preview 검수',
     baseballPreparing: '배포판 준비 중',
     baseballStart: '오늘부터 타자 시작하기',
     baseballStatus: '오늘부터 타자 준비 상태 보기',
     baseballNotice: '육성과 선수 저장·복구는 준비 중입니다. 게임 소개에서 현재 제공 범위를 확인해 주세요.',
+    baseballPreviewNotice: 'Preview 전용 검수 기록으로 육성과 저장·복구를 시험합니다. 공개 서비스의 기록과 분리됩니다.',
   },
   en: {
     title: 'Playground | Jihoon Choi Portfolio',
@@ -51,10 +53,12 @@ const copy = {
     baseballFeatures: ['Training & manual batting', '10 clubs · left or right', '3 games · 6 appearances'],
     baseballInput: 'Mouse & keyboard · touch on mobile',
     baseballLocal: 'Local trial available',
+    baseballPreview: 'Preview test',
     baseballPreparing: 'Release in preparation',
     baseballStart: 'Start Batter Journey',
     baseballStatus: 'View Batter Journey status',
     baseballNotice: 'Career play, player saves and recovery are in preparation. Open the game introduction to see what is available.',
+    baseballPreviewNotice: 'Try career play, saves and recovery with Preview test records, separate from the public service.',
   },
 }
 
@@ -76,12 +80,14 @@ function KeyboardDiagram() {
   )
 }
 
-export default function Playground() {
+export default function Playground({ baseballCareerAvailability = 'preparing' }) {
   const english = useRouter().locale === 'en'
   const text = copy[english ? 'en' : 'ko']
   const brand = BASEBALL_CAREER_BRAND[english ? 'en' : 'ko']
   const development = process.env.NODE_ENV === 'development'
-  const baseballAction = development ? text.baseballStart : text.baseballStatus
+  const preview = !development && baseballCareerAvailability === 'preview'
+  const available = development || preview
+  const baseballAction = available ? text.baseballStart : text.baseballStatus
 
   return (
     <PlaygroundShell title={text.title} description={text.description}>
@@ -109,7 +115,7 @@ export default function Playground() {
               <span className={styles.playgroundStart}>{text.sprintStart}<span aria-hidden="true">↗</span></span>
             </div>
           </Link>
-          <Link href="/playground/baseball/career" prefetch={false} className={styles.playgroundCard} aria-label={baseballAction} aria-describedby="playground-baseball-description" data-playground-baseball-entry data-availability={development ? 'local-trial' : 'preparing'}>
+          <Link href="/playground/baseball/career" prefetch={false} className={styles.playgroundCard} aria-label={baseballAction} aria-describedby="playground-baseball-description" data-playground-baseball-entry data-availability={development ? 'local-trial' : preview ? 'preview-trial' : 'preparing'}>
             <div className={styles.baseballDiagram} aria-hidden="true">
               <Image src="/images/playground/baseball/delivery/20261124/stadium-batting-view-lossless.webp" alt="" fill sizes="(max-width: 760px) 100vw, 560px" loading="eager" className={styles.baseballBackdrop} />
               <span className={styles.baseballDiagramLabel}>BATTING · GROW YOUR GAME</span>
@@ -119,11 +125,11 @@ export default function Playground() {
             </div>
             <div className={styles.playgroundCardBody}>
               <p className={styles.playgroundCardEyebrow}>02 / BASEBALL CAREER</p>
-              <span className={styles.baseballAvailability}>{development ? text.baseballLocal : text.baseballPreparing}</span>
+              <span className={styles.baseballAvailability}>{development ? text.baseballLocal : preview ? text.baseballPreview : text.baseballPreparing}</span>
               <h3 className={styles.playgroundCardTitle}>{brand.name}</h3>
               <p id="playground-baseball-description" className={styles.playgroundCardDescription}>{brand.description}</p>
               <ul className={styles.sprintFeatures}>{text.baseballFeatures.map(feature => <li key={feature}>{feature}</li>)}</ul>
-              {!development && <p className={styles.baseballNotice}>{text.baseballNotice}</p>}
+              {!development && <p className={styles.baseballNotice}>{preview ? text.baseballPreviewNotice : text.baseballNotice}</p>}
               <span className={styles.playgroundInput}>{text.baseballInput}</span>
               <span className={styles.playgroundStart}>{baseballAction}<span aria-hidden="true">↗</span></span>
             </div>
@@ -156,4 +162,9 @@ export default function Playground() {
       </div>
     </PlaygroundShell>
   )
+}
+
+export async function getStaticProps() {
+  const { readBaseballCareerAvailability } = await import('@/lib/server/baseball-db.mjs')
+  return { props: { baseballCareerAvailability: readBaseballCareerAvailability() } }
 }

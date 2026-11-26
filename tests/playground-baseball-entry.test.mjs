@@ -18,14 +18,16 @@ for (const path of ['pages/playground/index.js', 'pages/playground/baseball/care
   const url = new URL(`../${path}`, import.meta.url)
   const compiled = await transform(await fs.readFile(url, 'utf8'), {
     filename: fileURLToPath(url),
+    disableNextSsg: true,
     jsc: { parser: { syntax: 'ecmascript', jsx: true }, target: 'es2022', transform: { react: { runtime: 'automatic' } } },
     module: { type: 'commonjs' },
   })
   sources.set(path, compiled.code)
 }
 
-// Next Link와 PortfolioShell은 경계만 대체한다. 실제 브라우저의 locale 이동 검증은 아니다.
-function renderPage(path, { locale = 'ko', environment = 'production', props = {} } = {}) {
+// Link, Shell과 dynamic은 경계만 대체한다. 실제 브라우저의 locale 이동이나
+// 청크 요청 검증과 구분하며, 여기서는 허용 props와 mount 여부만 확인한다.
+function renderPage(path, { locale = 'ko', environment = 'production', props = {}, serverAvailability = 'preparing' } = {}) {
   const seen = { links: [], shells: [], career: [], careerLoads: 0, heads: 0 }
   const shell = shellProps => {
     seen.shells.push(shellProps)
@@ -42,16 +44,31 @@ function renderPage(path, { locale = 'ko', environment = 'production', props = {
       if (name.startsWith('react')) return require(name)
       if (name === 'next/router') return { useRouter: () => ({ locale }) }
       if (name === 'next/link') return { __esModule: true, default: Link }
+      if (name === 'next/dynamic') return { __esModule: true, default: (_loader, options) => {
+        assert.equal(options.ssr, false, '서버 렌더는 저장 클라이언트를 초기화하지 않는다')
+        return gameProps => {
+          seen.careerLoads++
+          seen.career.push(gameProps)
+          return React.createElement('div', { 'data-entry-career-game': 'true' })
+        }
+      } }
       if (name === 'next/image') return { __esModule: true, default: ({ src, alt, loading }) => React.createElement('img', { src, alt, loading }) }
       if (name === 'next/head') return { __esModule: true, default: ({ children }) => { seen.heads++; return React.createElement(React.Fragment, null, children) } }
       if (name.endsWith('/playground-shell') || name.endsWith('/portfolio-shell')) return { __esModule: true, default: shell }
       if (name.endsWith('/playground-baseball-brand.mjs')) return { BASEBALL_CAREER_BRAND }
+      if (name === '@/lib/server/baseball-db.mjs') return { readBaseballCareerAvailability: () => serverAvailability }
+      if (name === '@/lib/server/baseball-version.mjs') return { createBaseballDataVersions: async () => ({ fixture: 'baseballVersions' }) }
+      if (name === '@/lib/server/baseball-at-bat-api.mjs') return { createBaseballAtBatVersions: async () => ({ fixture: 'atBatStorageVersions' }) }
+      if (name === '@/lib/server/baseball-career-api.mjs') return { createBaseballCareerVersions: async () => ({ fixture: 'baseballCareerVersions' }) }
+      if (name === '@/lib/server/baseball-career-v2-api.mjs') return {
+        createBaseballAtBatV2Versions: async () => ({ fixture: 'atBatV2StorageVersions' }),
+        createBaseballCareerV2Versions: async () => ({ fixture: 'baseballCareerV2Versions' }),
+      }
       if (name.endsWith('/baseball-career-game')) {
         seen.careerLoads++
-        assert.equal(environment, 'development', '운영 경로는 육성 클라이언트를 불러오지 않는다')
         return { __esModule: true, default: gameProps => {
           seen.career.push(gameProps)
-          return React.createElement('div', { 'data-development-career-game': 'true' })
+          return React.createElement('div', { 'data-entry-career-game': 'true' })
         } }
       }
       if (name.endsWith('.module.css')) return { __esModule: true, default: {} }
@@ -59,7 +76,7 @@ function renderPage(path, { locale = 'ko', environment = 'production', props = {
     },
   })
   const html = renderToStaticMarkup(React.createElement(target.exports.default, props))
-  return { html, seen }
+  return { html, seen, pageExports: target.exports }
 }
 
 const plain = html => html.replace(/<[^>]*>/gu, '').replaceAll('&amp;', '&').replaceAll('&#x27;', "'").replaceAll('&quot;', '"')
@@ -146,7 +163,9 @@ test('개발 육성 페이지는 새 브랜드 메타와 기존 버전 props를 
     assert.equal(seen.shells[0].title, `${expected[locale].name} | ${locale === 'ko' ? '최지훈' : 'Jihoon'}`)
     assert.equal(seen.shells[0].description, BASEBALL_CAREER_BRAND[locale].description)
     assert.equal(seen.shells[0].immersive, true)
-    assert.ok(html.includes('data-development-career-game="true"'))
+    assert.ok(html.includes('data-entry-career-game="true"'))
+    assert.equal(game.enabled, true)
+    assert.equal(game.preview, false)
     assert.equal(html.includes('data-baseball-career-availability'), false)
   }
 })
@@ -160,12 +179,57 @@ test('운영 육성 페이지는 클라이언트를 불러오지 않고 브랜�
     assert.ok(html.includes('data-baseball-career-availability="preparing"'))
     assert.ok(plain(html).includes(expected[locale].unavailable))
     assert.ok(plain(html).includes(expected[locale].preparing))
-    assert.equal(/<form\b|<input\b|<button\b|data-development-career-game/u.test(html), false)
+    assert.equal(/<form\b|<input\b|<button\b|data-entry-career-game/u.test(html), false)
     for (const href of ['/playground', '/playground/baseball/at-bat']) {
       anchor(html, href)
       assert.equal(seen.links.find(item => item.href === href).prefetch, false)
     }
     assert.equal(seen.shells[0].description, BASEBALL_CAREER_BRAND[locale].description)
+  }
+})
+
+test('지정 Preview 표시는 한영 카드와 직접 육성 진입에서만 같은 허용 경계를 사용한다', () => {
+  for (const locale of ['ko', 'en']) {
+    const props = { baseballCareerAvailability: 'preview' }
+    const landing = renderPage('pages/playground/index.js', { locale, props })
+    const card = anchor(landing.html, '/playground/baseball/career')
+    assert.ok(card.attributes.includes('data-availability="preview-trial"'))
+    assert.ok(card.attributes.includes(`aria-label="${expected[locale].start}"`))
+    assert.ok(card.text.includes(locale === 'ko' ? 'Preview 검수' : 'Preview test'))
+    assert.equal(card.text.includes(expected[locale].preparing), false)
+    assert.equal(landing.seen.careerLoads, 0, '카드는 저장 클라이언트를 시작하지 않는다')
+    const page = renderPage('pages/playground/baseball/career.js', { locale, props })
+    assert.equal(page.seen.careerLoads, 1)
+    assert.equal(page.seen.career[0].enabled, true)
+    assert.equal(page.seen.career[0].preview, true)
+    assert.equal(page.seen.career[0].locale, locale)
+    assert.equal(page.html.includes('data-baseball-career-availability="preparing"'), false)
+  }
+})
+
+test('없는 값·잘못된 값·개발 enum은 production 빌드에서 Preview를 열지 않는다', () => {
+  for (const value of [undefined, null, true, 'true', 'development', 'production', 'PREVIEW']) {
+    const props = { baseballCareerAvailability: value }
+    const page = renderPage('pages/playground/baseball/career.js', { props })
+    assert.equal(page.seen.careerLoads, 0)
+    assert.ok(page.html.includes('data-baseball-career-availability="preparing"'))
+    const landing = renderPage('pages/playground/index.js', { props })
+    assert.ok(anchor(landing.html, '/playground/baseball/career').attributes.includes('data-availability="preparing"'))
+  }
+})
+
+test('서버 availability는 환경·연결 설정 없이 enum과 기존 버전 props만 직렬화한다', async () => {
+  for (const availability of ['development', 'preview', 'preparing']) {
+    for (const path of ['pages/playground/index.js', 'pages/playground/baseball/career.js']) {
+      const { pageExports } = renderPage(path, { serverAvailability: availability })
+      const value = await pageExports.getStaticProps()
+      assert.equal(value.props.baseballCareerAvailability, availability)
+      const expectedKeys = path.endsWith('/career.js')
+        ? ['baseballCareerAvailability', 'baseballVersions', 'atBatStorageVersions', 'baseballCareerVersions', 'atBatV2StorageVersions', 'baseballCareerV2Versions']
+        : ['baseballCareerAvailability']
+      assert.deepEqual(Object.keys(value.props).sort(), expectedKeys.sort())
+      assert.equal(/databaseUrl|signingSecret|BASEBALL_|postgres(?:ql)?:/i.test(JSON.stringify(value.props)), false)
+    }
   }
 })
 

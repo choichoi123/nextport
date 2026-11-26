@@ -41,7 +41,10 @@ function CareerButton({kind,onAction,children,disabled=false,className}){
     onClick={event=>{if(event.detail!==0&&intent.current!==kind)return;intent.current=null;onAction()}}>{children}</button>
 }
 
-export default function BaseballCareerGame({locale='ko',dataVersions=null,storageVersions=null,careerVersions=null,v2StorageVersions=null,v2CareerVersions=null}){
+export default function BaseballCareerGame({locale='ko',dataVersions=null,storageVersions=null,careerVersions=null,v2StorageVersions=null,v2CareerVersions=null,enabled=false,preview=false}){
+  const localDevelopment=process.env.NODE_ENV==='development'
+  const previewMode=!localDevelopment&&enabled===true&&preview===true
+  const careerEnabled=localDevelopment||previewMode
   const prefix=useId(),router=useRouter()
   const sharedFeedback=useBaseballFeedback({locale})
   const {intro:entranceIntro,prepare:prepareEntrance,enter:showEntrance,cancel:cancelEntrance}=useBaseballEntrance({feedback:sharedFeedback,locale})
@@ -52,7 +55,8 @@ export default function BaseballCareerGame({locale='ko',dataVersions=null,storag
   const [store,setStore]=useState({entries:[],history:[],busy:false,code:null}),[opening,setOpening]=useState(true)
   const [career,setCareer]=useState(null),[manual,setManual]=useState(null),[review,setReview]=useState(null)
   const modern=career?.schemaVersion!==1,rules=modern?BASEBALL_CAREER_V2_RULES:BASEBALL_CAREER_RULES
-  const text={...(copy[locale]||copy.ko),mit:locale==='en'?'Contact training':'미트 훈련',localNote:locale==='en'?'Records stay on the server. Keep a recovery code to continue this player in another browser. Pitches never resume automatically.':'기록은 서버에 저장됩니다. 복구 코드를 보관하면 다른 브라우저에서도 선수를 이어갑니다. 투구는 자동 재개하지 않습니다.'}
+  const previewCopy=previewMode?{unavailable:locale==='en'?'Preview storage is unavailable. Existing records and pending requests remain.':'Preview 저장소에 연결하지 못했습니다. 기존 기록과 대기 요청은 유지합니다.',reconnect:locale==='en'?'The Preview version changed. Refresh this page and choose the saved player again.':'Preview 버전이 변경되었습니다. 새로고침한 뒤 저장된 선수를 다시 선택해 주세요.'}:{}
+  const text={...(copy[locale]||copy.ko),mit:locale==='en'?'Contact training':'미트 훈련',localNote:locale==='en'?'Records stay on the server. Keep a recovery code to continue this player in another browser. Pitches never resume automatically.':'기록은 서버에 저장됩니다. 복구 코드를 보관하면 다른 브라우저에서도 선수를 이어갑니다. 투구는 자동 재개하지 않습니다.',...previewCopy}
   const f={...(focusCopy[locale]||focusCopy.ko),title:BASEBALL_CAREER_BRAND[locale==='en'?'en':'ko'].name,mit:locale==='en'?'Contact':'미트',...(modern?{trainingNote:locale==='en'?'Contact and power bonuses are fixed when you enter an appearance. Ball size and the timing window stay unchanged.':'미트·파워 보정은 타석 입장 때 고정합니다. 공 크기와 유효 타이밍은 그대로입니다.'}:{})}
   const [view,setView]=useState(createBaseballCareerView),[trainingChoice,setTrainingChoice]=useState(null),[trainingFeedback,setTrainingFeedback]=useState(null)
   const trainingEpoch=useRef(0),seenTrainingEvents=useRef(new Set())
@@ -71,15 +75,17 @@ export default function BaseballCareerGame({locale='ko',dataVersions=null,storag
     return()=>router.events.off('routeChangeStart',leave)
   },[router.events,clearTrainingFeedback,clearCareerPresentation,transition])
   useEffect(()=>{
+    let cancelled=false
     alive.current=true;setOpening(true);clearTrainingFeedback()
     if(careerRef.current){setCareer(null);setManual(null);setReview(null);setReconnectNotice(true);transition({type:'select-career',careerId:null})}
-    if(process.env.NODE_ENV==='development')void(async()=>{try{
+    if(careerEnabled)void(async()=>{try{
       const storage=await import('@/lib/playground-baseball-career-hub-client.mjs')
-      const client=await storage.openBaseballCareerHubClient({onChange:value=>{if(alive.current)setStore(value)}})
-      if(!alive.current){client.close();return}clientRef.current=client
-    }catch(cause){if(alive.current)setStore(old=>({...old,code:cause.code||'storage_unavailable',busy:false}))}finally{if(alive.current)setOpening(false)}})()
-    return()=>{alive.current=false;selectionEpoch.current++;trainingEpoch.current++;clientRef.current?.close();clientRef.current=null}
-  },[clearTrainingFeedback,transition])
+      const client=await storage.openBaseballCareerHubClient({onChange:value=>{if(!cancelled&&alive.current)setStore(value)}})
+      if(cancelled||!alive.current){client.close();return}clientRef.current=client
+    }catch(cause){if(!cancelled&&alive.current)setStore(old=>({...old,code:cause.code||'storage_unavailable',busy:false}))}finally{if(!cancelled&&alive.current)setOpening(false)}})()
+    else setOpening(false)
+    return()=>{cancelled=true;alive.current=false;selectionEpoch.current++;trainingEpoch.current++;clientRef.current?.close();clientRef.current=null}
+  },[careerEnabled,clearTrainingFeedback,transition])
   useEffect(()=>{if(contentRef.current)contentRef.current.scrollTop=0},[view.view,view.tab,career?.id])
   const onManualSession=useCallback(session=>{
     const owner=manualRef.current,currentCareer=careerRef.current
@@ -192,7 +198,7 @@ export default function BaseballCareerGame({locale='ko',dataVersions=null,storag
   function chooseAnother(){try{clientRef.current?.selectNew()}catch{/* The current version status remains visible. */}selectionEpoch.current++;controlsRef.current?.pause();clearTrainingFeedback();clearCareerPresentation();manualRef.current?.client.close();manualRef.current=null;controlsRef.current=null;setManual(null);retainCareer(null);setReview(null);setTrainingChoice(null);transition({type:'select-career',careerId:null})}
   function prepareView(){if(career&&!blocked&&career.status!=='complete'&&current?.preparation){clearTrainingFeedback();clearCareerPresentation();transition({type:'prepare'})}}
   const trainingPreview=career&&trainingChoice?getBaseballTrainingPreview({growth:career.growth,rules,choice:trainingChoice}):null
-  if(process.env.NODE_ENV!=='development')return <p>{locale==='en'?'Career development is under local review.':'선수 육성은 로컬 검수 중입니다.'}</p>
+  if(!careerEnabled)return <p>{locale==='en'?'Career play is in preparation.':'선수 육성은 준비 중입니다.'}</p>
   const setupView=(<div className={styles.setupGrid}>
       <form className={styles.panel} onSubmit={create} noValidate><p className={styles.kicker}>01 / YOUR PLAYER</p><h2>{text.setup}</h2><p>{locale==='en'?'New players use growth rules v2. Existing v1 players keep their original rules.':'새 선수는 미트·파워가 적용되는 v2로 시작합니다. 기존 v1 선수는 원래 규칙을 유지합니다.'}</p>
         <div className={styles.nameGrid}><label htmlFor={`${prefix}-name`}>{text.name}<input id={`${prefix}-name`} value={draft.name} autoComplete="off" maxLength={32} aria-invalid={feedback.name.invalid} aria-describedby={feedback.name.describedBy} onChange={event=>update('name',event.target.value)} /></label><label htmlFor={`${prefix}-number`}>{text.number}<input id={`${prefix}-number`} value={draft.jerseyNumber} inputMode="numeric" maxLength={2} aria-invalid={feedback.jerseyNumber.invalid} aria-describedby={feedback.jerseyNumber.describedBy} onChange={event=>update('jerseyNumber',event.target.value)} /></label></div>
@@ -200,7 +206,7 @@ export default function BaseballCareerGame({locale='ko',dataVersions=null,storag
         <label htmlFor={`${prefix}-team`}>{text.team}<select id={`${prefix}-team`} value={draft.teamId} onChange={event=>update('teamId',event.target.value)}>{BASEBALL_TEAMS.map(team=><option key={team.id} value={team.id}>{team.name}</option>)}</select></label>
         <label htmlFor={`${prefix}-speed`}>{text.speed}<select id={`${prefix}-speed`} value={settings.baseSpeedKmh} onChange={event=>setSettings(old=>({...old,baseSpeedKmh:Number(event.target.value)}))}>{[80,100,120,140,160].map(value=><option key={value} value={value}>{value} km/h</option>)}</select></label>
         <label htmlFor={`${prefix}-mode`}>{text.pitchMode}<select id={`${prefix}-mode`} value={settings.pitchMode} onChange={event=>setSettings(old=>({...old,pitchMode:event.target.value}))}><option value="mixed">{text.mixed}</option>{Object.entries(text.pitches).map(([id,label])=><option key={id} value={id}>{label}</option>)}</select></label>
-        <label className={styles.checkbox}><input type="checkbox" checked={development} onChange={event=>setDevelopment(event.target.checked)} />{text.development}</label>
+        {localDevelopment&&<label className={styles.checkbox}><input type="checkbox" checked={development} onChange={event=>setDevelopment(event.target.checked)} />{text.development}</label>}
         {feedback.messages.map(message=><p key={message.id} id={message.id} className={styles.error} role="alert">{message.text}</p>)}
         <button className={styles.primary} type="submit" disabled={busy||Boolean(store.code)||!clientRef.current}>{text.create} →</button>
       </form>
@@ -215,12 +221,13 @@ export default function BaseballCareerGame({locale='ko',dataVersions=null,storag
     if(event.target.closest('button')&&['Enter','Space'].includes(event.code)&&(event.repeat||event.nativeEvent.isComposing))event.preventDefault()
     if(event.key==='Enter'&&event.nativeEvent.isComposing)event.preventDefault()
   }}>
-    <header className={styles.focusHeader}><div><p className={styles.kicker}>BATTING LAB · CAREER · v{career?.schemaVersion||2}</p><h1>{view.view==='prepare'?f.prepareTitle:career?career.profile.name:f.title}</h1></div>
+    <header className={styles.focusHeader}><div><p className={styles.kicker}>BATTING LAB · {previewMode?'PREVIEW':'CAREER'} · v{career?.schemaVersion||2}</p><h1>{view.view==='prepare'?f.prepareTitle:career?career.profile.name:f.title}</h1></div>
       <span className={styles.hint} role='status' aria-label={f.connection}>{busy?f.saving:store.code?f.connection:f.ready}</span>
       {!career&&<Link href='/playground/baseball/at-bat' prefetch={false}>← {text.back}</Link>}
     </header>
     {career&&view.view==='manage'&&<nav className={styles.focusNav} aria-label={f.title}>{['home','schedule','records','player'].map(tab=><button type='button' key={tab} aria-current={view.tab===tab?'page':undefined} data-active={view.tab===tab} onClick={()=>goManage(tab)}>{f[tab]}</button>)}</nav>}
     <div ref={contentRef} className={styles.focusContent} hidden={view.view==='batting'} id={`${prefix}-career-content`}>
+      {previewMode&&!career&&<p className={styles.compactNotice} data-baseball-career-preview>{locale==='en'?'Preview test · Test records are stored separately from the public service.':'Preview 검수 · 기록은 공개 서비스와 분리해 저장합니다.'}</p>}
       {store.code&&<p className={styles.compactNotice} role='alert'>{errorText}</p>}
       {Object.entries(store.versionErrors||{}).filter(([version,code])=>code&&Number(version)!==store.activeVersion).map(([version])=><p className={styles.error} role='alert' key={version}>{locale==='en'?`The v${version} player list could not be loaded. Its existing records remain unchanged.`:`v${version} 선수 목록을 확인하지 못했습니다. 해당 버전의 기존 기록은 유지됩니다.`}</p>)}
       {reconnectNotice&&<p className={styles.hint}>{text.reconnect}</p>}
@@ -256,7 +263,7 @@ export default function BaseballCareerGame({locale='ko',dataVersions=null,storag
             {!trainingFeedback.changed&&<p>{preparationText.noChange}</p>}
           </div>}
         </section>}
-        <div className={styles.summaryGrid}><section className={styles.panel}><h2>{text.growth}</h2><div className={styles.growth}>{(modern?['mit','power','discipline','stamina']:['power','discipline','stamina']).map(key=><div key={key}><small>{f[key]}</small><strong>{career.growth[key]}</strong></div>)}</div><p>{f.trainingNote}</p><button type='button' onClick={()=>goManage('player')}>{locale==='en'?'Manage recovery code':'복구 코드 관리'}</button><p><Link href='/playground/baseball/growth' prefetch={false}>{locale==='en'?'Compare growth candidates':'성장 후보 비교하기'} →</Link></p></section><section className={styles.panel}><h2>{text.feedback}</h2><ul className={styles.notes}>{career.feedback.map(key=><li key={key}>{text.feedbackKeys[key]||key}</li>)}</ul></section></div>
+        <div className={styles.summaryGrid}><section className={styles.panel}><h2>{text.growth}</h2><div className={styles.growth}>{(modern?['mit','power','discipline','stamina']:['power','discipline','stamina']).map(key=><div key={key}><small>{f[key]}</small><strong>{career.growth[key]}</strong></div>)}</div><p>{f.trainingNote}</p><button type='button' onClick={()=>goManage('player')}>{locale==='en'?'Manage recovery code':'복구 코드 관리'}</button>{localDevelopment&&<p><Link href='/playground/baseball/growth' prefetch={false}>{locale==='en'?'Compare growth candidates':'성장 후보 비교하기'} →</Link></p>}</section><section className={styles.panel}><h2>{text.feedback}</h2><ul className={styles.notes}>{career.feedback.map(key=><li key={key}>{text.feedbackKeys[key]||key}</li>)}</ul></section></div>
       </>:view.tab==='schedule'?scheduleView:view.tab==='records'?<><section className={styles.panel}><h2>{text.season}</h2><Statistics value={career.stats} rates={career.rates} text={text}/></section>{recordsView}</>:<section className={styles.panel}><h2>{career.profile.name} · #{career.profile.jerseyNumber}</h2><p>{team.name} · {career.profile.handedness==='left'?text.left:text.right}</p><p>{career.settings.baseSpeedKmh} km/h · {career.settings.pitchMode==='mixed'?text.mixed:text.pitches[career.settings.pitchMode]}</p><p>{f.profileNote}</p><p>{text.localNote}</p><button type='button' disabled={busy} onClick={chooseAnother}>{f.choosePlayer}</button><button type='button' disabled={busy} onClick={()=>void refresh()}>{text.refresh}</button><BaseballCareerRecovery key={`${career.id}:${career.schemaVersion}`} careerId={career.id} version={career.schemaVersion} locale={locale} onRecovered={recoverCareer} disabled={busy}/></section>}
     </div>
     {embedded&&<div className={styles.focusStage} hidden={view.view!=='batting'}><BaseballAtBatGame key={manual.session.id} locale={locale} dataVersions={dataVersions} storageVersions={selectedStorageVersions} embeddedCareer={embedded}/></div>}
