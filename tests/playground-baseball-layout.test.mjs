@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto'
 import { BASEBALL_BALLPARK_LANDMARKS, BASEBALL_PITCHER_RELEASE_SPRITE, BASEBALL_BATTER_FIT_OPTIONS, createBaseballStage, createBaseballProjection, createBaseballPitcherPlacement, fitBaseballBatter } from '../lib/playground-baseball-layout.mjs'
 import { getBaseballBatterFrames } from '../lib/playground-baseball-animation.mjs'
 import { BASEBALL_RULES, createBaseballPitch, sampleBaseballPitch } from '../lib/playground-baseball.mjs'
+import { BASEBALL_PRACTICE_PITCH_TYPES, createBaseballPracticePitch } from '../lib/playground-baseball-practice-pitches.mjs'
 
 // Measured alpha>=32 bounds across all eight approved frames, relative to front sole.
 const BOUNDS = {
@@ -107,6 +108,39 @@ test('PC의 최대 2.8 화면비는 초광폭에서도 마운드의 투수와 �
       assert.ok(stage.box.every(point => point.y <= height - 12 + 1e-7))
       const batter = fitBaseballBatter(stage, BOUNDS[hand])
       assert.ok(batter.y + BOUNDS[hand].bottom * batter.scale <= height - 12 + 1e-7)
+    }
+  }
+})
+
+test('육성 PC의 2.25 화면비는 8구종의 극단 코스와 존 모서리의 마우스 조준을 보존한다', () => {
+  const { zone, courseMarginXM, courseMarginYM, ballRadiusM } = BASEBALL_RULES
+  const targetX = [zone.left - courseMarginXM, zone.right + courseMarginXM]
+  const targetY = [zone.bottom - courseMarginYM, zone.top + courseMarginYM]
+  const handOptions = ['left', 'right']
+  for (const [fieldWidth, fieldHeight] of [[1280, 292], [1920, 650], [3440, 900]]) {
+    // The one-pixel scene border is outside the canvas on each side.
+    const width = Math.min(fieldWidth, fieldHeight * 2.25) - 2
+    const height = fieldHeight - 2
+    for (const hand of handOptions) {
+      const projection = createBaseballProjection(createBaseballStage(width, height, hand))
+      for (const x of targetX) for (const y of targetY) {
+        const target = { x, y }
+        const screen = projection.project(target)
+        const aim = projection.unproject(screen.x, screen.y)
+        close(aim.x, x)
+        close(aim.y, y)
+        for (const { id } of BASEBALL_PRACTICE_PITCH_TYPES) {
+          for (const baseSpeedKmh of [80, 120, 160]) for (const pitcherHandedness of handOptions) {
+            const pitch = createBaseballPracticePitch({ pitchType: id, target, baseSpeedKmh, pitcherHandedness })
+            for (let i = 0; i <= 100; i++) {
+              const ball = projection.project(sampleBaseballPitch(pitch, pitch.flightTimeMs * i / 100))
+              const radius = Math.max(1.7, ball.scale * ballRadiusM)
+              assert.ok(ball.x >= radius && ball.x <= width - radius && ball.y >= radius && ball.y <= height - radius,
+                `공이 경기장 밖으로 잘림: ${fieldWidth}×${fieldHeight} ${id}/${baseSpeedKmh} ${pitcherHandedness}투/${hand}타 ${x},${y} ${i}%`)
+            }
+          }
+        }
+      }
     }
   }
 })

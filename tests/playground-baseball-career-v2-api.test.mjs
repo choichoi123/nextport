@@ -2,7 +2,8 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { createBaseballAtBatV2Versions, createBaseballCareerApiHandler, createBaseballCareerVersions, BASEBALL_CAREER_MAX_BODY_BYTES } from '../lib/server/baseball-career-v2-api.mjs'
-import { BASEBALL_CAREER_V2_PRE_MIXED_EIGHT_HASHES, BASEBALL_CAREER_V2_TRIAL_HASHES } from '../lib/playground-baseball-career-versions.mjs'
+import { BASEBALL_CAREER_BALANCED_PITCH_POLICY_ID } from '../lib/playground-baseball-at-bat-v2.mjs'
+import { BASEBALL_CAREER_V2_PRE_BALANCED_HASHES, BASEBALL_CAREER_V2_PRE_MIXED_EIGHT_HASHES, BASEBALL_CAREER_V2_TRIAL_HASHES, getBaseballCareerV2ReplayVersions } from '../lib/playground-baseball-career-versions.mjs'
 import { BASEBALL_AT_BAT_MIXED_EIGHT } from '../lib/playground-baseball-practice-pitches.mjs'
 import { createBaseballCareerSave, publicBaseballCareerSave } from '../lib/playground-baseball-career-v2.mjs'
 import { createBaseballCareerStore } from '../lib/server/baseball-career-v2-db.mjs'
@@ -203,6 +204,23 @@ test('published 144-game mixed checkpoints can still issue a pitch, while new mo
   assert.equal(fresh.body.career.settings.pitchMode,BASEBALL_AT_BAT_MIXED_EIGHT)
 })
 
+test('classic career commands keep their original policy beside the balanced annual career',async()=>{
+  const current=await createBaseballCareerVersions()
+  const previous=BASEBALL_CAREER_V2_PRE_BALANCED_HASHES
+  assert.equal(current.pitchPolicyId,BASEBALL_CAREER_BALANCED_PITCH_POLICY_ID)
+  const api=setup({getVersions:async()=>current})
+  const {career,session}=await manualCareer(api)
+  assert.equal(career.versions.pitchPolicyId,previous.pitchPolicyId)
+  assert.equal(career.appearancesPerGame,undefined)
+  assert.equal(session.state.pitchPolicyVersion,previous.pitchPolicyId)
+  const issued=await api.batCommand(career,session,{type:'issue'})
+  assert.equal(issued.statusCode,200)
+  const oldThree={scheduleId:career.scheduleId,settings:career.settings,appearancesPerGame:3,versions:previous}
+  assert.deepEqual(getBaseballCareerV2ReplayVersions(oldThree,current),previous)
+  assert.deepEqual(getBaseballCareerV2ReplayVersions({...oldThree,versions:current},current),current)
+  assert.equal(getBaseballCareerV2ReplayVersions({...oldThree,versions:career.versions},current),null)
+})
+
 test('mixed repertoire source changes the v2 at-bat hash without changing the shared engine version',async()=>{
   const getEngineVersions=async()=>({engine:{hash:versions.engineHash},rules:{hash:versions.rulesHash}})
   const versionsFor=source=>createBaseballAtBatV2Versions({
@@ -268,7 +286,10 @@ test('automatic simulation tuning and results cannot be supplied by a client',as
 
 test('build-time career hashing includes the engine and season schedule, without credentials',async()=>{
   const paths=[],value=await createBaseballCareerVersions({getAtBatVersions:async()=>Object.fromEntries(Object.entries(versions).filter(([key])=>key!=='careerHash')),readSource:async file=>{paths.push(file);return'example\r\n'}})
-  assert.deepEqual(paths,['lib/playground-baseball-career-v2.mjs','lib/playground-baseball-career-schedule.mjs']);assert.equal(Object.keys(value).length,7);assert.match(value.careerHash,/^[a-f0-9]{64}$/)
+  assert.deepEqual(paths,['lib/playground-baseball-career-v2.mjs','lib/playground-baseball-career-schedule.mjs'])
+  assert.deepEqual(Object.keys(value).sort(),[...Object.keys(versions),'pitchPolicyId'].sort())
+  assert.equal(value.pitchPolicyId,BASEBALL_CAREER_BALANCED_PITCH_POLICY_ID)
+  assert.match(value.careerHash,/^[a-f0-9]{64}$/)
 })
 
 test('career database queries use parameters and never invoke existing training tables',async()=>{

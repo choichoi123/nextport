@@ -6,6 +6,7 @@ import {
 import { replayBaseballAnnualBackup, replayBaseballAnnualSubmission } from '../lib/playground-baseball-annual.mjs'
 import { BASEBALL_CAREER_V2_PRE_MIXED_EIGHT_HASHES } from '../lib/playground-baseball-career-versions.mjs'
 import { BASEBALL_AT_BAT_MIXED_EIGHT } from '../lib/playground-baseball-practice-pitches.mjs'
+import { BASEBALL_CAREER_BALANCED_PITCH_POLICY_ID } from '../lib/playground-baseball-at-bat-v2.mjs'
 
 const uuid = index => `42a00000-0000-4000-8000-${index.toString(16).padStart(12,'0')}`
 const time = Date.parse('2026-11-26T00:00:00.000Z')
@@ -339,12 +340,13 @@ test('a lost annual acknowledgement leaves the same replayable submission and pr
   reopened.close()
 })
 
-test('recovered history starts year three with eight-pitch mode or keeps the existing fixed selection', async () => {
+test('recovered history starts year three with balanced locations and preserves fixed pitch selections', async () => {
   const id=uuid(900),last=uuid(901)
   const growth={mit:47,power:54,discipline:66,stamina:61,trust:100,xp:1600,condition:78}
   const stats={G:144,PA:288,AB:274,H:99,'2B':27,'3B':3,HR:14,BB:14,SO:140}
   const history=[{seasonId:id,seasonNumber:1,stats},{seasonId:last,seasonNumber:2,stats}]
   const winter={2:{version:1,direction:'power'}}
+  const currentVersions={...versions,pitchPolicyId:BASEBALL_CAREER_BALANCED_PITCH_POLICY_ID}
   for (const [pitchMode,expected] of [
     ['mixed',BASEBALL_AT_BAT_MIXED_EIGHT],
     [BASEBALL_AT_BAT_MIXED_EIGHT,BASEBALL_AT_BAT_MIXED_EIGHT],
@@ -357,7 +359,7 @@ test('recovered history starts year three with eight-pitch mode or keeps the exi
       reads++
       assert.equal(careerId,id)
       return {status:'ok',careerId,history,winter,latest:{seasonId:last,seasonNumber:2,growth,profile,settings:previousSettings,source:'development'}}
-    },settle:()=>assert.fail('Network during a season')})
+    },settle:()=>assert.fail('Network during a season')},{versions:currentVersions})
     assert.equal(reads,0)
     const confirmed=await opened.loadHistory(id)
     assert.deepEqual(confirmed.history,history)
@@ -365,6 +367,7 @@ test('recovered history starts year three with eight-pitch mode or keeps the exi
     await assert.rejects(opened.startNextSeason(id,winter[2]),{code:'invalid_command'})
     const next=await opened.startNextSeason(id)
     assert.deepEqual(next.settings,{...previousSettings,pitchMode:expected})
+    assert.equal(next.versions.pitchPolicyId,BASEBALL_CAREER_BALANCED_PITCH_POLICY_ID)
     assert.deepEqual(next.profile,profile)
     assert.deepEqual(next.growth,growth)
     assert.equal(next.source,'development')
@@ -375,10 +378,11 @@ test('recovered history starts year three with eight-pitch mode or keeps the exi
     assert.equal((await opened.advance(next.id,'current')).currentGameIndex,1)
     assert.equal(reads,1)
     opened.close()
-    const reloaded=await client(repository)
+    const reloaded=await client(repository,100,undefined,{versions:currentVersions})
     const resumed=await reloaded.read(next.id)
     assert.equal(resumed.career.currentGameIndex,1)
     assert.deepEqual(resumed.career.settings,next.settings)
+    assert.equal(resumed.career.versions.pitchPolicyId,BASEBALL_CAREER_BALANCED_PITCH_POLICY_ID)
     assert.deepEqual(reloaded.snapshot().entries[0].history,history)
     reloaded.close()
   }

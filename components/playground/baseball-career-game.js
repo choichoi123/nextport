@@ -412,7 +412,10 @@ export default function BaseballCareerGame({locale='ko',dataVersions=null,storag
   const pending=archive?null:selectedEntry?.pending
   const replayVersions=modern&&career&&v2CareerVersions?getBaseballCareerV2ReplayVersions(career,v2CareerVersions):null
   const selectedStorageVersions=modern
-    ? (replayVersions&&v2StorageVersions?Object.fromEntries(Object.keys(v2StorageVersions).map(key=>[key,replayVersions[key]])):v2StorageVersions)
+    ? (replayVersions&&v2StorageVersions?{
+        ...Object.fromEntries(Object.keys(v2StorageVersions).map(key=>[key,replayVersions[key]])),
+        pitchPolicyId:career.versions.pitchPolicyId,
+      }:v2StorageVersions)
     : storageVersions
   const versionMismatch=Boolean(!archive&&career&&(modern
     ? v2CareerVersions&&!replayVersions

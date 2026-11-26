@@ -9,6 +9,7 @@ import {
 } from '../lib/playground-baseball-annual.mjs'
 import {BASEBALL_ANNUAL_APPEARANCES_PER_GAME, createBaseballCareerSave, getBaseballCareerAppearancesPerGame,
   validateBaseballCareerSave} from '../lib/playground-baseball-career-v2.mjs'
+import {BASEBALL_CAREER_BALANCED_PITCH_POLICY_ID} from '../lib/playground-baseball-at-bat-v2.mjs'
 import {getBaseballWinterGoal, isBaseballWinterPlan} from '../lib/playground-baseball-winter.mjs'
 
 const start = '2026-11-26T03:00:00.000Z'
@@ -59,7 +60,8 @@ test('three-appearance drafts keep the same game for the first two manual at-bat
   assert.equal(getBaseballCareerAppearancesPerGame(old.career),2)
   assert.throws(()=>createBaseballCareerSave({...old.setup,appearancesPerGame:BASEBALL_ANNUAL_APPEARANCES_PER_GAME}))
   assert.throws(()=>createBaseballAnnualDraft({...old.setup,appearancesPerGame:2}))
-  const fresh = createBaseballAnnualDraft({...old.setup,appearancesPerGame:BASEBALL_ANNUAL_APPEARANCES_PER_GAME})
+  const balanced = {...versions,pitchPolicyId:BASEBALL_CAREER_BALANCED_PITCH_POLICY_ID}
+  const fresh = createBaseballAnnualDraft({...old.setup,versions:balanced,appearancesPerGame:BASEBALL_ANNUAL_APPEARANCES_PER_GAME})
   assert.equal(fresh.setup.appearancesPerGame,3)
   assert.throws(()=>validateBaseballAnnualDraft({...fresh,setup:old.setup}))
 
@@ -67,6 +69,7 @@ test('three-appearance drafts keep the same game for the first two manual at-bat
   for (const slot of [1,2,3]) {
     draft = apply(draft,'start-manual',{atBatId:randomUUID()})
     assert.equal(draft.session.growthSnapshot.slot,slot)
+    assert.equal(draft.session.state.pitchPolicyVersion,BASEBALL_CAREER_BALANCED_PITCH_POLICY_ID)
     while (draft.session.state.status === 'active') {
       draft = apply(draft,'issue',{attemptId:randomUUID()})
       draft = apply(draft,'accept-input',{...identifiers(draft.session.pending),input:{kind:'take'}})
@@ -79,7 +82,9 @@ test('three-appearance drafts keep the same game for the first two manual at-bat
     if (slot === 1) {
       assert.throws(()=>apply(draft,'simulate-game',{atBatIds:[randomUUID()]}))
       const automatic = apply(draft,'simulate-game',{atBatIds:[randomUUID(),randomUUID()]})
-      assert.deepEqual(replay(automatic).atBats.map(row=>[row.slot,row.source]),[[1,'manual'],[2,'automatic'],[3,'automatic']])
+      const replayed = replay(automatic).atBats
+      assert.deepEqual(replayed.map(row=>[row.slot,row.source]),[[1,'manual'],[2,'automatic'],[3,'automatic']])
+      assert.ok(replayed.every(row=>row.snapshot.state.pitchPolicyVersion===BASEBALL_CAREER_BALANCED_PITCH_POLICY_ID))
       assert.equal(automatic.career.currentGameIndex,1)
     }
   }

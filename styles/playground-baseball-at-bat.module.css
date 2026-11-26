@@ -184,6 +184,26 @@
 .careerFocused .fieldColumn>p,.careerFocused .fieldColumn>.data,.careerFocused .status { display:none; }
 .careerFocused .panel.careerDialog { position:absolute; inset:8px; z-index:20; margin-left:auto; width:min(660px,calc(100% - 16px)); height:calc(100% - 16px); max-height:none; padding:18px; overflow:auto; overscroll-behavior:contain; box-shadow:0 0 0 100vmax #061f27a6; }
 .careerDialog>.secondary:first-child { position:sticky; top:0; z-index:1; margin-top:0; margin-bottom:15px; background:var(--surface,#fffdf5); }
+@media (min-width:1001px) and (hover:hover) and (pointer:fine) {
+  .careerFocused[data-focus-enabled=false] [data-baseball-views] {
+    container-type:size;
+    background:#102d25;
+  }
+  /* Keep the live canvas, its backdrop and input on the same desktop camera. */
+  .careerFocused[data-focus-enabled=false] .field {
+    max-width:225cqh;
+    justify-self:center;
+  }
+  .careerFocused[data-focus-enabled=false] .fieldActions {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 240px minmax(0,1fr);
+  }
+  .careerFocused[data-focus-enabled=false] .fieldActions button {
+    grid-column:2;
+    max-width:100%;
+    width:100%;
+  }
+}
 @media(max-width:600px) {
   .careerFocused .hud { padding:7px 10px; gap:8px; }
   .careerFocused .hud .player>span { width:32px; height:32px; flex-basis:32px; font-size:15px; }

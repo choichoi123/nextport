@@ -7,7 +7,8 @@ import { BASEBALL_ANNUAL_MAX_SUBMISSION_BYTES, createBaseballAnnualDraft } from 
 import { createBaseballParticipant } from '../lib/server/baseball-auth.mjs'
 import { createBaseballAnnualStore, createBaseballCareerAnnualApiHandler } from '../lib/server/baseball-career-annual-api.mjs'
 import { createBaseballCareerV2Versions } from '../lib/server/baseball-career-v2-api.mjs'
-import { BASEBALL_CAREER_V2_PRE_MIXED_EIGHT_HASHES, BASEBALL_CAREER_V2_PRIOR_REGULAR_HASHES } from '../lib/playground-baseball-career-versions.mjs'
+import { BASEBALL_CAREER_BALANCED_PITCH_POLICY_ID } from '../lib/playground-baseball-at-bat-v2.mjs'
+import { BASEBALL_CAREER_V2_PRE_BALANCED_HASHES, BASEBALL_CAREER_V2_PRE_MIXED_EIGHT_HASHES, BASEBALL_CAREER_V2_PRIOR_REGULAR_HASHES } from '../lib/playground-baseball-career-versions.mjs'
 import { BASEBALL_AT_BAT_MIXED_EIGHT, getBaseballPracticePitchType } from '../lib/playground-baseball-practice-pitches.mjs'
 
 const now = Date.parse('2026-11-26T00:00:00.000Z')
@@ -264,6 +265,31 @@ test('prior four-pitch continuations still settle and cannot submit new modes un
   }
 })
 
+test('a deployed 432-appearance log keeps its original policy and cannot claim the balanced policy',async()=>{
+  const current=await createBaseballCareerV2Versions()
+  const previous=BASEBALL_CAREER_V2_PRE_BALANCED_HASHES
+  const setup={id,settings:{...settings,pitchMode:BASEBALL_AT_BAT_MIXED_EIGHT},appearancesPerGame:3}
+  const fullStats={...stats,PA:432,AB:390,BB:42}
+  const replays=[]
+  const {api}=harness({
+    getVersions:async()=>current,
+    replay:submitted=>{
+      replays.push(submitted.setup.versions.pitchPolicyId)
+      return {draft:{career:{...complete.draft.career,appearancesPerGame:3,stats:fullStats}},atBats:Array.from({length:432},()=>({}))}
+    },
+    store:{
+      lookup:async()=>({status:'unconfirmed'}),
+      save:async()=>({status:'stored',receipt:{...receipt,stats:fullStats},duplicate:false}),
+    },
+  })
+  const send=versions=>issue(api,request({body:{...body,setup:{...setup,versions}}}))
+  assert.equal((await send(previous)).code,200)
+  assert.equal((await send(current)).code,200)
+  assert.equal((await send({...previous,pitchPolicyId:BASEBALL_CAREER_BALANCED_PITCH_POLICY_ID})).value.code,'version_mismatch')
+  assert.equal((await send({...current,pitchPolicyId:previous.pitchPolicyId})).value.code,'version_mismatch')
+  assert.deepEqual(replays,[previous.pitchPolicyId,BASEBALL_CAREER_BALANCED_PITCH_POLICY_ID])
+})
+
 test('a two-appearance legacy season settles and the same career settles a three-appearance season with all eight pitches',async()=>{
   const current=await createBaseballCareerV2Versions()
   const first=createBaseballAnnualDraft({
@@ -314,6 +340,8 @@ test('a two-appearance legacy season settles and the same career settles a three
     assert.equal(atBats.filter(row=>row.slot===3).length,continued?144:0)
     assert.deepEqual(career.settings,submitted.settings)
     assert.deepEqual(career.versions,submitted.versions)
+    assert.equal(career.versions.pitchPolicyId,continued ? BASEBALL_CAREER_BALANCED_PITCH_POLICY_ID : BASEBALL_CAREER_V2_PRE_BALANCED_HASHES.pitchPolicyId)
+    assert.ok(atBats.every(({snapshot})=>snapshot.state.pitchPolicyVersion===career.versions.pitchPolicyId))
     assert.deepEqual(career.startingGrowth,submitted.continuation?.startingGrowth)
     assert.deepEqual(repertoire(atBats),continued
       ? ['changeup','curveball','cutter','four-seam','sinker','slider','splitter','sweeper']
