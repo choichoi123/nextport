@@ -3,10 +3,12 @@ import { randomUUID } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import { Readable } from 'node:stream'
 import test from 'node:test'
-import { BASEBALL_ANNUAL_MAX_SUBMISSION_BYTES } from '../lib/playground-baseball-annual.mjs'
+import { BASEBALL_ANNUAL_MAX_SUBMISSION_BYTES, createBaseballAnnualDraft } from '../lib/playground-baseball-annual.mjs'
 import { createBaseballParticipant } from '../lib/server/baseball-auth.mjs'
 import { createBaseballAnnualStore, createBaseballCareerAnnualApiHandler } from '../lib/server/baseball-career-annual-api.mjs'
-import { BASEBALL_CAREER_V2_PRIOR_REGULAR_HASHES } from '../lib/server/baseball-career-v2-api.mjs'
+import { createBaseballCareerV2Versions } from '../lib/server/baseball-career-v2-api.mjs'
+import { BASEBALL_CAREER_V2_PRE_MIXED_EIGHT_HASHES, BASEBALL_CAREER_V2_PRIOR_REGULAR_HASHES } from '../lib/playground-baseball-career-versions.mjs'
+import { BASEBALL_AT_BAT_MIXED_EIGHT, getBaseballPracticePitchType } from '../lib/playground-baseball-practice-pitches.mjs'
 
 const now = Date.parse('2026-11-26T00:00:00.000Z')
 const env = {
@@ -228,14 +230,119 @@ test('forged or conflicting lineage is rejected before replay, and a saved next-
 })
 
 test('pre-continuation rule hashes remain valid for existing year-one logs only',async()=>{
-  const oldVersions={...versions,...BASEBALL_CAREER_V2_PRIOR_REGULAR_HASHES}
+  const oldVersions=BASEBALL_CAREER_V2_PRIOR_REGULAR_HASHES
   const first=harness()
-  const settled=await issue(first.api,request({body:{...body,setup:{id,versions:oldVersions}}}))
+  const settled=await issue(first.api,request({body:{...body,setup:{id,versions:oldVersions,settings}}}))
   assert.equal(settled.code,200)
-  const wrong=harness({getVersions:async()=>({...versions,growthHash:'c'.repeat(64)})})
-  assert.equal((await issue(wrong.api,request({body:{...body,setup:{id,versions:{...oldVersions,growthHash:'d'.repeat(64)}}}}))).code,409)
+  const wrong=harness()
+  assert.equal((await issue(wrong.api,request({body:{...body,setup:{id,versions:{...oldVersions,growthHash:'d'.repeat(64)},settings}}}))).code,409)
   const continued=harness({store:{lookupContinuation:async()=>({status:'unconfirmed'})},replay:()=>assert.fail('outdated rules')})
   assert.equal((await issue(continued.api,request({body:{...nextBody,setup:{...nextBody.setup,versions:oldVersions}}}))).value.code,'version_mismatch')
+})
+
+test('prior four-pitch continuations still settle and cannot submit new modes under the old versions',async()=>{
+  const prior=BASEBALL_CAREER_V2_PRE_MIXED_EIGHT_HASHES
+  const legacy={...nextBody,setup:{...nextBody.setup,versions:prior,settings:{...settings,pitchMode:'mixed'}}}
+  const nextReceipt={...receipt,seasonId:nextId,seasonNumber:2}
+  const {api}=harness({
+    store:{
+      lookupContinuation:async()=>({status:'unconfirmed'}),
+      saveContinuation:async()=>({status:'stored',receipt:nextReceipt,duplicate:false}),
+    },
+    replay:(submitted)=>{
+      assert.deepEqual(submitted,legacy)
+      return {...complete,draft:{career:{...complete.draft.career,id:nextId}}}
+    },
+  })
+  assert.equal((await issue(api,request({body:legacy}))).code,200)
+  for(const change of [
+    {settings:{...settings,pitchMode:BASEBALL_AT_BAT_MIXED_EIGHT}},
+    {settings:{...settings,pitchMode:'sweeper'}},
+    {versions:{...prior,atBatHash:'e'.repeat(64)}},
+  ]){
+    assert.equal((await issue(api,request({body:{...legacy,setup:{...legacy.setup,...change}}}))).value.code,'version_mismatch')
+  }
+})
+
+test('a two-appearance legacy season settles and the same career settles a three-appearance season with all eight pitches',async()=>{
+  const current=await createBaseballCareerV2Versions()
+  const first=createBaseballAnnualDraft({
+    id,profile,settings,versions:BASEBALL_CAREER_V2_PRE_MIXED_EIGHT_HASHES,
+    seed:12852,now:new Date(now).toISOString(),source:'development',
+  }).setup
+  const actionsFor=setup=>Array.from({length:144},()=>[
+    {type:'prepare',commandId:randomUUID(),choice:'rest',now:setup.now},
+    {type:'simulate-game',commandId:randomUUID(),atBatIds:Array.from({length:setup.appearancesPerGame??2},()=>randomUUID()),now:setup.now},
+  ]).flat()
+  const repertoire=atBats=>[...new Set(atBats.flatMap(({snapshot})=>snapshot.state.history
+    .map(row=>getBaseballPracticePitchType(row.pitch))))].sort()
+  const calls=[], saved=new Map()
+  const store=createBaseballAnnualStore({query:async(sql,[actor,seasonId,hash,...values])=>{
+    const continued=seasonId===nextId
+    assert.match(actor,/^[a-f0-9]{64}$/)
+    assert.match(hash,/^[a-f0-9]{64}$/)
+    assert.equal(sql,continued
+      ? 'SELECT baseball_private.baseball_continue_career_annual_with_winter($1, $2::uuid, $3, $4::jsonb, $5::jsonb, $6::jsonb) AS result'
+      : 'SELECT baseball_private.baseball_settle_career_annual($1, $2::uuid, $3, $4::jsonb, $5::jsonb) AS result')
+    const [submitted,career,atBats]=continued?values.map(value=>JSON.parse(value)):[first,...values.map(value=>JSON.parse(value))]
+    calls.push({seasonId,hash,lookup:career===null})
+    if(continued){
+      const previous=saved.get(id)
+      assert.equal(actor,previous.actor)
+      assert.equal(submitted.continuation.careerId,id)
+      assert.equal(submitted.continuation.previousSeasonId,id)
+      assert.equal(submitted.continuation.seasonNumber,2)
+      assert.deepEqual(submitted.continuation.history,[{seasonId:id,seasonNumber:1,stats:previous.career.stats}])
+      assert.deepEqual(submitted.continuation.startingGrowth,previous.career.growth)
+      assert.deepEqual(submitted.profile,previous.career.profile)
+      assert.deepEqual(submitted.settings,{...previous.career.settings,pitchMode:BASEBALL_AT_BAT_MIXED_EIGHT})
+      assert.equal(submitted.source,previous.career.source)
+    }
+    const existing=saved.get(seasonId)
+    if(existing){
+      assert.equal(career,null)
+      assert.equal(atBats,null)
+      assert.equal(hash,existing.hash)
+      return [{result:{status:'stored',receipt:existing.receipt,duplicate:true}}]
+    }
+    if(career===null){
+      assert.equal(atBats,null)
+      return [{result:{status:'unconfirmed'}}]
+    }
+    assert.equal(atBats.length,continued?432:288)
+    assert.equal(career.appearancesPerGame,continued?3:undefined)
+    assert.equal(atBats.filter(row=>row.slot===3).length,continued?144:0)
+    assert.deepEqual(career.settings,submitted.settings)
+    assert.deepEqual(career.versions,submitted.versions)
+    assert.deepEqual(career.startingGrowth,submitted.continuation?.startingGrowth)
+    assert.deepEqual(repertoire(atBats),continued
+      ? ['changeup','curveball','cutter','four-seam','sinker','slider','splitter','sweeper']
+      : ['changeup','curveball','four-seam','slider'])
+    const storedReceipt={...receipt,seasonId,seasonNumber:continued?2:1,stats:career.stats,...(continued?{winter:submitted.winter}:{})}
+    saved.set(seasonId,{actor,hash,career,receipt:storedReceipt})
+    return [{result:{status:'stored',receipt:storedReceipt,duplicate:false}}]
+  }})
+  const api=createBaseballCareerAnnualApiHandler({env,now:()=>now,store,getVersions:async()=>current})
+  const firstResponse=await issue(api,request({body:{setup:first,actions:actionsFor(first)}}))
+  assert.equal(firstResponse.code,200)
+  const previous=saved.get(id).career
+  const previousSnapshot=structuredClone(previous)
+  const next=createBaseballAnnualDraft({
+    ...first,id:nextId,settings:{...settings,pitchMode:BASEBALL_AT_BAT_MIXED_EIGHT},versions:current,seed:31097,winter,appearancesPerGame:3,
+    continuation:{careerId:id,previousSeasonId:id,seasonNumber:2,startingGrowth:previous.growth,
+      history:[{seasonId:id,seasonNumber:1,stats:previous.stats}]},
+  }).setup
+  const nextRequest=request({body:{setup:next,actions:actionsFor(next)}})
+  const response=await issue(api,nextRequest)
+  assert.equal(response.code,200)
+  assert.deepEqual(response.value.receipt,{...saved.get(nextId).receipt,savedAt:'2026-11-26T00:00:00.123Z'})
+  assert.equal(response.value.receipt.stats.PA,432)
+  const retryApi=createBaseballCareerAnnualApiHandler({env,now:()=>now,store,
+    getVersions:()=>assert.fail('receipt retries must not load a version')})
+  assert.deepEqual((await issue(retryApi,nextRequest)).value,{...response.value,duplicate:true})
+  assert.deepEqual(saved.get(id).career,previousSnapshot)
+  assert.deepEqual(calls.map(({seasonId,lookup})=>[seasonId,lookup]),[[id,true],[id,false],[nextId,true],[nextId,false],[nextId,true]])
+  assert.equal(new Set(calls.filter(call=>call.seasonId===nextId).map(call=>call.hash)).size,1)
 })
 
 test('career history read requires an authenticated same-origin request and returns only the season summaries',async()=>{
@@ -257,6 +364,17 @@ test('career history read requires an authenticated same-origin request and retu
   assert.equal((await issue(api,request(read))).code,404)
   storedHistory={status:'ok',careerId:id,history:[{...history[0],privateValue:'redact'}],latest}
   assert.equal((await issue(api,request(read))).code,503)
+})
+
+test('career history preserves all valid pitch choices for continuation',async()=>{
+  const latest={seasonId:id,seasonNumber:1,growth,profile,settings,source:'manual'}
+  const read={method:'GET',query:{careerId:id}}
+  for(const pitchMode of ['mixed',BASEBALL_AT_BAT_MIXED_EIGHT,'sweeper','splitter','sinker','cutter']){
+    const {api}=harness({store:{history:async()=>({status:'ok',careerId:id,history,latest:{...latest,settings:{...settings,pitchMode}}})}})
+    const response=await issue(api,request(read))
+    assert.equal(response.code,200)
+    assert.equal(response.value.latest.settings.pitchMode,pitchMode)
+  }
 })
 
 test('history exposes the archived winter plan alongside the unchanged season summaries',async()=>{

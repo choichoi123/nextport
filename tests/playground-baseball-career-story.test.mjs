@@ -2,12 +2,21 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { getBaseballCareerStory, getBaseballCareerStoryMatchup } from '../lib/playground-baseball-career-story.mjs'
 
-function stats({ games = 144, hits = 0, doubles = 0, triples = 0, homeRuns = 0, walks = 0, strikeouts = 0 } = {}) {
-  const appearances = games * 2
+function stats({ games = 144, perGame = 2, hits = 0, doubles = 0, triples = 0, homeRuns = 0, walks = 0, strikeouts = 0 } = {}) {
+  const appearances = games * perGame
   return { G: games, PA: appearances, AB: appearances - walks, H: hits, '2B': doubles, '3B': triples, HR: homeRuns, BB: walks, SO: strikeouts }
 }
 
 const history = (...rows) => rows.map((stats, index) => ({ seasonNumber: index + 1, stats }))
+
+test('a three-appearance season uses valid mixed-length career history and completed matchups', () => {
+  const season = stats({ perGame: 3, hits: 170 })
+  const story = getBaseballCareerStory({ year: 2, stats: season, history: history(stats()), complete: true })
+  assert.equal(story.evidence.total.PA, 720)
+  const game = { status: 'complete', opponentId: 'twins', appearances: [{}, {}, {}],
+    stats: stats({ games: 1, perGame: 3, hits: 1 }) }
+  assert.equal(getBaseballCareerStoryMatchup([game], 'twins', 1).stats.PA, 3)
+})
 
 test('story waits for the supported year and required game phase', () => {
   assert.equal(getBaseballCareerStory({ year: 1, stats: stats({ games: 0 }) }), null)

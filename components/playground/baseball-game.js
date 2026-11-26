@@ -8,7 +8,8 @@ import BaseballFeedbackPanel, { BaseballFeedbackOverlay } from './baseball-feedb
 import useBaseballLiveFeedback from './use-baseball-live-feedback'
 import useBaseballEntrance from './use-baseball-entrance'
 import BaseballEntranceOverlay from './baseball-entrance-overlay'
-import { BASEBALL_RULES, BASEBALL_PITCH_TYPES, createBaseballPitch, getBaseballPitchSpeed, judgeBaseballSwing, judgeBaseballTake } from '@/lib/playground-baseball.mjs'
+import { BASEBALL_RULES, judgeBaseballSwing, judgeBaseballTake } from '@/lib/playground-baseball.mjs'
+import { BASEBALL_PRACTICE_PITCH_TYPES, createBaseballPracticePitch, getBaseballPracticePitchSpeed, getBaseballPracticePitchType, isBaseballExtendedPracticePitchType } from '@/lib/playground-baseball-practice-pitches.mjs'
 import { BASEBALL_TEAMS, getBaseballTeam, validateBaseballPlayer } from '@/lib/playground-baseball-teams.mjs'
 import { getBaseballPlayerFeedback, revalidateBaseballPlayerField, handleBaseballCanvasKeyDown } from '@/lib/playground-baseball-input.mjs'
 import { createBaseballDataCollector } from '@/lib/playground-baseball-data.mjs'
@@ -27,8 +28,18 @@ const copy = {
 
 const initialAim = { x: 0, y: (BASEBALL_RULES.zone.bottom + BASEBALL_RULES.zone.top) / 2 }
 const pitchCopy = {
-  ko: { type:'구종', baseSpeed:'포심 기준 구속', effective:'다음 공', names:{'four-seam':'포심',slider:'슬라이더',curveball:'커브',changeup:'체인지업'}, prototype:'타격 시제품 · 4구종' },
-  en: { type:'Pitch type', baseSpeed:'Fastball reference speed', effective:'Next pitch', names:{'four-seam':'Four-seam',slider:'Slider',curveball:'Curveball',changeup:'Changeup'}, prototype:'Batting prototype · four pitches' },
+  ko: {
+    type:'구종', baseSpeed:'포심 기준 구속', effective:'다음 공',
+    names:{'four-seam':'포심',slider:'슬라이더',curveball:'커브',changeup:'체인지업',sweeper:'스위퍼',splitter:'스플리터',sinker:'싱커',cutter:'커터'},
+    prototype:`타격 시제품 · ${BASEBALL_PRACTICE_PITCH_TYPES.length}구종`,
+    localOnly:'확장 구종(스위퍼·스플리터·싱커·커터) 결과는 이번 훈련 화면에서 볼 수 있습니다. 첫 확장 투구를 완료하면 개발용 저장이 끝나며, 기본 구종으로 새 훈련을 시작할 때 다시 저장됩니다.',
+  },
+  en: {
+    type:'Pitch type', baseSpeed:'Fastball reference speed', effective:'Next pitch',
+    names:{'four-seam':'Four-seam',slider:'Slider',curveball:'Curveball',changeup:'Changeup',sweeper:'Sweeper',splitter:'Splitter',sinker:'Sinker',cutter:'Cutter'},
+    prototype:`Batting prototype · ${BASEBALL_PRACTICE_PITCH_TYPES.length} pitch types`,
+    localOnly:'Sweeper, splitter, sinker and cutter results appear in this session. Development recording stops after the first completed pitch of one of these types and resumes when you start a new practice with one of the original four.',
+  },
 }
 const FOCUS_PREFERENCE = 'nextport:baseball:batting-close-up'
 const activePhase = phase => phase === 'windup' || phase === 'flight'
@@ -57,7 +68,7 @@ export default function BaseballGame({ locale = 'ko', dataVersions = null }) {
   const [phase, setPhase] = useState('setup')
   const [speed, setSpeed] = useState(120)
   const [pitchType, setPitchType] = useState('four-seam')
-  const [pitch, setPitch] = useState(() => createBaseballPitch({ speedKmh:120, seed:1 }))
+  const [pitch, setPitch] = useState(() => createBaseballPracticePitch())
   const [pitchStartAt, setPitchStartAt] = useState(null)
   const [swingAt, setSwingAt] = useState(null)
   const [swingAim, setSwingAim] = useState(null)
@@ -303,9 +314,11 @@ export default function BaseballGame({ locale = 'ko', dataVersions = null }) {
         const decision = round.decision || judgeBaseballTake(round.pitch)
         finishFeedback(round, { result:decision, authority:'memory' })
         if (round.dataAttemptId) collectData('completeAttempt', { result:decision })
-        if (round.index + 1 >= BASEBALL_RULES.sessionPitches) endDataSession('complete')
+        const completedPitchType = getBaseballPracticePitchType(round.pitch)
+        if (isBaseballExtendedPracticePitchType(completedPitchType)) endDataSession('version-change')
+        else if (round.index + 1 >= BASEBALL_RULES.sessionPitches) endDataSession('complete')
         setResult(decision)
-        setHistory(items => [...items, { ...decision, pitchNumber:round.index + 1, speedKmh:round.pitch.speedKmh }])
+        setHistory(items => [...items, { ...decision, pitchType:completedPitchType, pitchNumber:round.index + 1, speedKmh:round.pitch.speedKmh }])
         setPhase(round.index + 1 >= BASEBALL_RULES.sessionPitches ? 'complete' : 'result')
         return
       }
@@ -367,7 +380,6 @@ export default function BaseballGame({ locale = 'ko', dataVersions = null }) {
     const entranceToken=prepareEntrance()
     endDataSession('player-change')
     dataVersionBlockedRef.current = false
-    beginDataSession(valid.player.handedness)
     setPlayer(valid.player); setHistory([]); seedRef.current = seedFor(); setPhase('ready'); setErrors({})
     showEntrance(entranceToken,valid.player)
     // Measure after the form gives way to the field action bar. This moves only
@@ -379,15 +391,18 @@ export default function BaseballGame({ locale = 'ko', dataVersions = null }) {
     cancelEntrance()
     prepareFeedback()
     preserveMobileScrollRoom()
-    const next = createBaseballPitch({ pitchType, speedKmh:getBaseballPitchSpeed(speed,pitchType), seed:(seedRef.current + history.length) >>> 0, target:history.length===0?initialAim:undefined })
-    if (!dataSessionRef.current && !dataVersionBlockedRef.current) beginDataSession(player.handedness)
-    const dataAttemptId = dataSessionRef.current ? collectData('startAttempt', {
+    const next = createBaseballPracticePitch({ pitchType, baseSpeedKmh:speed, seed:(seedRef.current + history.length) >>> 0, target:history.length===0?initialAim:undefined })
+    // The recorded sequence is contiguous and its first pitch is centered.
+    // After a local-only result there is no valid way to resume that sequence.
+    const recordPitch = !hasLocalOnlyResult && !isBaseballExtendedPracticePitchType(pitchType) && !dataVersionBlockedRef.current
+    if (recordPitch && !dataSessionRef.current) beginDataSession(player.handedness)
+    const dataAttemptId = recordPitch && dataSessionRef.current ? collectData('startAttempt', {
       pitch:next, pitchNumber:history.length + 1, baseSpeedKmh:speed, firstCenterPitch:history.length === 0,
       environment:dataEnvironment(dataEnvironmentRef.current),
     }) : null
     const startAt = performance.now()
     roundRef.current = { pitch:next, startAt, swingAt:null, decision:null, revealed:false, finished:false, handedness:player.handedness, index:history.length, dataAttemptId }
-    beginFeedback(roundRef.current, {scopeId:dataSessionRef.current||undefined,pitchId:dataAttemptId||undefined,attemptId:dataAttemptId||undefined})
+    beginFeedback(roundRef.current, {scopeId:dataAttemptId ? dataSessionRef.current : undefined,pitchId:dataAttemptId||undefined,attemptId:dataAttemptId||undefined})
     setPitch(next); setPitchStartAt(startAt); setSwingAt(null); setSwingAim(null); setResult(null); setResultAt(null); setElapsed(-BASEBALL_RULES.windupMs); setPhase('windup')
     const canvas = inputCanvasFor(gameRef.current)
     canvas?.focus({ preventScroll:true })
@@ -406,7 +421,7 @@ export default function BaseballGame({ locale = 'ko', dataVersions = null }) {
     cancelFeedback(roundRef.current)
     roundRef.current = null; setPitchStartAt(null); setSwingAt(null); setSwingAim(null); setResult(null); setResultAt(null); setElapsed(0); onAim(initialAim); setPhase(nextPhase)
   }
-  function restart() { endDataSession('restart'); dataVersionBlockedRef.current = false; beginDataSession(player.handedness); setHistory([]); seedRef.current = seedFor(); clearRound('ready'); const token=prepareEntrance();showEntrance(token,player) }
+  function restart() { endDataSession('restart'); dataVersionBlockedRef.current = false; setHistory([]); seedRef.current = seedFor(); clearRound('ready'); const token=prepareEntrance();showEntrance(token,player) }
   function changePlayer() { endDataSession('player-change'); setPlayer(null); setHistory([]); clearRound('setup') }
   function keyDown(event) {
     handleBaseballCanvasKeyDown(event, { aim:aimRef.current, onAim, onSwing:swing, onPause:pause })
@@ -416,7 +431,9 @@ export default function BaseballGame({ locale = 'ko', dataVersions = null }) {
   const team = getBaseballTeam(displayPlayer.teamId)
   const playing = activePhase(phase)
   const settled = phase === 'result' || phase === 'complete'
-  const effectiveSpeed = getBaseballPitchSpeed(speed,pitchType)
+  const effectiveSpeed = getBaseballPracticePitchSpeed(speed,pitchType)
+  const displayedPitchType = getBaseballPracticePitchType(pitch)
+  const hasLocalOnlyResult = history.some(item => isBaseballExtendedPracticePitchType(item.pitchType))
   const score = history.reduce((sum,item) => sum + item.score,0)
   const hits = history.filter(item => item.outcome === 'contact' || item.outcome === 'perfect').length
   const perfect = history.filter(item => item.outcome === 'perfect').length
@@ -437,7 +454,7 @@ export default function BaseballGame({ locale = 'ko', dataVersions = null }) {
       <div className={styles.fieldColumn}>
         <div className={styles.hud}><div className={styles.player}><span style={{ background:team.helmet, color:'#fff' }}>#{displayPlayer.jerseyNumber || '7'}</span><div><strong>{displayPlayer.name || (locale === 'ko' ? '나만의 타자' : 'Your batter')}</strong><small>{team.name} · {displayPlayer.handedness === 'left' ? text.left : text.right}</small></div></div><div className={styles.readings}><div><small>{text.pitches}</small><strong>{Math.min(history.length+(playing?1:0),10)}<em>/10</em></strong></div><div><small>{playing?text.speed:pitchesText.effective}</small><strong>{playing ? pitch.speedKmh : effectiveSpeed}<em>km/h</em></strong></div><div><small>{text.score}</small><strong>{score}</strong></div></div></div>
         <div className={styles.viewOptions}>
-          <span data-pitcher-handedness={pitch.pitcherHandedness}>{locale === 'en' ? (playing?'Pitcher':'On field') : (playing?'투수':'화면')} · {pitch.pitcherHandedness === 'left' ? (locale === 'en' ? 'Left-handed' : '좌투') : (locale === 'en' ? 'Right-handed' : '우투')} · {pitchesText.names[pitch.type]}</span>
+          <span data-pitcher-handedness={pitch.pitcherHandedness} data-baseball-practice-pitch-type={displayedPitchType}>{locale === 'en' ? (playing?'Pitcher':'On field') : (playing?'투수':'화면')} · {pitch.pitcherHandedness === 'left' ? (locale === 'en' ? 'Left-handed' : '좌투') : (locale === 'en' ? 'Right-handed' : '우투')} · {pitchesText.names[displayedPitchType]}</span>
           <button className={styles.focusToggle} type="button" aria-pressed={focusEnabled} aria-controls="baseball-batting-close-up" onClick={toggleFocus}>{locale === 'en' ? 'Batting close-up' : '확대 타격'} <strong>{focusEnabled ? 'ON' : 'OFF'}</strong></button>
         </div>
         <BaseballFeedbackPanel locale={locale} feedback={gameFeedback} onOpen={()=>pause('menu')} />
@@ -455,7 +472,7 @@ export default function BaseballGame({ locale = 'ko', dataVersions = null }) {
           <p id={feedback.numberHint} className={styles.hint}>{text.numberHint}</p>
           <fieldset aria-invalid={feedback.handedness.invalid} aria-describedby={feedback.handedness.describedBy}><legend>{text.hand}</legend><div className={styles.segment}><button type="button" aria-pressed={draft.handedness==='right'} onClick={()=>updateDraft('handedness','right')}>{text.right}</button><button type="button" aria-pressed={draft.handedness==='left'} onClick={()=>updateDraft('handedness','left')}>{text.left}</button></div></fieldset>
           <label>{text.team}<select value={draft.teamId} onChange={event=>updateDraft('teamId',event.target.value)} aria-invalid={feedback.teamId.invalid} aria-describedby={feedback.teamId.describedBy}>{BASEBALL_TEAMS.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
-          <label>{pitchesText.type}<select value={pitchType} onChange={event=>setPitchType(event.target.value)}>{BASEBALL_PITCH_TYPES.map(item=><option key={item.id} value={item.id}>{pitchesText.names[item.id]}</option>)}</select></label>
+          <label>{pitchesText.type}<select value={pitchType} onChange={event=>setPitchType(event.target.value)}>{BASEBALL_PRACTICE_PITCH_TYPES.map(item=><option key={item.id} value={item.id}>{pitchesText.names[item.id]}</option>)}</select></label>
           <label>{pitchesText.baseSpeed}<select value={speed} onChange={event=>setSpeed(Number(event.target.value))}>{[80,100,120,140,150,160].map(value=><option key={value} value={value}>{value} km/h</option>)}</select></label>
           <p className={styles.pitchSelection}>{pitchesText.names[pitchType]} <strong>{effectiveSpeed} km/h</strong></p>
           {feedback.messages.length > 0 && <div role="alert">{feedback.messages.map(message => <p key={message.id} id={message.id} className={styles.error}>{message.text}</p>)}</div>}
@@ -479,7 +496,7 @@ export default function BaseballGame({ locale = 'ko', dataVersions = null }) {
           </div> : <p className={styles.explanation}>{phase==='paused'?text.pauseNote:playing?text.timingHelp:text.beginHint}</p>}
           <div className={styles.stats}><div><small>{text.overall}</small><strong>{score}</strong></div><div><small>{text.hits}</small><strong>{hits}</strong></div><div><small>{text.perfect}</small><strong>{perfect}</strong></div></div>
           {!playing && phase!=='complete' && <>
-            <label>{pitchesText.type}<select value={pitchType} onChange={event=>setPitchType(event.target.value)}>{BASEBALL_PITCH_TYPES.map(item=><option key={item.id} value={item.id}>{pitchesText.names[item.id]}</option>)}</select></label>
+            <label>{pitchesText.type}<select value={pitchType} onChange={event=>setPitchType(event.target.value)}>{BASEBALL_PRACTICE_PITCH_TYPES.map(item=><option key={item.id} value={item.id}>{pitchesText.names[item.id]}</option>)}</select></label>
             <label>{pitchesText.baseSpeed}<select value={speed} onChange={event=>setSpeed(Number(event.target.value))}>{[80,100,120,140,150,160].map(value=><option key={value} value={value}>{value} km/h</option>)}</select></label>
             <p className={styles.pitchSelection}>{pitchesText.effective} · {pitchesText.names[pitchType]} <strong>{effectiveSpeed} km/h</strong></p>
           </>}
@@ -488,6 +505,7 @@ export default function BaseballGame({ locale = 'ko', dataVersions = null }) {
           <p className={styles.hint}>{text.model}</p>
           {history.length>0 && <div className={styles.history}><h3>{text.history}</h3><ol>{history.map(item=><li key={item.pitchNumber}><span>{String(item.pitchNumber).padStart(2,'0')}</span><strong>{text.outcomes[item.outcome]}</strong><small>{pitchesText.names[item.pitchType || 'four-seam']}<br/>{item.speedKmh} km/h</small><b>+{item.score}</b></li>)}</ol></div>}
         </>}
+        {process.env.NODE_ENV === 'development' && dataVersions && (hasLocalOnlyResult || isBaseballExtendedPracticePitchType(pitchType)) && <p className={styles.hint}>{pitchesText.localOnly}</p>}
         <p className={styles.sessionNote}>{process.env.NODE_ENV === 'development' ? text.persistedFresh : text.fresh}</p>
       </aside>
     </div>

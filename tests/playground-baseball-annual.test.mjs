@@ -4,9 +4,11 @@ import {performance} from 'node:perf_hooks'
 import test from 'node:test'
 import {
   BASEBALL_ANNUAL_MAX_SUBMISSION_BYTES, advanceBaseballAnnualDraft, createBaseballAnnualDraft,
-  getBaseballAnnualIdentity, replayBaseballAnnualBackup, replayBaseballAnnualSubmission, summarizeBaseballAnnualTotals, validateBaseballAnnualDraft,
+  getBaseballAnnualIdentity, isCompleteBaseballAnnualStats, replayBaseballAnnualBackup, replayBaseballAnnualSubmission,
+  summarizeBaseballAnnualTotals, validateBaseballAnnualDraft,
 } from '../lib/playground-baseball-annual.mjs'
-import {createBaseballCareerSave, validateBaseballCareerSave} from '../lib/playground-baseball-career-v2.mjs'
+import {BASEBALL_ANNUAL_APPEARANCES_PER_GAME, createBaseballCareerSave, getBaseballCareerAppearancesPerGame,
+  validateBaseballCareerSave} from '../lib/playground-baseball-career-v2.mjs'
 import {getBaseballWinterGoal, isBaseballWinterPlan} from '../lib/playground-baseball-winter.mjs'
 
 const start = '2026-11-26T03:00:00.000Z'
@@ -49,6 +51,41 @@ test('mid-pitch and completed direct records replay from raw input without a net
   assert.equal(withAutomatic.career.currentGameIndex,1)
   assert.equal(withAutomatic.career.stats.PA,2)
   assert.equal(replay(withAutomatic).atBats[1].slot,2)
+})
+
+test('three-appearance drafts keep the same game for the first two manual at-bats and replay all three growth snapshots',()=>{
+  const old = create()
+  assert.equal(Object.hasOwn(old.setup,'appearancesPerGame'),false)
+  assert.equal(getBaseballCareerAppearancesPerGame(old.career),2)
+  assert.throws(()=>createBaseballCareerSave({...old.setup,appearancesPerGame:BASEBALL_ANNUAL_APPEARANCES_PER_GAME}))
+  assert.throws(()=>createBaseballAnnualDraft({...old.setup,appearancesPerGame:2}))
+  const fresh = createBaseballAnnualDraft({...old.setup,appearancesPerGame:BASEBALL_ANNUAL_APPEARANCES_PER_GAME})
+  assert.equal(fresh.setup.appearancesPerGame,3)
+  assert.throws(()=>validateBaseballAnnualDraft({...fresh,setup:old.setup}))
+
+  let draft = apply(fresh,'prepare',{choice:'mit'})
+  for (const slot of [1,2,3]) {
+    draft = apply(draft,'start-manual',{atBatId:randomUUID()})
+    assert.equal(draft.session.growthSnapshot.slot,slot)
+    while (draft.session.state.status === 'active') {
+      draft = apply(draft,'issue',{attemptId:randomUUID()})
+      draft = apply(draft,'accept-input',{...identifiers(draft.session.pending),input:{kind:'take'}})
+      draft = apply(draft,'resolve',identifiers(draft.session.pending))
+    }
+    assert.equal(draft.career.stats.PA,slot)
+    assert.equal(draft.career.currentGameIndex,slot===3?1:0)
+    assert.equal(draft.career.games[0].status,slot===3?'complete':'active')
+    assert.equal(draft.career.ledger.filter(row=>row.kind==='game').length,slot===3?1:0)
+    if (slot === 1) {
+      assert.throws(()=>apply(draft,'simulate-game',{atBatIds:[randomUUID()]}))
+      const automatic = apply(draft,'simulate-game',{atBatIds:[randomUUID(),randomUUID()]})
+      assert.deepEqual(replay(automatic).atBats.map(row=>[row.slot,row.source]),[[1,'manual'],[2,'automatic'],[3,'automatic']])
+      assert.equal(automatic.career.currentGameIndex,1)
+    }
+  }
+  assert.equal(validateBaseballAnnualDraft(draft),true)
+  assert.deepEqual(replay(draft).draft,draft)
+  assert.deepEqual(replay(draft).atBats.map(row=>row.snapshot.growthSnapshot.slot),[1,2,3])
 })
 
 test('replay rejects redundant, forged and out-of-order actions',()=>{
@@ -171,4 +208,33 @@ test('all 144 regular-season games settle to 288 canonical at-bats from a compac
   assert.equal(new Set(result.atBats.map(row=>row.id)).size,288)
   assert.deepEqual(result.atBats.at(-1).snapshot.growthSnapshot,result.draft.career.games[143].appearances[1].growthSnapshot)
   assert.equal(validateBaseballAnnualDraft(result.draft),true)
+})
+
+test('a three-appearance season settles 432 canonical at-bats and continues mixed-era totals',context=>{
+  const previous = create()
+  const previousStats = {G:144,PA:288,AB:240,H:67,'2B':14,'3B':5,HR:4,BB:48,SO:40}
+  const previousHistory = [{seasonId:previous.setup.id,seasonNumber:1,stats:previousStats}]
+  const continuation = {careerId:previous.setup.id,previousSeasonId:previous.setup.id,seasonNumber:2,
+    startingGrowth:previous.career.growth,history:previousHistory}
+  const initial = createBaseballAnnualDraft({...previous.setup,id:randomUUID(),continuation,appearancesPerGame:BASEBALL_ANNUAL_APPEARANCES_PER_GAME})
+  const actions = initial.career.games.flatMap(()=>[
+    action('prepare',{choice:'rest'}),
+    action('simulate-game',{atBatIds:[randomUUID(),randomUUID(),randomUUID()]}),
+  ])
+  const before = performance.now()
+  const result = replayBaseballAnnualSubmission({setup:initial.setup,actions})
+  context.diagnostic(`144-game, 3-appearance auto replay in ${Math.round(performance.now()-before)}ms`)
+  assert.equal(validateBaseballAnnualDraft(result.draft),true)
+  assert.equal(result.draft.career.status,'complete')
+  assert.equal(result.atBats.length,432)
+  const stats = result.draft.career.stats
+  assert.equal(isCompleteBaseballAnnualStats(stats,3),true)
+  assert.equal(isCompleteBaseballAnnualStats(stats,2),false)
+  assert.equal(isCompleteBaseballAnnualStats({...stats,PA:'432'}),false)
+  assert.equal(isCompleteBaseballAnnualStats(previousStats),true)
+  assert.deepEqual(result.atBats.filter(row=>row.gameIndex===143).map(row=>row.snapshot.growthSnapshot.slot),[1,2,3])
+  const history = [...previousHistory,{seasonId:initial.setup.id,seasonNumber:2,stats}]
+  const yearThree = createBaseballAnnualDraft({...initial.setup,id:randomUUID(),continuation:{...continuation,
+    previousSeasonId:initial.setup.id,seasonNumber:3,startingGrowth:result.draft.career.growth,history}})
+  assert.equal(summarizeBaseballAnnualTotals(yearThree.setup.continuation.history,yearThree.career.stats).stats.PA,720)
 })

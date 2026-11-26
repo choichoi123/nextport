@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises'
 import { createBaseballAtBatApiHandler, createBaseballAtBatVersions, BASEBALL_AT_BAT_MAX_BODY_BYTES } from '../lib/server/baseball-at-bat-api.mjs'
 import { createBaseballAtBatStore } from '../lib/server/baseball-at-bat-db.mjs'
 import { createBaseballParticipant } from '../lib/server/baseball-auth.mjs'
+import { validBaseballAtBatCheckpoint } from '../lib/playground-baseball-at-bat-client.mjs'
 
 const clone = value => JSON.parse(JSON.stringify(value))
 const versions = { engineHash:'a'.repeat(64), rulesHash:'b'.repeat(64), atBatHash:'c'.repeat(64), fieldHash:'d'.repeat(64), sessionHash:'e'.repeat(64) }
@@ -206,6 +207,37 @@ test('changed engine or policy blocks further commands but existing checkpoint s
   const read=await updated.run(request({method:'GET',id:session.id}));assert.equal(read.statusCode,200);assert.equal(read.body.session.revision,1)
 })
 
+test('a saved four-pitch session continues and a new extended pitch survives review and restore',async()=>{
+  const store=memoryStore()
+  const currentVersions=await createBaseballAtBatVersions()
+  const legacyVersions={...currentVersions,
+    atBatHash:'6a6b6d234f1287aca81112744db90cc8143dae5af4a0b767b7cd4cff5bfcc923',
+    sessionHash:'a3c8c9001d9d25277d8c8d030a922bbd8f3a72310f4a9898e89714fff9983a7a',
+  }
+  const oldApi=setup({store,getVersions:async()=>legacyVersions})
+  const oldSession=(await oldApi.create()).body.session
+  const currentApi=setup({store,getVersions:async()=>currentVersions})
+  const oldIssue=await currentApi.command(oldSession,{type:'issue'})
+  assert.equal(oldIssue.statusCode,200)
+  assert.equal(oldIssue.body.session.config.pitchMode,'mixed')
+  assert.equal(oldIssue.body.session.pending.pitch.practiceType,undefined)
+  assert.equal(oldIssue.body.session.versions.atBatHash,legacyVersions.atBatHash)
+  assert.equal(validBaseballAtBatCheckpoint(oldIssue.body.session),true)
+
+  let next=(await currentApi.create({settings:{...settings,pitchMode:'sinker'}})).body.session
+  next=(await currentApi.command(next,{type:'issue'})).body.session
+  assert.equal(next.pending.pitch.practiceType,'sinker')
+  assert.equal(validBaseballAtBatCheckpoint(next),true)
+  const {pitchId,attemptId}=next.pending
+  next=(await currentApi.command(next,{type:'accept-input',pitchId,attemptId,input:{kind:'take'}})).body.session
+  const completed=(await currentApi.command(next,{type:'resolve',pitchId,attemptId})).body.session
+  const restored=await currentApi.run(request({method:'GET',id:completed.id}))
+  assert.equal(restored.statusCode,200)
+  assert.equal(restored.body.session.state.history[0].result.pitchType,'sinker')
+  assert.equal(validBaseballAtBatCheckpoint(restored.body.session),true)
+  assertPrivateAbsent(restored.body)
+})
+
 test('terminal statistics and the final receipt cannot be counted or resolved a second time',async()=>{
   const {create,command,run}=setup()
   let session=(await create({source:'development'})).body.session,lastBody
@@ -254,12 +286,15 @@ test('storage capacity, rate limit, connection loss and corrupt receipts are dis
   const res=await setup({store:corrupt}).create();assert.equal(res.statusCode,503)
 })
 
-test('source hashes identify only the physical engine and three approved at-bat modules',async()=>{
+test('at-bat source hash includes the practice pitch profiles and each session dependency',async()=>{
   const paths=[]
   const value=await createBaseballAtBatVersions({getEngineVersions:async()=>({engine:{hash:versions.engineHash},rules:{hash:versions.rulesHash}}),readSource:async file=>{paths.push(file);return 'example\r\n'}})
-  assert.deepEqual(paths.sort(),['lib/playground-baseball-at-bat-session.mjs','lib/playground-baseball-at-bat.mjs','lib/playground-baseball-field.mjs'])
+  assert.deepEqual(paths.sort(),['lib/playground-baseball-at-bat-session.mjs','lib/playground-baseball-at-bat.mjs','lib/playground-baseball-field.mjs','lib/playground-baseball-practice-pitches.mjs'])
   assert.equal(value.engineHash,versions.engineHash);assert.match(value.sessionHash,/^[a-f0-9]{64}$/)
-  assert.equal(value.sessionHash,value.atBatHash)
+  const changed=await createBaseballAtBatVersions({getEngineVersions:async()=>({engine:{hash:versions.engineHash},rules:{hash:versions.rulesHash}}),
+    readSource:async file=>file.endsWith('practice-pitches.mjs')?'changed':'example\r\n'})
+  assert.notEqual(changed.atBatHash,value.atBatHash)
+  assert.equal(changed.sessionHash,value.sessionHash)
 })
 
 test('database calls are parameterized and isolated from the ten-pitch RPC contract',async()=>{

@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { createBaseballCareerView, reduceBaseballCareerView, getBaseballCareerResumeId,
+import { createBaseballCareerView, reduceBaseballCareerView, getBaseballCareerResumeId, getBaseballCareerNextManualSlot,
   isBaseballCareerSessionCurrent, selectBaseballCareerCompletedAppearance } from '../lib/playground-baseball-career-view.mjs'
 import { createBaseballCareerSave, createBaseballCareerManualAtBat, applyBaseballCareerCommand,
   advanceBaseballCareerAtBat } from '../lib/playground-baseball-career.mjs'
@@ -12,7 +12,6 @@ const clone = value => JSON.parse(JSON.stringify(value))
 const versions = Object.fromEntries(['engineHash', 'rulesHash', 'atBatHash', 'fieldHash', 'sessionHash', 'careerHash']
   .map((key, index) => [key, String(index + 1).repeat(64)]))
 const selected = () => createBaseballCareerView({ careerId: uuid(1) })
-const prepareView = () => reduceBaseballCareerView(selected(), { type: 'prepare' })
 const request = (state, atBatId = null) => reduceBaseballCareerView(state, { type: 'request-manual', atBatId })
 const ready = (state, intent, atBatId) => reduceBaseballCareerView(state,
   { type: 'manual-ready', epoch: intent.epoch, careerId: intent.careerId, atBatId })
@@ -48,23 +47,21 @@ function finish(pair = start()) {
   return pair
 }
 
-test('관리와 준비 화면은 저장·성장·타석을 만들지 않는 휘발 상태다', () => {
+test('관리 화면은 첫 타석 입장 요청을 받기까지 선수 선택만 보관한다', () => {
   const initial = createBaseballCareerView(), state = selected()
   assert.deepEqual(initial, { view: 'manage', tab: 'home', careerId: null, atBatId: null, epoch: 0, intent: null })
-  assert.equal(reduceBaseballCareerView(initial, { type: 'prepare' }), initial)
-  const next = reduceBaseballCareerView(state, { type: 'prepare' })
-  assert.equal(next.view, 'prepare')
-  assert.equal(next.intent, null)
-  assert.equal(next.atBatId, null)
+  assert.equal(request(initial), initial)
+  assert.equal(state.intent, null)
+  assert.equal(state.atBatId, null)
   assert.equal(state.view, 'manage')
-  assert.ok(Object.isFrozen(next))
-  assert.equal(reduceBaseballCareerView(next, { type: 'prepare' }), next)
+  assert.ok(Object.isFrozen(state))
 })
 
-test('동기 request 전이는 prepare에서 한 의도만 만들고 연타를 무시한다', () => {
-  const manage = selected()
-  assert.equal(request(manage), manage)
-  const state = request(prepareView())
+test('직접 입장은 관리의 육성 탭에서만 요청하며 연타를 무시한다', () => {
+  const records = reduceBaseballCareerView(selected(), { type: 'manage', tab: 'records' })
+  assert.equal(request(records), records)
+  const state = request(selected())
+  assert.equal(state.view, 'manage')
   assert.deepEqual(state.intent, { epoch: state.epoch, careerId: uuid(1), atBatId: null })
   assert.ok(Object.isFrozen(state.intent))
   assert.equal(request(state), state)
@@ -72,19 +69,19 @@ test('동기 request 전이는 prepare에서 한 의도만 만들고 연타를 �
 })
 
 test('입장 요청을 취소한 뒤 늦게 성공해도 체크포인트와 별개로 화면은 재열리지 않는다', () => {
-  const pending = request(prepareView()), intent = pending.intent
+  const pending = request(selected()), intent = pending.intent
   const cancelled = reduceBaseballCareerView(pending, { type: 'manage', tab: 'records' })
   const saved = start().career
   assert.equal(getBaseballCareerResumeId(saved), uuid(20))
   assert.equal(ready(cancelled, intent, uuid(20)), cancelled)
   assert.equal(cancelled.view, 'manage')
   assert.equal(cancelled.tab, 'records')
-  const preparedAgain = reduceBaseballCareerView(cancelled, { type: 'prepare' })
-  assert.equal(ready(preparedAgain, intent, uuid(20)), preparedAgain)
+  const homeAgain = reduceBaseballCareerView(cancelled, { type: 'manage', tab:'home' })
+  assert.equal(ready(homeAgain, intent, uuid(20)), homeAgain)
 })
 
 test('선수 변경·명시 취소는 이전 epoch를 무효화하고 새 의도를 구분한다', () => {
-  const pending = request(prepareView()), intent = pending.intent
+  const pending = request(selected()), intent = pending.intent
   for (const action of [{ type: 'cancel' }, { type: 'select-career', careerId: uuid(2) },
     { type: 'select-career', careerId: null }]) {
     const next = reduceBaseballCareerView(pending, action)
@@ -92,13 +89,13 @@ test('선수 변경·명시 취소는 이전 epoch를 무효화하고 새 의도
     assert.ok(next.epoch > intent.epoch)
     assert.equal(next.intent, null)
   }
-  const again = request(reduceBaseballCareerView(reduceBaseballCareerView(pending, { type: 'cancel' }), { type: 'prepare' }))
+  const again = request(reduceBaseballCareerView(pending, { type: 'cancel' }))
   assert.equal(ready(again, intent, uuid(20)), again)
   assert.equal(ready(again, again.intent, uuid(20)).view, 'batting')
 })
 
 test('같은 타석 이어하기는 기존 ID만 수락하고 입장 의도를 한 번 소비한다', () => {
-  const pending = request(prepareView(), uuid(20)), intent = pending.intent
+  const pending = request(selected(), uuid(20)), intent = pending.intent
   assert.equal(ready(pending, intent, uuid(21)), pending)
   assert.equal(ready(pending, { ...intent, careerId: uuid(2) }, uuid(20)), pending)
   assert.equal(ready(pending, { ...intent, epoch: intent.epoch + 1 }, uuid(20)), pending)
@@ -109,22 +106,22 @@ test('같은 타석 이어하기는 기존 ID만 수락하고 입장 의도를 �
   const hidden = reduceBaseballCareerView(opened, { type: 'manage', tab: 'schedule' })
   assert.equal(hidden.atBatId, opened.atBatId)
   assert.equal(hidden.tab, 'schedule')
-  const again = request(reduceBaseballCareerView(hidden, { type: 'prepare' }), opened.atBatId)
+  const again = request(reduceBaseballCareerView(hidden, { type: 'manage', tab:'home' }), opened.atBatId)
   assert.equal(ready(again, again.intent, uuid(20)).atBatId, opened.atBatId)
 })
 
 test('현재 요청의 실패만 의도를 소비하며 재시도는 새 화면 epoch를 받는다', () => {
-  const pending = request(prepareView()), intent = pending.intent
+  const pending = request(selected()), intent = pending.intent
   assert.equal(reduceBaseballCareerView(pending, { type: 'manual-failed', epoch: intent.epoch - 1, careerId: intent.careerId }), pending)
   const failed = reduceBaseballCareerView(pending, { type: 'manual-failed', ...intent })
-  assert.equal(failed.view, 'prepare')
+  assert.equal(failed.view, 'manage')
   assert.equal(failed.intent, null)
   assert.equal(ready(failed, intent, uuid(20)), failed)
   assert.ok(request(failed).intent.epoch > intent.epoch)
 })
 
 test('유효한 관리 탭만 열며 화면 상태를 바꿔도 기존 타석을 보존한다', () => {
-  const pending = request(prepareView()), opened = ready(pending, pending.intent, uuid(20))
+  const pending = request(selected()), opened = ready(pending, pending.intent, uuid(20))
   for (const tab of ['home', 'schedule', 'records', 'player']) {
     const next = reduceBaseballCareerView(opened, { type: 'manage', tab })
     assert.equal(next.tab, tab)
@@ -133,6 +130,39 @@ test('유효한 관리 탭만 열며 화면 상태를 바꿔도 기존 타석을
   }
   for (const action of [{ type: 'manage', tab: 'debug' }, { type: 'request-manual', atBatId: '' },
     { type: 'select-career' }, { type: 'unknown' }, null]) assert.equal(reduceBaseballCareerView(opened, action), opened)
+})
+
+test('다음 타석을 저장하는 동안 같은 타격 화면을 보존하고 이전 결과의 요청은 거절한다', () => {
+  const opening = request(selected()), first = ready(opening, opening.intent, uuid(20))
+  const next = { type:'request-next-manual', completedAtBatId:uuid(20) }
+  assert.equal(request(first), first)
+  assert.equal(reduceBaseballCareerView(first, { ...next, completedAtBatId:uuid(19) }), first)
+  const pending = reduceBaseballCareerView(first, next)
+  assert.equal(pending.view, 'batting')
+  assert.equal(pending.atBatId, uuid(20))
+  assert.equal(reduceBaseballCareerView(pending, next), pending)
+  assert.equal(ready(pending, pending.intent, uuid(20)), pending)
+  const second = ready(pending, pending.intent, uuid(21))
+  assert.equal(second.view, 'batting')
+  assert.equal(second.atBatId, uuid(21))
+  assert.equal(reduceBaseballCareerView(second, next), second)
+  const hidden = reduceBaseballCareerView(pending, { type:'cancel' })
+  assert.equal(ready(hidden, pending.intent, uuid(21)), hidden)
+})
+
+test('다음 타석은 마지막 확정 결과와 같은 경기에서만 허용한다', () => {
+  const first = finish()
+  const confirmed = first.career.games[0].appearances[0]
+  assert.equal(getBaseballCareerNextManualSlot(first.career, confirmed, 2), 2)
+  assert.equal(getBaseballCareerNextManualSlot(first.career, null, 2), null)
+  assert.equal(getBaseballCareerNextManualSlot(first.career, { id:uuid(19) }, 2), null)
+  const active = start(first.career, uuid(21))
+  assert.equal(getBaseballCareerNextManualSlot(active.career, confirmed, 2), null)
+  const played = [...first.career.games[0].appearances, { id:uuid(21) }]
+  const seasonThree = { ...first.career, games:[{...first.career.games[0],appearances:played},...first.career.games.slice(1)] }
+  assert.equal(getBaseballCareerNextManualSlot(seasonThree, played[1], 3), 3)
+  assert.equal(getBaseballCareerNextManualSlot(seasonThree, played[1], 2), null)
+  assert.equal(getBaseballCareerNextManualSlot({ ...seasonThree,currentGameIndex:1 }, played[1], 3), null)
 })
 
 test('복구 ID는 실제 activeAtBat만 재사용하고 완료·선택 없음에서는 만들지 않는다', () => {

@@ -4,6 +4,11 @@ import {
   BASEBALL_AT_BAT_RULES, createBaseballAtBat, nextBaseballAtBatPitch, resolveBaseballAtBatPitch,
 } from '../lib/playground-baseball-at-bat.mjs'
 import { BASEBALL_RULES, BASEBALL_PITCH_TYPES, judgeBaseballTake, judgeBaseballSwing, sampleBaseballPlatePassage } from '../lib/playground-baseball.mjs'
+import * as growthAtBat from '../lib/playground-baseball-at-bat-v2.mjs'
+import { createBaseballGrowthSnapshot } from '../lib/playground-baseball-growth.mjs'
+import {
+  BASEBALL_AT_BAT_MIXED_EIGHT, BASEBALL_PRACTICE_PITCH_TYPES, getBaseballPracticePitchSpeed, getBaseballPracticePitchType,
+} from '../lib/playground-baseball-practice-pitches.mjs'
 
 const fresh = options => createBaseballAtBat({ id:'pa-test', seed:42, ...options })
 // Semantic fixtures exercise the count layer. Physics results are separately
@@ -67,6 +72,75 @@ test('구종 혼합의 첫 공들에 4구종·볼/스트라이크가 존재하�
   }
   assert.deepEqual([...types].sort(), ['changeup', 'curveball', 'four-seam', 'slider'])
   assert.deepEqual([...takes].sort(), ['ball', 'called-strike'])
+})
+
+const atBatEngines = [
+  { create:fresh, next:nextBaseballAtBatPitch, resolve:resolveBaseballAtBatPitch },
+  {
+    create:options => growthAtBat.createBaseballAtBat({ id:'pa-test', ...options,
+      growthSnapshot:createBaseballGrowthSnapshot({ careerId:'22000000-0000-4000-8000-000000000001',
+        careerRevision:2, gameIndex:0, slot:1, mit:40, power:40 }) }),
+    next:growthAtBat.nextBaseballAtBatPitch,
+    resolve:growthAtBat.resolveBaseballAtBatPitch,
+  },
+]
+
+test('저장된 4구종 혼합은 예전 시드의 투구 ID·볼카운트·종료 결과를 그대로 재생한다', () => {
+  const golden = [
+    ['3533496745:left:slider:106:-0.03873268656339496:0.9686769989660475', 'called-strike'],
+    ['373926314:left:slider:106:0.06733295011068696:1.0940836572125554', 'ball'],
+    ['272968404:left:slider:106:0.4358519477901049:0.5870388603085466', 'ball'],
+    ['174083417:left:curveball:90:0.333790085093677:0.9981529348073015', 'ball'],
+    ['539369190:left:120:-0.13761813524062744:1.109293653279543', 'ball'],
+  ]
+  for (const engine of atBatEngines) {
+    let state = engine.create({ pitchMode:'mixed', seed:7, pitcherHandedness:'left' })
+    for (const [pitchId, outcome] of golden) {
+      const issue = engine.next(state), result = judgeBaseballTake(issue.pitch)
+      assert.equal(issue.pitch.id, pitchId)
+      assert.equal(result.outcome, outcome)
+      state = engine.resolve(state, { ...issue, result })
+      assert.deepEqual(state.history.at(-1).result, result)
+    }
+    assert.deepEqual([state.balls, state.strikes, state.outcome], [4, 1, 'walk'])
+  }
+})
+
+test('8구종 혼합은 좌우투에 모두 출현하며 공유 판정과 확장 구종 기록을 보존한다', () => {
+  const expected = BASEBALL_PRACTICE_PITCH_TYPES.map(profile => profile.id).sort()
+  for (const engine of atBatEngines) for (const pitcherHandedness of ['left','right']) {
+    const appeared = new Set()
+    for (let seed = 0; seed < 170; seed++) {
+      const state = engine.create({ pitchMode:BASEBALL_AT_BAT_MIXED_EIGHT, seed, pitcherHandedness, baseSpeedKmh:80 })
+      const issue = engine.next(state), pitch = issue.pitch
+      const pitchType = getBaseballPracticePitchType(pitch)
+      const result = judgeBaseballTake(pitch)
+      appeared.add(pitchType)
+      assert.equal(pitch.speedKmh, getBaseballPracticePitchSpeed(80, pitchType))
+      assert.equal(pitch.pitcherHandedness, pitcherHandedness)
+      assert.equal(result.platePassage.inside, result.outcome === 'called-strike')
+      assert.deepEqual(engine.next(JSON.parse(JSON.stringify(state))), issue)
+      const next = engine.resolve(state, { ...issue, result })
+      assert.equal(next.history[0].result.pitchType, pitchType)
+      assert.equal(engine.resolve(next, { ...issue, result }), next)
+    }
+    assert.deepEqual([...appeared].sort(), expected)
+  }
+})
+
+test('확장 구종을 단일 선택해도 실제 접촉과 저장된 구종이 일치한다', () => {
+  for (const engine of atBatEngines) for (const pitchMode of ['sweeper','splitter','sinker','cutter']) {
+    const state = engine.create({ pitchMode, seed:7, pitcherHandedness:'left' })
+    const issue = engine.next(state)
+    const passage = sampleBaseballPlatePassage(issue.pitch)
+    const result = judgeBaseballSwing(issue.pitch, { swingAtMs:passage.timeMs - BASEBALL_RULES.swingContactMs, aim:passage.point })
+    const fieldResult = ['contact','perfect'].includes(result.outcome) ? { outcome:'single' } : null
+    assert.equal(getBaseballPracticePitchType(issue.pitch), pitchMode)
+    assert.equal(result.contacted, true)
+    const next = engine.resolve(state, { ...issue, result, fieldResult })
+    assert.equal(next.history[0].result.pitchType, pitchMode)
+    assert.equal(next.history[0].result.contacted, true)
+  }
 })
 
 test('3볼·2스트라이크에서도 다음 공을 한 종류의 코스로 고정하지 않는다', () => {

@@ -189,3 +189,74 @@ test('regular-season SQL keeps trial bounds and restricts two new appearances to
   assert.match(save.body, /batch_slot[\s\S]*?item->>'source' IS DISTINCT FROM 'automatic'/)
   assert.match(save.body, /jsonb_build_object\('status','stored','snapshot',prior.snapshot,'duplicate',true/)
 })
+
+test('season pitch-mix migrations change only the permitted transition and settlement setting comparison', async () => {
+  const [dev, prod, previous] = await Promise.all([
+    read('db/migrations/20261126-baseball-career-pitch-mix.sql'),
+    read('db/production/011-baseball-career-pitch-mix.sql'),
+    read('db/production/008-baseball-career-multiseason.sql'),
+  ])
+  const updated = functions(prod)
+  assert.deepEqual(updated, functions(dev))
+  assert.equal(updated.length, 1)
+  const [continuation] = updated
+  assert.equal(continuation.name, 'baseball_private.baseball_continue_career_annual')
+  const original = functions(previous).find(fn => fn.name === continuation.name)
+  const previousSettingsCheck = "OR latest->'settings' IS DISTINCT FROM p_setup->'settings'"
+  const permittedTransition = [
+    "OR (latest->'settings' IS DISTINCT FROM p_setup->'settings' AND NOT (",
+    "      latest->'settings'->>'pitchMode' IS NOT DISTINCT FROM 'mixed'",
+    "      AND (latest->'settings' || '{\"pitchMode\":\"mixed-eight\"}'::jsonb) IS NOT DISTINCT FROM p_setup->'settings'",
+    "    ))",
+  ].join('\n')
+  const replaySettingsCheck = "OR p_setup->'settings' IS DISTINCT FROM p_snapshot->'settings'"
+  assert.ok(continuation.body.includes(permittedTransition))
+  assert.ok(continuation.body.includes(replaySettingsCheck))
+  assert.deepEqual({
+    ...continuation,
+    body: continuation.body
+      .replace('\n    ' + permittedTransition, ' ' + previousSettingsCheck)
+      .replace('\n    ' + replaySettingsCheck, " OR latest->'settings' IS DISTINCT FROM p_snapshot->'settings'"),
+  }, original)
+  assert.match(dev, /current_database\(\)\s*<>\s*'baseball_dev'/)
+  assert.match(prod, /current_database\(\)\s*<>\s*'baseball_prod'/)
+  assert.match(prod, /SET LOCAL ROLE baseball_prod_owner/)
+  for (const sql of [dev, prod]) {
+    assert.match(sql, /to_regprocedure\('baseball_private\.baseball_continue_career_annual_with_finish/)
+    assert.match(sql, /BEGIN;[\s\S]*COMMIT;\s*$/)
+    assert.doesNotMatch(clean(sql), /\b(?:CREATE ROLE|GRANT|REVOKE|ALTER TABLE|TRUNCATE|DROP TABLE|DELETE)\b/)
+  }
+})
+
+test('annual settlement SQL pins two or three slots per game without changing legacy write RPCs or grants', async () => {
+  const [dev, prod, previous] = await Promise.all([
+    read('db/migrations/20261126-baseball-career-three-appearances.sql'),
+    read('db/production/012-baseball-career-three-appearances.sql'),
+    read('db/production/008-baseball-career-multiseason.sql'),
+  ])
+  const storeFunctions = functions(prod)
+  assert.deepEqual(storeFunctions, functions(dev))
+  assert.equal(storeFunctions.length, 1)
+  const [store] = storeFunctions
+  assert.equal(store.name, 'baseball_private.baseball_store_career_annual_episode')
+  const original = functions(previous).find(fn => fn.name === store.name)
+  assert.equal(store.arguments, original.arguments)
+  assert.equal(store.header, original.header)
+  assert.match(store.body, /p_snapshot\?'appearancesPerGame' AND p_snapshot->'appearancesPerGame' IS DISTINCT FROM '3'::jsonb/)
+  assert.match(store.body, /CASE WHEN p_snapshot\?'appearancesPerGame' THEN 3 ELSE 2 END/)
+  assert.match(store.body, /p_snapshot->'stats'->'PA' IS DISTINCT FROM to_jsonb\(144 \* appearances_per_game\)/)
+  assert.match(store.body, /jsonb_array_length\(p_at_bats\)<>144 \* appearances_per_game/)
+  assert.match(store.body, /jsonb_array_length\(game->'appearances'\)<>appearances_per_game/)
+  assert.match(store.body, /entry->>'gameIndex' IS DISTINCT FROM \(\(position-1\)\/appearances_per_game\)::text/)
+  assert.match(store.body, /entry->>'slot' IS DISTINCT FROM \(\(\(position-1\)%appearances_per_game\)\+1\)::text/)
+  assert.match(store.body, /'growthSnapshot'->>'slot' IS DISTINCT FROM entry->>'slot'/)
+  assert.match(store.body, /p_at_bats::text\)>33554432/)
+  assert.match(store.body, /'duplicate',true/)
+  for (const sql of [dev, prod]) {
+    assert.match(sql, /DROP CONSTRAINT IF EXISTS career_v2_at_bats_slot_check/)
+    assert.match(sql, /ADD CONSTRAINT baseball_career_v2_slot_range CHECK\(slot BETWEEN 1 AND 3\)/)
+    assert.match(sql, /to_regprocedure\('baseball_private\.baseball_continue_career_annual_with_finish/)
+    assert.match(sql, /BEGIN;[\s\S]*COMMIT;\s*$/)
+    assert.doesNotMatch(clean(sql), /\b(?:CREATE ROLE|GRANT|REVOKE|TRUNCATE|DROP TABLE|DELETE)\b/)
+  }
+})

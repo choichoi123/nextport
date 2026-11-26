@@ -170,6 +170,22 @@ test('changed versions preserve old saves but block new effects',async()=>{
   const read=await next.run(request({method:'GET',id:career.id}));assert.equal(read.statusCode,200);assert.equal(read.body.career.revision,1)
 })
 
+test('the four-pitch career pin permits continuing a stored career with its original configuration',async()=>{
+  const store=memoryStore(),activeVersions=await createBaseballCareerVersions()
+  const legacyVersions={...activeVersions,
+    atBatHash:'6a6b6d234f1287aca81112744db90cc8143dae5af4a0b767b7cd4cff5bfcc923',
+    sessionHash:'a3c8c9001d9d25277d8c8d030a922bbd8f3a72310f4a9898e89714fff9983a7a',
+    careerHash:'0def3dac19a65083128addf66e87869356d5ba18a88749f6cc072d788fef77f8',
+  }
+  const oldApi=setup({store,getVersions:async()=>legacyVersions})
+  const {career,session}=await manualCareer(oldApi)
+  const issue=await setup({store,getVersions:async()=>activeVersions,now:()=>time+1000}).batCommand(career,session,{type:'issue'})
+  assert.equal(issue.statusCode,200)
+  assert.equal(issue.body.session.config.pitchMode,'mixed')
+  assert.equal(issue.body.session.pending.pitch.practiceType,undefined)
+  assert.equal(issue.body.session.versions.sessionHash,legacyVersions.sessionHash)
+})
+
 test('list timestamps are canonical and only approved profile/summary fields leave the API',async()=>{
   const api=setup();await api.create()
   const list=await api.run(request({method:'GET'}));assert.equal(list.statusCode,200)

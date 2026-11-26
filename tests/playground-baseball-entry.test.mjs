@@ -63,8 +63,6 @@ function renderPage(path, { locale = 'ko', environment = 'production', props = {
       if (name === '@/lib/server/baseball-career-v2-api.mjs') return {
         createBaseballAtBatV2Versions: async () => ({ fixture: 'atBatV2StorageVersions' }),
         createBaseballCareerV2Versions: async () => ({ fixture: 'baseballCareerV2Versions' }),
-        BASEBALL_CAREER_V2_TRIAL_HASHES: {careerHash:'original-career-hash',growthHash:'original-growth-hash'},
-        BASEBALL_CAREER_V2_PRIOR_REGULAR_HASHES: {careerHash:'prior-regular-career-hash'},
       }
       if (name.endsWith('/baseball-career-game')) {
         seen.careerLoads++
@@ -248,7 +246,7 @@ test('서버 availability는 환경·연결 설정 없이 enum과 기존 버전 
       const value = await pageExports.getStaticProps()
       assert.equal(value.props.baseballCareerAvailability, availability)
       const expectedKeys = path.endsWith('/career.js')
-        ? ['baseballCareerAvailability', 'baseballVersions', 'atBatStorageVersions', 'baseballCareerVersions', 'atBatV2StorageVersions', 'baseballCareerV2Versions', 'legacyV2StorageVersions', 'legacyV2CareerVersions', 'priorAnnualVersions']
+        ? ['baseballCareerAvailability', 'baseballVersions', 'atBatStorageVersions', 'baseballCareerVersions', 'atBatV2StorageVersions', 'baseballCareerV2Versions']
         : ['baseballCareerAvailability']
       assert.deepEqual(Object.keys(value.props).sort(), expectedKeys.sort())
       assert.equal(/databaseUrl|signingSecret|BASEBALL_|postgres(?:ql)?:/i.test(JSON.stringify(value.props)), false)

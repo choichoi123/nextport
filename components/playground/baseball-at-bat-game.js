@@ -1,13 +1,15 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import BaseballScene from './baseball-scene'
 import BaseballFeedbackPanel, { BaseballFeedbackOverlay } from './baseball-feedback-panel'
 import useBaseballLiveFeedback from './use-baseball-live-feedback'
 import useBaseballEntrance from './use-baseball-entrance'
 import BaseballEntranceOverlay from './baseball-entrance-overlay'
 import useBaseballPostplay from './use-baseball-postplay'
-import { BASEBALL_RULES, BASEBALL_PITCH_TYPES, createBaseballPitch, judgeBaseballSwing, judgeBaseballTake } from '@/lib/playground-baseball.mjs'
+import { BASEBALL_RULES, createBaseballPitch, judgeBaseballSwing, judgeBaseballTake } from '@/lib/playground-baseball.mjs'
+import { BASEBALL_AT_BAT_MIXED_EIGHT, BASEBALL_PRACTICE_PITCH_TYPES, getBaseballPracticePitchType } from '@/lib/playground-baseball-practice-pitches.mjs'
+import { matchesBaseballAtBatVersions, matchesBaseballVersions } from '@/lib/playground-baseball-pitch-version-compat.mjs'
 import { createBaseballGrowthSnapshot, validateBaseballGrowthSnapshot, judgeBaseballGrowthSwing } from '@/lib/playground-baseball-growth.mjs'
 import { BASEBALL_AT_BAT_RULES, createBaseballAtBat, nextBaseballAtBatPitch, resolveBaseballAtBatPitch } from '@/lib/playground-baseball-at-bat.mjs'
 import { BASEBALL_FIELD_MODEL, getBaseballFieldFenceDistance, resolveBaseballFieldResult } from '@/lib/playground-baseball-field.mjs'
@@ -21,7 +23,8 @@ const copy = {
     title:'한 타석의 승부.', kicker:'BATTING LAB · AT-BAT PRACTICE', practice:'한 타석 연습', ten:'10구 연습', back:'놀이터',
     setup:'선수와 상대 설정', name:'선수 이름', number:'등번호', numberHint:'0~99 · 07처럼 입력할 수 있어요.', hand:'타석', right:'우타', left:'좌타', team:'구단',
     nameError:'이름을 16자 이내로 입력해 주세요.', numberError:'등번호는 0~99의 숫자로 입력해 주세요.', playerError:'선수 설정을 확인해 주세요.',
-    pitcher:'상대 투수', random:'랜덤 좌우투', rightPitcher:'우투', leftPitcher:'좌투', pitchMode:'투구 구성', mixed:'4구종 혼합', baseSpeed:'포심 기준 구속',
+    pitcher:'상대 투수', random:'랜덤 좌우투', rightPitcher:'우투', leftPitcher:'좌투', pitchMode:'투구 구성', baseSpeed:'포심 기준 구속',
+    pitchMixes:{mixed:'4구종 혼합',[BASEBALL_AT_BAT_MIXED_EIGHT]:'8구종 혼합'},
     enter:'타석 입장', loading:'이미지 준비 중', loadFailed:'선수 이미지를 불러오지 못했습니다. 경기장 안에서 다시 불러올 수 있습니다.',
     begin:'투구 받기', next:'다음 공', swing:'스윙', pause:'중단', resume:'같은 공 다시 준비', confirmSwing:'입력한 결과 확인', newAtBat:'다음 타석', change:'선수 변경',
     ready:'투구를 받을 준비가 됐습니다.', windup:'투구 준비', flight:'공을 보고 스윙하세요', swinging:'스윙!', fieldPlay:'타구 플레이 진행 중', paused:'승부를 잠시 멈췄습니다.', complete:'타석 종료',
@@ -36,7 +39,7 @@ const copy = {
     versionChanged:'판정 버전이 변경됐습니다. 기존 승부 기록을 남기고 새 타석을 준비해 주세요.', error:'승부 결과를 확인하지 못했습니다. 기록을 바꾸지 않았으며 입력한 결과를 다시 확인할 수 있습니다.',
     data:'타석 데이터 확인', archive:'이 화면에서 마친 타석', completed:'완료', interrupted:'중단',
     memoryMode:'메모리 연습', storedMode:'개발 DB 저장', storageTitle:'타석 저장·이어하기', storageLoading:'저장 연결 확인 중', storageReady:'개발 DB 연결됨', storageEmpty:'저장된 타석이 없습니다.', storageRetry:'저장 다시 시도', storageRefresh:'목록 새로고침', storageResume:'이어하기', storagePending:'전송 대기 입력이 있습니다. 같은 요청으로 다시 확인합니다.', storageSaving:'승부 기록 저장 중', storageError:'저장을 확인하지 못했습니다. 다음 공을 시작하지 않고 기록을 유지합니다.', storageConflict:'다른 탭의 승부와 충돌했습니다. 기존 입력을 보존했으며 현재 서버 상태를 확인해 주세요.', storageUnavailable:'개발 DB가 설정되지 않았거나 연결할 수 없습니다. 메모리 연습을 선택할 수 있습니다.', storageLocalFailed:'브라우저 보관을 완료하지 못했습니다. 입력을 새로 받지 않고 멈췄습니다.', storageNote:'이름·등번호·구단은 이 브라우저에만 보관합니다. 개발 DB는 발급한 공과 입력·판정·카운트를 저장하며, 새로고침 후 직접 이어할 수 있습니다. 쿠키·브라우저 데이터 삭제나 다른 기기에서의 복구는 지원하지 않습니다.', storageSwitch:'모드 변경은 선수 설정 화면에서 할 수 있습니다.', storageUnknownPlayer:'저장 타자', storageRead:'서버 상태 확인', storageStored:'서버 확정 기록', storageRestoreHint:'기록을 불러왔습니다. 투구는 자동 시작하지 않습니다.',
-    pitches:{'four-seam':'포심', slider:'슬라이더', curveball:'커브', changeup:'체인지업'},
+    pitches:{'four-seam':'포심', slider:'슬라이더', curveball:'커브', changeup:'체인지업', sweeper:'스위퍼', splitter:'스플리터', sinker:'싱커', cutter:'커터'},
     outcomes:{ball:'볼', 'called-strike':'지켜본 스트라이크', miss:'헛스윙', foul:'파울', contact:'페어 타격', perfect:'정타', walk:'볼넷', 'strikeout-looking':'루킹 삼진', 'strikeout-swinging':'헛스윙 삼진', single:'단타', double:'2루타', triple:'3루타', 'home-run':'홈런', flyout:'뜬공 아웃', lineout:'직선타 아웃', groundout:'땅볼 아웃'},
     reasons:{'caught-fly':'공이 땅에 닿기 전에 야수가 뜬공을 잡았습니다.', 'caught-line-drive':'야수가 낮고 빠른 타구를 땅에 닿기 전에 잡았습니다.', 'throw-beats-runner':'수비의 1루 송구가 타자주자보다 먼저 도착했습니다.', 'safe-single':'수비가 처리하기 전에 타자주자가 1루에 도달했습니다.', 'safe-double':'수비 처리 시간 안에 2루까지 안전하게 도달했습니다.', 'safe-triple':'수비 처리 시간 안에 3루까지 안전하게 도달했습니다.', 'over-fence':'페어 타구가 땅에 닿기 전에 담장 높이를 넘어갔습니다.', 'ground-rule-double':'페어 타구가 바운드한 뒤 담장 밖으로 나가 인정2루타가 됐습니다.'},
   },
@@ -44,7 +47,8 @@ const copy = {
     title:'One at-bat. One contest.', kicker:'BATTING LAB · AT-BAT PRACTICE', practice:'At-bat practice', ten:'10-pitch practice', back:'Playground',
     setup:'Your batter and pitcher', name:'Player name', number:'Jersey number', numberHint:'0–99 · leading zero is supported.', hand:'Batting side', right:'Right', left:'Left', team:'Club',
     nameError:'Enter a name within 16 characters.', numberError:'Enter a jersey number from 0 to 99.', playerError:'Check the player settings.',
-    pitcher:'Opposing pitcher', random:'Random throwing hand', rightPitcher:'Right-handed', leftPitcher:'Left-handed', pitchMode:'Pitch selection', mixed:'Four-pitch mix', baseSpeed:'Fastball reference speed',
+    pitcher:'Opposing pitcher', random:'Random throwing hand', rightPitcher:'Right-handed', leftPitcher:'Left-handed', pitchMode:'Pitch selection', baseSpeed:'Fastball reference speed',
+    pitchMixes:{mixed:'Four-pitch mix',[BASEBALL_AT_BAT_MIXED_EIGHT]:'Eight-pitch mix'},
     enter:'Enter the at-bat', loading:'Preparing images', loadFailed:'The player images could not load. Retry inside the field.',
     begin:'Receive pitch', next:'Next pitch', swing:'Swing', pause:'Pause', resume:'Prepare the same pitch', confirmSwing:'Confirm the existing swing', newAtBat:'Next at-bat', change:'Change player',
     ready:'Ready for the next pitch.', windup:'Windup', flight:'Read the pitch and swing', swinging:'Swing!', fieldPlay:'Ball in play', paused:'At-bat paused.', complete:'At-bat complete',
@@ -59,7 +63,7 @@ const copy = {
     versionChanged:'The judgment version changed. Keep the recorded pitches and prepare a new at-bat.', error:'The result could not be confirmed. Records remain unchanged; retry confirming the existing input.',
     data:'Inspect at-bat data', archive:'At-bats completed on this screen', completed:'Complete', interrupted:'Interrupted',
     memoryMode:'Memory practice', storedMode:'Development DB', storageTitle:'Save and resume an at-bat', storageLoading:'Checking storage connection', storageReady:'Development DB connected', storageEmpty:'No saved at-bats.', storageRetry:'Retry saving', storageRefresh:'Refresh list', storageResume:'Resume', storagePending:'An input is waiting to sync. Retry the same request.', storageSaving:'Saving this pitch', storageError:'Storage could not be confirmed. The next pitch is blocked and records remain.', storageConflict:'Another tab changed this at-bat. Your input remains; inspect the current server state.', storageUnavailable:'The development DB is not configured or cannot be reached. Memory practice is available.', storageLocalFailed:'Browser storage did not complete. The existing input remains and play is paused.', storageNote:'Name, jersey and club stay in this browser. The development DB saves issued pitches, inputs, results and counts. Resume manually after refreshing. Recovery after clearing cookies/browser data or on another device is not supported.', storageSwitch:'Change mode from player setup.', storageUnknownPlayer:'Saved batter', storageRead:'Inspect server state', storageStored:'Server-confirmed records', storageRestoreHint:'Records restored. Pitches do not resume automatically.',
-    pitches:{'four-seam':'Four-seam', slider:'Slider', curveball:'Curveball', changeup:'Changeup'},
+    pitches:{'four-seam':'Four-seam', slider:'Slider', curveball:'Curveball', changeup:'Changeup', sweeper:'Sweeper', splitter:'Splitter', sinker:'Sinker', cutter:'Cutter'},
     outcomes:{ball:'Ball', 'called-strike':'Called strike', miss:'Swing and miss', foul:'Foul', contact:'Fair contact', perfect:'Perfect contact', walk:'Walk', 'strikeout-looking':'Called strikeout', 'strikeout-swinging':'Swinging strikeout', single:'Single', double:'Double', triple:'Triple', 'home-run':'Home run', flyout:'Flyout', lineout:'Lineout', groundout:'Groundout'},
     reasons:{'caught-fly':'A fielder caught the fly ball before it touched the ground.', 'caught-line-drive':'A fielder caught the low, fast line drive before it landed.', 'throw-beats-runner':'The throw reached first base before the batter-runner.', 'safe-single':'The batter-runner reached first before the defense completed the play.', 'safe-double':'The batter-runner safely reached second within the fielding time.', 'safe-triple':'The batter-runner safely reached third within the fielding time.', 'over-fence':'The fair ball cleared the fence in the air.', 'ground-rule-double':'The fair ball bounced out of the park for a ground-rule double.'},
   },
@@ -68,6 +72,7 @@ const copy = {
 const initialAim = { x:0, y:(BASEBALL_RULES.zone.bottom + BASEBALL_RULES.zone.top) / 2 }
 const FOCUS_PREFERENCE = 'nextport:baseball:batting-close-up'
 const activePhase = phase => phase === 'windup' || phase === 'flight'
+const useBeforePaint = typeof window === 'undefined' ? useEffect : useLayoutEffect
 const isFair = result => result?.outcome === 'contact' || result?.outcome === 'perfect'
 const seedFor = () => Math.floor(Math.random() * 0x100000000) >>> 0
 const countLabel = count => `${count.balls}B ${count.strikes}S`
@@ -174,6 +179,7 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
     catch { return { snapshot:null, invalid:true } }
   },[embeddedCareer?.session])
   const careerActive=embeddedCareer?.active!==false,careerFocused=embeddedCareer?.focused===true
+  const appearanceId=embeddedCareer?.session.id,entryToken=embeddedCareer?.entryToken,onEntranceReady=embeddedCareer?.onEntranceReady
   const careerActiveRef=useRef(careerActive);careerActiveRef.current=careerActive
   const [careerDetails,setCareerDetails]=useState(false),careerDialogRef=useRef(null)
   const router = useRouter()
@@ -184,7 +190,9 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
   const {trajectory,reaction,begin:beginPostplay,contact:contactPostplay,confirm:confirmPostplay,cancel:cancelPostplay}=useBaseballPostplay()
   const prefix = useId()
   const [draft,setDraft] = useState({ name:'',jerseyNumber:'7',handedness:'right',teamId:'heroes' })
-  const [settings,setSettings] = useState({ pitcherHandedness:'random',baseSpeedKmh:120,pitchMode:'mixed' })
+  const [settings,setSettings] = useState(embeddedCareer?.session?.config ?? {
+    pitcherHandedness:'random',baseSpeedKmh:120,pitchMode:BASEBALL_AT_BAT_MIXED_EIGHT,
+  })
   const [player,setPlayer] = useState(embeddedCareer?.player||null)
   const [errors,setErrors] = useState({})
   const [phase,setPhase] = useState(embeddedCareer?'paused':'setup')
@@ -214,7 +222,7 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
   const gameRef = useRef(null), roundRef = useRef(null), atBatRef = useRef(embeddedCareer?.session?.state||null), aimRef = useRef(initialAim)
   const phaseRef = useRef(embeddedCareer?'paused':'setup'), previousVersion = useRef(null), atBatVersion = useRef(null)
   const engineVersion = `${dataVersions?.engine?.hash || 'local'}:${dataVersions?.rules?.hash || BASEBALL_AT_BAT_RULES.id}`
-  const versionSignature=JSON.stringify([engineVersion,storageVersions,BASEBALL_RULES,BASEBALL_PITCH_TYPES,BASEBALL_AT_BAT_RULES,BASEBALL_FIELD_MODEL,embeddedGrowth.snapshot,embeddedGrowth.invalid])
+  const versionSignature=JSON.stringify([engineVersion,storageVersions,BASEBALL_RULES,BASEBALL_PRACTICE_PITCH_TYPES,BASEBALL_AT_BAT_RULES,BASEBALL_FIELD_MODEL,embeddedGrowth.snapshot,embeddedGrowth.invalid])
   const setGamePhase = useCallback(value => { phaseRef.current=value;setPhase(value) },[])
   const updateAtBat = useCallback(value => { atBatRef.current=value;setAtBat(value) },[])
   const onAim = useCallback(value => {
@@ -235,10 +243,11 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
     setPitchStartAt(null);setSwingAt(null);setSwingAim(null);setResult(null);setResultAt(null);setFieldResult(null)
     setGamePhase('paused')
     if(storageModeRef.current&&storageClientRef.current&&round.attemptId){
+      const client=storageClientRef.current,sessionId=serverSessionRef.current.id
       round.pausePromise=Promise.resolve(round.acceptPromise).then(()=>{
-        if(round.acceptFailed)return null
-        return storageClientRef.current?.command(serverSessionRef.current.id,{type:'pause',pitchId:round.pitchId,attemptId:round.attemptId})
-      }).then(session=>{if(session)serverSessionRef.current=session;return session}).catch(()=>null)
+        if(round.acceptFailed||storageClientRef.current!==client)return null
+        return client.command(sessionId,{type:'pause',pitchId:round.pitchId,attemptId:round.attemptId})
+      }).then(session=>{if(session&&roundRef.current===round&&storageClientRef.current===client)serverSessionRef.current=session;return session}).catch(()=>null)
     }
   },[setGamePhase,cancelFeedback,cancelPostplay,cancelEntry,embeddedCareer?.entryToken])
   useEffect(()=>{
@@ -250,8 +259,17 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
   const onAssetsReady = useCallback((ready,error) => {
     setAssetsReady(ready);setAssetError(error || '')
     if (!ready) pause({preserveEntrance:true})
-    else if(!embeddedGrowth.invalid&&embeddedCareer?.onEntranceReady?.(embeddedCareer.entryToken))requestAnimationFrame(()=>revealMobileInput({careerEntry:true}))
-  },[pause,embeddedCareer?.onEntranceReady,embeddedCareer?.entryToken,embeddedGrowth.invalid])
+  },[pause])
+  useEffect(()=>{
+    if(!appearanceId||!careerActive||!assetsReady||versionBlocked)return
+    if(entryToken)onEntranceReady?.(entryToken)
+    const frame=requestAnimationFrame(()=>{
+      if(phaseRef.current==='ready'||phaseRef.current==='paused'){
+        gameRef.current?.querySelector('[data-baseball-field-actions] button:not(:disabled)')?.focus({preventScroll:true})
+      }
+    })
+    return()=>cancelAnimationFrame(frame)
+  },[appearanceId,careerActive,assetsReady,versionBlocked,entryToken,onEntranceReady])
 
   const settle = useCallback(round => {
     if (!round || round.finished) return
@@ -364,11 +382,13 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
   useEffect(() => {
     try { setFocusEnabled(window.localStorage.getItem(FOCUS_PREFERENCE)==='on') } catch { /* Optional preference. */ }
   },[])
-  useEffect(()=>{
+  useBeforePaint(()=>{
     storageAliveRef.current=true
     let unsubscribe
     if(embeddedCareer){
+      storageStartingRef.current=false
       storageClientRef.current=embeddedCareer.client
+      setCareerDetails(false);setStorageReview(null)
       setStorageState(embeddedCareer.client.snapshot())
       unsubscribe=embeddedCareer.client.subscribe?.(value=>{if(storageAliveRef.current)setStorageState(value)})
       const checkpoint=embeddedCareer.latestSession||embeddedCareer.session
@@ -376,12 +396,12 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
     }
     if(storageModeRef.current&&!storageClientRef.current)setStorageState(old=>({...old,busy:false,code:'client_reconnect_required'}))
     return ()=>{storageAliveRef.current=false;unsubscribe?.();if(!embeddedCareer)storageClientRef.current?.close();storageClientRef.current=null}
-    // Each embedded slot mounts with its own key/client; regular D owns its client.
+    // Exchange the checkpoint before paint while retaining the mounted stadium.
   },[embeddedCareer?.client])
   useEffect(() => {
-    const old=previousVersion.current;previousVersion.current=versionSignature
-    if (old!==null && old!==versionSignature && atBatRef.current) { pause();setVersionBlocked(true) }
-  },[versionSignature,pause])
+    const old=previousVersion.current;previousVersion.current={appearanceId,signature:versionSignature}
+    if (old?.appearanceId===appearanceId && old && old.signature!==versionSignature && atBatRef.current) { pause();setVersionBlocked(true) }
+  },[versionSignature,pause,appearanceId])
   useEffect(() => {
     const hidden=()=>{if(document.hidden)pause()},blur=()=>pause(),menu=()=>pause()
     window.addEventListener('blur',blur);window.addEventListener('nextport:playground-menu-open',menu)
@@ -456,7 +476,10 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
     updateAtBat(session.state);clearPresentation({preserveEntrance})
     embeddedCareer?.onSession?.(session)
     atBatVersion.current={engineVersion:`${session.versions.engineHash}:${session.versions.rulesHash}`,engineRulesVersion:dataVersions?.rules?.id||'local',fieldModelVersion:session.versions.fieldModelId}
-    const incompatible=storageVersions?Object.keys(storageVersions).some(key=>session.versions[key]!==storageVersions[key]):Boolean(dataVersions&&(session.versions.engineHash!==dataVersions.engine.hash||session.versions.rulesHash!==dataVersions.rules.hash))
+    const matchesStorage=session.schemaVersion===1?matchesBaseballAtBatVersions:matchesBaseballVersions
+    const incompatible=storageVersions
+      ? !matchesStorage(session.versions,storageVersions,session.config.pitchMode)
+      : Boolean(dataVersions&&(session.versions.engineHash!==dataVersions.engine.hash||session.versions.rulesHash!==dataVersions.rules.hash))
     setVersionBlocked(incompatible);setStorageNotice(restored)
     const pending=session.pending,last=session.state.history.at(-1)
     if(incompatible){
@@ -513,12 +536,12 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
     }catch{/* Keep both the input and the server checkpoint if archival fails. */}
     finally{storageStartingRef.current=false}
   }
-  async function prepareServerAtBat(validPlayer,entranceToken){
+  async function prepareServerAtBat(validPlayer,entranceToken,pitchMode){
     const client=storageClientRef.current
     if(!client||storageStartingRef.current)return
     storageStartingRef.current=true
     try{
-      const config={handedness:validPlayer.handedness,pitcherHandedness:settings.pitcherHandedness==='random'?(seedFor()%2?'left':'right'):settings.pitcherHandedness,baseSpeedKmh:settings.baseSpeedKmh,pitchMode:settings.pitchMode}
+      const config={handedness:validPlayer.handedness,pitcherHandedness:settings.pitcherHandedness==='random'?(seedFor()%2?'left':'right'):settings.pitcherHandedness,baseSpeedKmh:settings.baseSpeedKmh,pitchMode}
       const session=await client.create(config,validPlayer,{source:developmentSample?'development':'manual'})
       if(!storageAliveRef.current)return
       if(atBatRef.current)setArchive(items=>[...items,recordValue(atBatRef.current,atBatVersion.current)])
@@ -529,17 +552,19 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
     finally{storageStartingRef.current=false}
   }
   function prepareAtBat(validPlayer) {
+    const pitchMode=settings.pitchMode==='mixed'?BASEBALL_AT_BAT_MIXED_EIGHT:settings.pitchMode
     if(storageModeRef.current){
       if(!storageClientRef.current||storageStartingRef.current)return
       cancelFeedback(roundRef.current);cancelPostplay()
-      const token=prepareEntrance();void prepareServerAtBat(validPlayer,token);return
+      const token=prepareEntrance();void prepareServerAtBat(validPlayer,token,pitchMode);return
     }
     preserveScrollRoom()
     const previous=atBatRef.current
     if(previous) setArchive(items=>[...items,recordValue(previous,atBatVersion.current)])
     const seed=seedFor(),pitcherHandedness=settings.pitcherHandedness==='random'?(seed%2?'left':'right'):settings.pitcherHandedness
     const id=window.crypto?.randomUUID?.() || `local-${Date.now()}-${seed}`
-    const next=createBaseballAtBat({id,handedness:validPlayer.handedness,pitcherHandedness,baseSpeedKmh:settings.baseSpeedKmh,pitchMode:settings.pitchMode,seed})
+    const next=createBaseballAtBat({id,handedness:validPlayer.handedness,pitcherHandedness,baseSpeedKmh:settings.baseSpeedKmh,pitchMode,seed})
+    if(pitchMode!==settings.pitchMode)setSettings(old=>({...old,pitchMode}))
     updateAtBat(next);atBatVersion.current={engineVersion,engineRulesVersion:dataVersions?.rules?.id||'local',fieldModelVersion:BASEBALL_FIELD_MODEL.version};clearPresentation();setVersionBlocked(false);setGamePhase('ready')
     setPitch(createBaseballPitch({speedKmh:settings.baseSpeedKmh,seed:1,target:initialAim,pitcherHandedness}))
     const token=prepareEntrance();showEntrance(token,validPlayer)
@@ -629,6 +654,7 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
     const previous=atBatRef.current
     if(previous)setArchive(items=>[...items,recordValue(previous,atBatVersion.current)])
     updateAtBat(null);setPlayer(null);clearPresentation();setVersionBlocked(false);setGamePhase('setup')
+    setSettings(old=>old.pitchMode==='mixed'?{...old,pitchMode:BASEBALL_AT_BAT_MIXED_EIGHT}:old)
     serverSessionRef.current=null;setStorageNotice(false)
     gameRef.current?.style.removeProperty('--pa-mobile-flow-floor')
   }
@@ -649,7 +675,12 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
     ? `Ball-center allowance ${(displayedGrowth.contactRadiusM*100).toFixed(3)}cm · Power ×${displayedGrowth.powerMultiplier.toFixed(3)} · Physical bat unchanged`
     : `공 중심 허용 거리 ${(displayedGrowth.contactRadiusM*100).toFixed(3)}cm · 파워 ×${displayedGrowth.powerMultiplier.toFixed(3)} · 실제 배트 크기 유지`):null
   const last=atBat?.history.at(-1),balls=atBat?.balls||0,strikes=atBat?.strikes||0
-  const status=phase==='saving'?text.storageSaving:phase==='windup'?text.windup:phase==='flight'?(result&&isFair(result)?text.fieldPlay:swingAt!==null?text.swinging:text.flight):phase==='paused'?text.paused:phase==='complete'?text.complete:text.ready
+  const currentPitchType=getBaseballPracticePitchType(pitch)
+  const currentPitchMode=atBat?.pitchMode??settings.pitchMode
+  const pitchModeLabel=text.pitchMixes[currentPitchMode]??text.pitches[currentPitchMode]
+  const savingLocally=localCareer&&phase==='saving'
+  const flightStatus=result&&isFair(result)?text.fieldPlay:swingAt!==null?text.swinging:text.flight
+  const status=savingLocally?flightStatus:phase==='saving'?text.storageSaving:phase==='windup'?text.windup:phase==='flight'?flightStatus:phase==='paused'?text.paused:phase==='complete'?text.complete:text.ready
   const feedback=getBaseballPlayerFeedback(errors,text)
   const hasPausedInput=phase==='paused'&&Boolean(roundRef.current)&&(roundRef.current.swingAt!==null||roundRef.current.acceptedInput||roundRef.current.input)
   const kind=versionBlocked?'new-version':playing?'swing':phase==='paused'?'resume':phase==='complete'?'new-at-bat':phase==='ready'?'begin':'next'
@@ -657,10 +688,11 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
   const actionText=versionBlocked?text.newAtBat:playing?text.swing:phase==='paused'?(hasPausedInput?text.confirmSwing:text.resume):phase==='complete'?text.newAtBat:phase==='ready'?text.begin:text.next
   const storagePending=storageState.entries.find(entry=>entry.id===serverSessionRef.current?.id)?.pending
   const storageBlocked=storageMode&&!playing&&(storageOpening||storageState.busy||phase==='saving'||Boolean(storagePending)||Boolean(storageState.code&&!versionBlocked)||Boolean(embeddedCareer&&versionBlocked))
-  const primary=<ActionButton key={kind} kind={kind} className={playing?styles.secondary:styles.primary} onAction={action} disabled={!assetsReady||(playing&&swingAt!==null)||storageBlocked}>{phase==='saving'?text.storageSaving:actionText}<span aria-hidden="true">→</span></ActionButton>
+  const primary=<ActionButton key={kind} kind={kind} className={playing?styles.secondary:styles.primary} onAction={action} disabled={!assetsReady||(playing&&swingAt!==null)||storageBlocked}>{phase==='saving'&&!savingLocally?text.storageSaving:actionText}<span aria-hidden="true">→</span></ActionButton>
   const fieldActions=phase!=='setup'?<div className={styles.fieldActions} data-baseball-field-actions><div><strong>{settled&&result?text.outcomes[atBat?.outcome||result.outcome]:status}</strong><span>{countLabel({balls,strikes})} · {text.committed} {atBat?.pitchCount||0}</span></div>{careerFocused&&phase==='complete'?<button type='button' className={styles.primary} onClick={()=>setCareerDetails(true)}>{locale==='en'?'View appearance review':'타석 결산 보기'}</button>:!(embeddedCareer&&phase==='complete')&&primary}</div>:null
   const recordJson=useMemo(()=>JSON.stringify({storage:storageMode?'development-db':'memory',mode:'at-bat-practice',trust:storageMode?'server-recalculated-input-unverified':'local-unverified',current:recordValue(atBat,atBatVersion.current),previous:archive},null,2),[atBat,archive,storageMode])
-  const scenePhase=settled&&fieldResult?'paused':phase
+  // Resolving the local journal must not send the canvas back to its ready pose.
+  const scenePhase=savingLocally?'result':settled&&fieldResult?'paused':phase
   const savedRows=[...new Map([...storageState.history.map(row=>[row.id,row]),...storageState.entries.map(entry=>{
     const summary=storageState.history.find(row=>row.id===entry.id)
     return [entry.id,{...(summary?.revision>(entry.checkpoint?.revision||0)?summary:entry.checkpoint),id:entry.id,entry}]
@@ -672,7 +704,8 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
       :storageState.code==='storage_capacity'?(locale==='en'?'The server storage limit was reached. Your pending input and the previous checkpoint remain. Further play is paused.':'서버 저장 한도에 도달했습니다. 대기 입력과 기존 기록은 유지하며 승부를 멈췄습니다.')
         :['not_configured','database_unavailable','owner_required'].includes(storageState.code)?text.storageUnavailable:text.storageError
 
-  return <section ref={gameRef} className={`${styles.game}${embeddedCareer?` ${styles.embedded}`:''}${careerFocused?` ${styles.careerFocused}`:''}`} data-baseball-at-bat data-phase={phase} data-focus-enabled={focusEnabled} data-career-active={careerActive}
+  return <section ref={gameRef} className={`${styles.game}${embeddedCareer?` ${styles.embedded}`:''}${careerFocused?` ${styles.careerFocused}`:''}`} data-baseball-at-bat data-phase={phase} data-pitch-mode={currentPitchMode} data-focus-enabled={focusEnabled} data-career-active={careerActive}
+    data-career-appearance-slot={embeddedCareer?.appearanceSlot} data-career-appearance-limit={embeddedCareer?.appearanceLimit} data-local-write-pending={localCareer&&(savingLocally||storageState.busy)}
     onKeyDown={keyDown} onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget))pause()}}>
     {!embeddedCareer&&<><header className={styles.heading}><div><p className={styles.kicker}>{text.kicker}</p><h1>{text.title}</h1></div><nav aria-label={text.practice} data-career-navigation={process.env.NODE_ENV==='development'}><Link href="/playground/baseball" prefetch={false}>{text.ten}</Link>{process.env.NODE_ENV==='development'&&<Link href="/playground/baseball/career" prefetch={false}>{locale==='en'?'Grow a batter':'선수 육성'}</Link>}<Link href="/playground" prefetch={false}>← {text.back}</Link></nav></header><p className={styles.intro}>{text.intro}</p></>}
     {process.env.NODE_ENV==='development'&&!embeddedCareer&&<section className={styles.storage} aria-label={text.storageTitle}>
@@ -691,12 +724,13 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
     <div className={styles.layout} data-baseball-at-bat-layout>
       <div className={styles.fieldColumn} inert={careerFocused&&careerDetails?'':undefined} aria-hidden={careerFocused&&careerDetails?true:undefined}>
         <div className={styles.hud}>
-          <div className={styles.player}><span style={{background:team.helmet}}>#{displayPlayer.jerseyNumber||'7'}</span><div><strong>{displayPlayer.name||(locale==='en'?'Your batter':'나만의 타자')}</strong><small>{team.name} · {displayPlayer.handedness==='left'?text.left:text.right}</small></div></div>
+          <div className={styles.player}><span style={{background:team.helmet}}>#{displayPlayer.jerseyNumber||'7'}</span><div><strong>{displayPlayer.name||(locale==='en'?'Your batter':'나만의 타자')}</strong><small>{team.name} · {displayPlayer.handedness==='left'?text.left:text.right}</small>
+            {embeddedCareer?.appearanceSlot&&<small className={styles.appearanceProgress}>{locale==='en'?'Appearance':'타석'} {embeddedCareer.appearanceSlot}/{embeddedCareer.appearanceLimit}</small>}</div></div>
           <CountReadout balls={balls} strikes={strikes} label={text.count} locale={locale} />
           <div className={styles.pitchCount}><small>{text.committed}</small><strong>{atBat?.pitchCount||0}</strong>{playing&&<span>{text.current} {(atBat?.pitchCount||0)+1}</span>}</div>
         </div>
         <div className={careerFocused?styles.careerToolbar:undefined}>
-        <div className={styles.viewOptions}><span title={growthLabel||undefined}>{text.pitcherFixed} · {pitch.pitcherHandedness==='left'?text.leftPitcher:text.rightPitcher} · {playing?`${text.pitches[pitch.type]} ${pitch.speedKmh} km/h`:settings.pitchMode==='mixed'?text.mixed:text.pitches[settings.pitchMode]}{growthLabel?` · ${growthLabel}`:''}</span><button type="button" aria-pressed={focusEnabled} aria-controls="baseball-batting-close-up" aria-label={`${text.focus} ${focusEnabled?'ON':'OFF'}`} onClick={toggleFocus}>{careerFocused&&locale==='en'?'Close-up':text.focus} <strong>{focusEnabled?'ON':'OFF'}</strong></button></div>
+        <div className={styles.viewOptions}><span title={growthLabel||undefined} data-at-bat-pitch-type={currentPitchType}>{text.pitcherFixed} · {pitch.pitcherHandedness==='left'?text.leftPitcher:text.rightPitcher} · {playing?`${text.pitches[currentPitchType]} ${pitch.speedKmh} km/h`:pitchModeLabel}{growthLabel?` · ${growthLabel}`:''}</span><button type="button" aria-pressed={focusEnabled} aria-controls="baseball-batting-close-up" aria-label={`${text.focus} ${focusEnabled?'ON':'OFF'}`} onClick={toggleFocus}>{careerFocused&&locale==='en'?'Close-up':text.focus} <strong>{focusEnabled?'ON':'OFF'}</strong></button></div>
         <BaseballFeedbackPanel locale={locale} feedback={gameFeedback} onOpen={pause} />
         {careerFocused&&<button type='button' className={styles.careerDetailsButton} aria-label={locale==='en'?'Status & records':'상태·기록'} onClick={()=>setCareerDetails(true)}>{locale==='en'?'Details':'상태·기록'}</button>}
         </div>
@@ -730,7 +764,7 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
           <fieldset aria-invalid={feedback.handedness.invalid} aria-describedby={feedback.handedness.describedBy}><legend>{text.hand}</legend><div className={styles.segment}><button type="button" aria-pressed={draft.handedness==='right'} onClick={()=>updateDraft('handedness','right')}>{text.right}</button><button type="button" aria-pressed={draft.handedness==='left'} onClick={()=>updateDraft('handedness','left')}>{text.left}</button></div></fieldset>
           <label htmlFor={`${prefix}-team`}>{text.team}<select id={`${prefix}-team`} value={draft.teamId} onChange={e=>updateDraft('teamId',e.target.value)} aria-invalid={feedback.teamId.invalid} aria-describedby={feedback.teamId.describedBy}>{BASEBALL_TEAMS.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
           <label htmlFor={`${prefix}-pitcher`}>{text.pitcher}<select id={`${prefix}-pitcher`} value={settings.pitcherHandedness} onChange={e=>setSettings(old=>({...old,pitcherHandedness:e.target.value}))}><option value="random">{text.random}</option><option value="right">{text.rightPitcher}</option><option value="left">{text.leftPitcher}</option></select></label>
-          <label htmlFor={`${prefix}-mode`}>{text.pitchMode}<select id={`${prefix}-mode`} value={settings.pitchMode} onChange={e=>setSettings(old=>({...old,pitchMode:e.target.value}))}><option value="mixed">{text.mixed}</option>{BASEBALL_PITCH_TYPES.map(type=><option key={type.id} value={type.id}>{text.pitches[type.id]}</option>)}</select></label>
+          <label htmlFor={`${prefix}-mode`}>{text.pitchMode}<select id={`${prefix}-mode`} value={settings.pitchMode} onChange={e=>setSettings(old=>({...old,pitchMode:e.target.value}))}><option value={BASEBALL_AT_BAT_MIXED_EIGHT}>{text.pitchMixes[BASEBALL_AT_BAT_MIXED_EIGHT]}</option>{BASEBALL_PRACTICE_PITCH_TYPES.map(({id})=><option key={id} value={id}>{text.pitches[id]}</option>)}</select></label>
           <label htmlFor={`${prefix}-speed`}>{text.baseSpeed}<select id={`${prefix}-speed`} value={settings.baseSpeedKmh} onChange={e=>setSettings(old=>({...old,baseSpeedKmh:Number(e.target.value)}))}>{[80,100,120,140,150,160].map(value=><option key={value} value={value}>{value} km/h</option>)}</select></label>
           {feedback.messages.length>0&&<div role="alert">{feedback.messages.map(message=><p key={message.id} id={message.id} className={styles.error}>{message.text}</p>)}</div>}
           {assetError&&<p className={styles.error} role="alert">{text.loadFailed}</p>}
@@ -755,7 +789,7 @@ export default function BaseballAtBatGame({ locale='ko', dataVersions=null, stor
           {phase==='complete'&&embeddedCareer?.summary}
           {careerFocused&&fieldResult&&settled&&<FieldMap value={fieldResult} text={text} locale={locale} />}
           <p className={styles.hint}>{text.locked}</p>
-          <section className={styles.history}><h3>{text.history}</h3>{!atBat?.history.length?<p className={styles.hint}>{text.empty}</p>:<ol>{atBat.history.slice(-20).map(row=><li key={row.pitchId}><span>{row.number}</span><div><strong>{text.outcomes[row.terminalOutcome||row.result.outcome]}</strong><small>{text.pitches[row.pitch.type]} · {row.pitch.speedKmh} km/h</small></div><span>{countLabel(row.countBefore)}<br/>→ {countLabel(row.countAfter)}</span></li>)}</ol>}</section>
+          <section className={styles.history}><h3>{text.history}</h3>{!atBat?.history.length?<p className={styles.hint}>{text.empty}</p>:<ol>{atBat.history.slice(-20).map(row=><li key={row.pitchId}><span>{row.number}</span><div><strong>{text.outcomes[row.terminalOutcome||row.result.outcome]}</strong><small>{text.pitches[getBaseballPracticePitchType(row.pitch)]} · {row.pitch.speedKmh} km/h</small></div><span>{countLabel(row.countBefore)}<br/>→ {countLabel(row.countAfter)}</span></li>)}</ol>}</section>
           <p className={styles.sessionNote}>{text.archive}: {archive.filter(value=>value.status==='complete').length+(atBat?.status==='complete'?1:0)}</p>
         </>}
       </aside>

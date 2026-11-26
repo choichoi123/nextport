@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createBaseballObservation } from '../lib/playground-baseball-observation.mjs'
 import { createBaseballPitch, judgeBaseballTake } from '../lib/playground-baseball.mjs'
+import { createBaseballPracticePitch } from '../lib/playground-baseball-practice-pitches.mjs'
 
 function sample(startAt = 100, overrides = {}) {
   const pitch = createBaseballPitch({ seed:17 })
@@ -47,6 +48,27 @@ test('늦게 시작한 현재 공·이전 결과·중복 결과는 수집하지 
   assert.equal(observer.status().completed, 1)
   observer.capture(sample(300, { phase:'complete', result:judgeBaseballTake(sample().pitch) }))
   assert.equal(observer.status().completed, 1)
+})
+
+test('확장 연습 구종의 관찰 자료에는 실제 연습 구종과 판정 좌표가 남는다', () => {
+  const observer = createBaseballObservation()
+  observer.arm(0)
+  for (const pitchType of ['sweeper', 'splitter', 'sinker', 'cutter']) {
+    for (const pitcherHandedness of ['left', 'right']) {
+      const pitch = createBaseballPracticePitch({ pitchType, pitcherHandedness })
+      const first = sample(100 + 3000 * observer.status().completed, { pitch })
+      const result = judgeBaseballTake(pitch)
+      observer.capture(first)
+      observer.capture({ ...first, now:first.startAt + 2100, phase:'result', result })
+      const record = observer.snapshot().at(-1)
+      assert.equal(record.pitch.id, pitch.id)
+      assert.equal(record.pitch.pitcherHandedness, pitcherHandedness)
+      assert.equal(record.pitch.type, pitchType)
+      assert.equal(record.result.pitchType, pitchType)
+      assert.deepEqual(record.result.platePassage.point, result.platePassage.point)
+    }
+  }
+  assert.equal(observer.status().completed, 8)
 })
 
 test('공개 접촉 결과가 flight에 있어도 완료 전에는 snapshot에 나오지 않는다', () => {
@@ -155,6 +177,22 @@ test('비정상 표본과 알 수 없는 필드는 RAF 관찰에서 무시한다
   for (const invalid of [null, {}, sample(100, { now:NaN }), sample(100, { pitch:{ id:'https://private', type:'curveball' } })]) observer.capture(invalid)
   assert.deepEqual(observer.status(), { state:'armed', completed:0, aborted:0 })
   assert.throws(() => observer.arm(NaN), TypeError)
+})
+
+test('기존 포심 ID는 유지하고 등록 구종과 일치하지 않는 ID는 제외한다', () => {
+  const observer = createBaseballObservation()
+  const pitch = createBaseballPracticePitch({ pitchType:'sinker', pitcherHandedness:'right' })
+  observer.arm(0)
+  for (const typeSegment of ['private-data:', 'cutter:', '']) {
+    const id = pitch.id.replace('sinker:', typeSegment)
+    observer.capture(sample(100, { pitch:{ ...pitch, id } }))
+  }
+  assert.deepEqual(observer.status(), { state:'armed', completed:0, aborted:0 })
+
+  const fourSeam = sample().pitch
+  finish(observer)
+  assert.equal(observer.snapshot()[0].pitch.id, fourSeam.id)
+  assert.equal(observer.snapshot()[0].pitch.type, 'four-seam')
 })
 
 test('실제 배트·고정 조준·별도 복기는 서로 덮지 않고 허용한 숫자 필드만 독립 복사한다', () => {

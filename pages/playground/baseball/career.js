@@ -16,7 +16,7 @@ function CareerLoading() {
   </section>
 }
 
-export default function BaseballCareerPage({ baseballCareerAvailability = 'preparing', baseballVersions, atBatStorageVersions, baseballCareerVersions, atBatV2StorageVersions, baseballCareerV2Versions, legacyV2CareerVersions, legacyV2StorageVersions, priorAnnualVersions }) {
+export default function BaseballCareerPage({ baseballCareerAvailability = 'preparing', baseballVersions, atBatStorageVersions, baseballCareerVersions, atBatV2StorageVersions, baseballCareerV2Versions }) {
   const locale = useRouter().locale === 'en' ? 'en' : 'ko'
   const brand = BASEBALL_CAREER_BRAND[locale]
   const development = process.env.NODE_ENV === 'development'
@@ -27,7 +27,7 @@ export default function BaseballCareerPage({ baseballCareerAvailability = 'prepa
     title={`${brand.name} | ${locale === 'ko' ? '최지훈' : 'Jihoon'}`}
     description={brand.description}>
     {available
-      ? <CareerGame enabled preview={preview} production={production} locale={locale} dataVersions={baseballVersions} storageVersions={atBatStorageVersions} careerVersions={baseballCareerVersions} v2StorageVersions={atBatV2StorageVersions} v2CareerVersions={baseballCareerV2Versions} legacyV2CareerVersions={legacyV2CareerVersions} legacyV2StorageVersions={legacyV2StorageVersions} priorAnnualVersions={priorAnnualVersions} />
+      ? <CareerGame enabled preview={preview} production={production} locale={locale} dataVersions={baseballVersions} storageVersions={atBatStorageVersions} careerVersions={baseballCareerVersions} v2StorageVersions={atBatV2StorageVersions} v2CareerVersions={baseballCareerV2Versions} />
       : <section className={styles.careerNotice} data-baseball-career-availability="preparing">
         <p className={styles.playgroundEyebrow}>BATTING · GROW YOUR GAME</p>
         <h1>{brand.name}</h1>
@@ -48,12 +48,9 @@ export async function getStaticProps() {
   const { createBaseballDataVersions } = await import('@/lib/server/baseball-version.mjs')
   const { createBaseballAtBatVersions } = await import('@/lib/server/baseball-at-bat-api.mjs')
   const { createBaseballCareerVersions } = await import('@/lib/server/baseball-career-api.mjs')
-  const { createBaseballAtBatV2Versions, createBaseballCareerV2Versions, BASEBALL_CAREER_V2_TRIAL_HASHES, BASEBALL_CAREER_V2_PRIOR_REGULAR_HASHES } = await import('@/lib/server/baseball-career-v2-api.mjs')
+  const { createBaseballAtBatV2Versions, createBaseballCareerV2Versions } = await import('@/lib/server/baseball-career-v2-api.mjs')
   const [baseballVersions, atBatStorageVersions, baseballCareerVersions, atBatV2StorageVersions, baseballCareerV2Versions] = await Promise.all([
     createBaseballDataVersions(), createBaseballAtBatVersions(), createBaseballCareerVersions(), createBaseballAtBatV2Versions(), createBaseballCareerV2Versions(),
   ])
-  const legacyV2StorageVersions = {...atBatV2StorageVersions,growthHash:BASEBALL_CAREER_V2_TRIAL_HASHES.growthHash}
-  const legacyV2CareerVersions = {...baseballCareerV2Versions,...BASEBALL_CAREER_V2_TRIAL_HASHES}
-  const priorAnnualVersions = {...baseballCareerV2Versions,...BASEBALL_CAREER_V2_PRIOR_REGULAR_HASHES}
-  return { props:{ baseballCareerAvailability, baseballVersions, atBatStorageVersions, baseballCareerVersions, atBatV2StorageVersions, baseballCareerV2Versions, legacyV2StorageVersions, legacyV2CareerVersions, priorAnnualVersions } }
+  return { props:{ baseballCareerAvailability, baseballVersions, atBatStorageVersions, baseballCareerVersions, atBatV2StorageVersions, baseballCareerV2Versions } }
 }

@@ -4,6 +4,8 @@ import {
   createBaseballAnnualTransport, openBaseballAnnualClient, selectBaseballAnnualArchive,
 } from '../lib/playground-baseball-annual-client.mjs'
 import { replayBaseballAnnualBackup, replayBaseballAnnualSubmission } from '../lib/playground-baseball-annual.mjs'
+import { BASEBALL_CAREER_V2_PRE_MIXED_EIGHT_HASHES } from '../lib/playground-baseball-career-versions.mjs'
+import { BASEBALL_AT_BAT_MIXED_EIGHT } from '../lib/playground-baseball-practice-pitches.mjs'
 
 const uuid = index => `42a00000-0000-4000-8000-${index.toString(16).padStart(12,'0')}`
 const time = Date.parse('2026-11-26T00:00:00.000Z')
@@ -77,6 +79,7 @@ test('the active appearance and accepted input reopen without any transport call
   const repository = memoryRepository()
   const beforeReload = await client(repository)
   const fresh = await beforeReload.create(profile,settings)
+  assert.equal(fresh.appearancesPerGame,3)
   await beforeReload.command(fresh.id,{type:'prepare',choice:'mit'})
   const career = await beforeReload.command(fresh.id,{type:'start-manual'})
   const id = career.activeAtBat.id
@@ -177,13 +180,13 @@ test('series and week simulation save a bounded range once, preserve preparation
 
   const afterSeries = await first.advance(id,'series')
   assert.equal(afterSeries.currentGameIndex,2)
-  assert.equal(afterSeries.games[1].preparation.choice,'mit')
+  assert.equal(afterSeries.games[1].preparation.choice,'rest')
   assert.equal(writes,4)
   const afterWeek = await first.advance(id,'week')
   assert.equal(afterWeek.currentGameIndex,6)
-  assert.equal(afterWeek.games[2].preparation.choice,'rest')
+  assert.equal(afterWeek.games[2].preparation.choice,'mit')
   assert.equal(afterWeek.games[6].preparation,null)
-  assert.equal(afterWeek.statsBySource.automatic.PA,12)
+  assert.equal(afterWeek.statsBySource.automatic.PA,18)
   assert.equal(writes,5)
   assert.equal((await first.advance(id,'week')).currentGameIndex,6)
   assert.equal(writes,5)
@@ -228,7 +231,7 @@ test('a competing tab never leaves a partially committed auto-play range', async
   const reopened = await first.read(id)
   assert.equal(reopened.career.currentGameIndex,1)
   assert.equal(reopened.career.games[1].preparation.choice,'stamina')
-  assert.equal(reopened.career.stats.PA,2)
+  assert.equal(reopened.career.stats.PA,3)
   first.close()
   second.close()
 })
@@ -305,7 +308,8 @@ test('a lost annual acknowledgement leaves the same replayable submission and pr
   assert.equal(next.stats.PA,0)
   assert.deepEqual(next.growth,draft.career.growth)
   assert.deepEqual(next.profile,draft.career.profile)
-  assert.deepEqual(next.settings,draft.career.settings)
+  assert.deepEqual(next.settings,{...draft.career.settings,pitchMode:BASEBALL_AT_BAT_MIXED_EIGHT})
+  assert.equal(next.appearancesPerGame,3)
   assert.equal(next.versions.careerHash,nextVersions.careerHash)
   assert.deepEqual(await repository.read(id),{...draft,receipt})
 
@@ -317,6 +321,7 @@ test('a lost annual acknowledgement leaves the same replayable submission and pr
   assert.deepEqual(entry.winter,(await repository.read(next.id)).setup.winter)
   const advanced = await reopened.advance(next.id,'current')
   const backup = await reopened.exportSave(next.id)
+  assert.deepEqual(JSON.parse(backup).setup.settings,next.settings)
   assert.deepEqual(JSON.parse(backup).setup.winter,entry.winter)
   assert.equal(JSON.parse(backup).winterDraft,undefined)
   await assert.rejects(reopened.importSave(JSON.stringify({
@@ -325,6 +330,7 @@ test('a lost annual acknowledgement leaves the same replayable submission and pr
   assert.deepEqual(reopened.snapshot().entries.find(item=>item.id===next.id).winter,entry.winter)
   const restored = await client(memoryRepository(),5000,undefined,compatibility)
   assert.deepEqual(await restored.importSave(backup),advanced)
+  assert.deepEqual((await restored.read(next.id)).career.settings,next.settings)
   assert.deepEqual(restored.snapshot().entries[0].history,entry.history)
   assert.deepEqual(restored.snapshot().entries[0].winter,entry.winter)
   assert.equal(requests.length,2)
@@ -333,30 +339,76 @@ test('a lost annual acknowledgement leaves the same replayable submission and pr
   reopened.close()
 })
 
-test('explicitly loaded server history can continue on a fresh browser without fetching during play', async () => {
+test('recovered history starts year three with eight-pitch mode or keeps the existing fixed selection', async () => {
   const id=uuid(900),last=uuid(901)
   const growth={mit:47,power:54,discipline:66,stamina:61,trust:100,xp:1600,condition:78}
   const stats={G:144,PA:288,AB:274,H:99,'2B':27,'3B':3,HR:14,BB:14,SO:140}
   const history=[{seasonId:id,seasonNumber:1,stats},{seasonId:last,seasonNumber:2,stats}]
   const winter={2:{version:1,direction:'power'}}
-  let reads=0
-  const opened=await client(memoryRepository(),5000,{history:async careerId=>{
-    reads++
-    assert.equal(careerId,id)
-    return {status:'ok',careerId,history,winter,latest:{seasonId:last,seasonNumber:2,growth,profile,settings,source:'manual'}}
-  },settle:()=>assert.fail('Network during a season')})
-  assert.equal(reads,0)
-  const confirmed=await opened.loadHistory(id)
-  assert.deepEqual(confirmed.history,history)
-  assert.deepEqual(confirmed.winter,winter)
-  await assert.rejects(opened.startNextSeason(id,winter[2]),{code:'invalid_command'})
-  const next=await opened.startNextSeason(id)
-  assert.deepEqual(next.growth,growth)
-  assert.deepEqual(opened.snapshot().entries[0].history,history)
-  assert.equal(opened.snapshot().entries[0].seasonNumber,3)
-  assert.equal((await opened.advance(next.id,'current')).currentGameIndex,1)
-  assert.equal(reads,1)
+  for (const [pitchMode,expected] of [
+    ['mixed',BASEBALL_AT_BAT_MIXED_EIGHT],
+    [BASEBALL_AT_BAT_MIXED_EIGHT,BASEBALL_AT_BAT_MIXED_EIGHT],
+    ['cutter','cutter'],
+  ]) {
+    let reads=0
+    const repository=memoryRepository()
+    const previousSettings={pitchMode,baseSpeedKmh:140}
+    const opened=await client(repository,5000,{history:async careerId=>{
+      reads++
+      assert.equal(careerId,id)
+      return {status:'ok',careerId,history,winter,latest:{seasonId:last,seasonNumber:2,growth,profile,settings:previousSettings,source:'development'}}
+    },settle:()=>assert.fail('Network during a season')})
+    assert.equal(reads,0)
+    const confirmed=await opened.loadHistory(id)
+    assert.deepEqual(confirmed.history,history)
+    assert.deepEqual(confirmed.winter,winter)
+    await assert.rejects(opened.startNextSeason(id,winter[2]),{code:'invalid_command'})
+    const next=await opened.startNextSeason(id)
+    assert.deepEqual(next.settings,{...previousSettings,pitchMode:expected})
+    assert.deepEqual(next.profile,profile)
+    assert.deepEqual(next.growth,growth)
+    assert.equal(next.source,'development')
+    const entry=opened.snapshot().entries[0]
+    assert.equal(entry.careerId,id)
+    assert.deepEqual(entry.history,history)
+    assert.equal(entry.seasonNumber,3)
+    assert.equal((await opened.advance(next.id,'current')).currentGameIndex,1)
+    assert.equal(reads,1)
+    opened.close()
+    const reloaded=await client(repository)
+    const resumed=await reloaded.read(next.id)
+    assert.equal(resumed.career.currentGameIndex,1)
+    assert.deepEqual(resumed.career.settings,next.settings)
+    assert.deepEqual(reloaded.snapshot().entries[0].history,history)
+    reloaded.close()
+  }
+})
+
+test('pre-eight season two can be imported, resumed and exported with the same four-pitch pin', async () => {
+  const season = automaticGames(1)
+  const careerId=uuid(750)
+  const stats={G:144,PA:288,AB:274,H:99,'2B':27,'3B':3,HR:14,BB:14,SO:140}
+  const startingGrowth={mit:47,power:54,discipline:66,stamina:61,trust:100,xp:1600,condition:78}
+  season.setup={...season.setup,versions:BASEBALL_CAREER_V2_PRE_MIXED_EIGHT_HASHES,
+    continuation:{careerId,previousSeasonId:careerId,seasonNumber:2,startingGrowth,history:[{seasonId:careerId,seasonNumber:1,stats}]}}
+  const repository=memoryRepository()
+  const opened=await client(repository)
+  const backup={...season,format:'nextport-baseball-season-v1'}
+  await assert.rejects(opened.importSave(JSON.stringify({
+    ...backup,setup:{...season.setup,settings:{...settings,pitchMode:BASEBALL_AT_BAT_MIXED_EIGHT}},
+  })),{code:'version_mismatch'})
+  const restored=await opened.importSave(JSON.stringify(backup))
+  assert.deepEqual(restored.stats,replayBaseballAnnualSubmission(season,{includeAtBats:false}).draft.career.stats)
+  assert.equal(restored.settings.pitchMode,'mixed')
   opened.close()
+  const reloaded=await client(repository)
+  const advanced=await reloaded.advance(restored.id,'current')
+  assert.equal(advanced.currentGameIndex,2)
+  const exported=JSON.parse(await reloaded.exportSave(restored.id))
+  assert.deepEqual(exported.setup.versions,(await repository.read(restored.id)).setup.versions)
+  assert.equal(exported.setup.versions.careerHash,BASEBALL_CAREER_V2_PRE_MIXED_EIGHT_HASHES.careerHash)
+  assert.equal(exported.setup.settings.pitchMode,'mixed')
+  reloaded.close()
 })
 
 test('annual settlement keeps the winter plan in the one submitted season and verifies the receipt', async () => {
@@ -551,6 +603,11 @@ test('an imported continuation stays editable only when it extends the confirmed
   await opened.loadHistory(id)
   const local = await opened.importSave(JSON.stringify({format:'nextport-baseball-season-v1',...submission}))
   assert.equal(selectBaseballAnnualArchive(opened.snapshot().entries[0],local.id,opened.snapshot().confirmedHistories),undefined)
+  const started = await repository.read(local.id)
+  const continued = await opened.startNextSeason(id)
+  assert.equal(continued.id,local.id)
+  assert.equal(continued.settings.pitchMode,'mixed')
+  assert.deepEqual(await repository.read(local.id),started)
   assert.equal((await opened.advance(local.id,'current')).currentGameIndex,2)
   remote = {...response,history:[first,{seasonId:laterId,seasonNumber:2,stats}],latest:{...response.latest,seasonId:laterId,seasonNumber:2}}
   await opened.loadHistory(id)

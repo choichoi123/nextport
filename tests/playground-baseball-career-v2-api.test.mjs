@@ -1,7 +1,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
-import { createBaseballCareerApiHandler, createBaseballCareerVersions, BASEBALL_CAREER_MAX_BODY_BYTES, BASEBALL_CAREER_V2_TRIAL_HASHES } from '../lib/server/baseball-career-v2-api.mjs'
+import { createBaseballAtBatV2Versions, createBaseballCareerApiHandler, createBaseballCareerVersions, BASEBALL_CAREER_MAX_BODY_BYTES } from '../lib/server/baseball-career-v2-api.mjs'
+import { BASEBALL_CAREER_V2_PRE_MIXED_EIGHT_HASHES, BASEBALL_CAREER_V2_TRIAL_HASHES } from '../lib/playground-baseball-career-versions.mjs'
+import { BASEBALL_AT_BAT_MIXED_EIGHT } from '../lib/playground-baseball-practice-pitches.mjs'
 import { createBaseballCareerSave, publicBaseballCareerSave } from '../lib/playground-baseball-career-v2.mjs'
 import { createBaseballCareerStore } from '../lib/server/baseball-career-v2-db.mjs'
 import { createBaseballParticipant, readBaseballParticipant } from '../lib/server/baseball-auth.mjs'
@@ -131,7 +133,7 @@ test('a completed manual appearance applies its statistics and growth exactly on
 
 test('three games and six automatic appearances retain separate raw records and one-time growth',async()=>{
   const api=setup(),owner=readBaseballParticipant(request(),env.BASEBALL_SIGNING_SECRET,time)
-  const trial=createBaseballCareerSave({id:uuid(),profile,settings,source:'development',versions:{...versions,...BASEBALL_CAREER_V2_TRIAL_HASHES},seed:42,now:new Date(time).toISOString()})
+  const trial=createBaseballCareerSave({id:uuid(),profile,settings,source:'development',versions:BASEBALL_CAREER_V2_TRIAL_HASHES,seed:42,now:new Date(time).toISOString()})
   api.store.careers.set(trial.id,{owner:owner.hash,snapshot:trial})
   let career=publicBaseballCareerSave(trial),firstAuto
   for(let game=0;game<3;game++){
@@ -171,6 +173,46 @@ test('new players reach game five through atomic automatic games with idempotent
   const list=await api.run(request({method:'GET'}))
   assert.equal(list.body.careers[0].completedGames,4)
   assert.equal(list.body.careers[0].totalGames,144)
+})
+
+test('published 144-game mixed checkpoints can still issue a pitch, while new modes need the current versions',async()=>{
+  const api=setup(),owner=readBaseballParticipant(request(),env.BASEBALL_SIGNING_SECRET,time)
+  const createPrior=pitchMode=>createBaseballCareerSave({
+    id:uuid(),profile,settings:{...settings,pitchMode},versions:BASEBALL_CAREER_V2_PRE_MIXED_EIGHT_HASHES,
+    seed:42,now:new Date(time).toISOString(),scheduleId:'regular-144-v1',
+  })
+  const old=createPrior('mixed')
+  api.store.careers.set(old.id,{owner:owner.hash,snapshot:old})
+  const prepared=await api.command(old,{type:'prepare',choice:'rest'})
+  assert.equal(prepared.statusCode,200)
+  const started=await api.command(prepared.body.career,{type:'start-manual'})
+  const active=started.body.career
+  const session=(await api.run(request({method:'GET',id:active.id,atBatId:active.activeAtBat.id}))).body.session
+  const issued=await api.batCommand(active,session,{type:'issue'})
+  assert.equal(issued.statusCode,200)
+  assert.equal(issued.body.session.pending.pitch.practiceType,undefined)
+  assert.equal(issued.body.session.versions.atBatHash,old.versions.atBatHash)
+
+  const forged=createPrior(BASEBALL_AT_BAT_MIXED_EIGHT)
+  api.store.careers.set(forged.id,{owner:owner.hash,snapshot:forged})
+  const rejected=await api.command(forged,{type:'prepare',choice:'rest'})
+  assert.equal(rejected.statusCode,409)
+  assert.equal(rejected.body.code,'version_mismatch')
+  const fresh=await api.create({settings:forged.settings})
+  assert.equal(fresh.statusCode,200)
+  assert.equal(fresh.body.career.settings.pitchMode,BASEBALL_AT_BAT_MIXED_EIGHT)
+})
+
+test('mixed repertoire source changes the v2 at-bat hash without changing the shared engine version',async()=>{
+  const getEngineVersions=async()=>({engine:{hash:versions.engineHash},rules:{hash:versions.rulesHash}})
+  const versionsFor=source=>createBaseballAtBatV2Versions({
+    getEngineVersions,
+    readSource:async file=>file.endsWith('playground-baseball-practice-pitches.mjs')?source:file,
+  })
+  const first=await versionsFor('pitch profile')
+  const next=await versionsFor('tuned pitch profile')
+  assert.notEqual(first.atBatHash,next.atBatHash)
+  assert.deepEqual(next,{...first,atBatHash:next.atBatHash})
 })
 
 test('two tabs cannot claim one slot or overwrite accepted D input',async()=>{

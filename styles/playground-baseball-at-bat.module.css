@@ -157,6 +157,7 @@
 .careerFocused .layout { display:block; height:100%; min-height:0; position:relative; }
 .careerFocused .fieldColumn { height:100%; min-height:0; display:flex; flex-direction:column; }
 .careerFocused .hud { flex:0 0 auto; border-radius:0; padding:9px 14px; }
+.careerFocused .hud .player small.appearanceProgress { display:block; font-weight:600; }
 .careerToolbar { position:relative; display:flex; align-items:center; min-width:0; flex:0 0 auto; gap:6px; padding:0 8px; background:#173d32; border-top:1px solid #c9d6bc33; }
 .careerFocused .viewOptions { flex:1 1 auto; min-width:0; padding:0; border:0; }
 .careerFocused .viewOptions>span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
@@ -179,6 +180,7 @@
 .careerFocused .fieldActions button { flex:0 1 240px; min-width:128px; width:auto; max-width:65%; min-height:44px; margin:0; padding:8px 12px; }
 .careerFocused .fieldActions .primary { background:#e5d8a5; border-color:#e5d8a5; color:#193d32; }
 .careerFocused .fieldActions .secondary { color:#f5f1df; border-color:#c9d6bc88; }
+.careerFocused[data-local-write-pending=true]:not([data-phase=windup],[data-phase=flight]) .fieldActions button:disabled { opacity:1; cursor:progress; }
 .careerFocused .fieldColumn>p,.careerFocused .fieldColumn>.data,.careerFocused .status { display:none; }
 .careerFocused .panel.careerDialog { position:absolute; inset:8px; z-index:20; margin-left:auto; width:min(660px,calc(100% - 16px)); height:calc(100% - 16px); max-height:none; padding:18px; overflow:auto; overscroll-behavior:contain; box-shadow:0 0 0 100vmax #061f27a6; }
 .careerDialog>.secondary:first-child { position:sticky; top:0; z-index:1; margin-top:0; margin-bottom:15px; background:var(--surface,#fffdf5); }
